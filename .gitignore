@@ -1,0 +1,15 @@
+*~
+**~
+*.ico
+*.jpg
+*.png
+*.jpeg
+*.log
+*test
+phoneinfoga-master/**
+*/__pycache__/**
+*.zip
+*.zip
+*.pyc
+__pycache__
+node_modules/**
