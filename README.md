@@ -13,6 +13,45 @@
 **Core Mission:** Enable collaborative AI training across hospitals without sharing raw patient data
 **Key Innovation:** Privacy-preserving medical AI that respects data sovereignty
 
+
+## Architecture in Mermaid
+
+```mermaid
+graph TB
+subgraph CoordinatorServer [Coordinator Server]
+C[Coordinator FedAvg]
+A[Aggregation Module]
+P[Privacy Accounting]
+M[Client Management]
+E[Evaluation Dashboard]
+end
+
+subgraph HospitalClients [Hospital Clients]
+    subgraph ClientInternal [Client Node]
+        L[Local Model]
+        D[DP Module DP-SGD]
+        DL[Data Loader Non-IID]
+        S[Secure Communication]
+    end
+    
+    H1[Hospital A] --> L
+    H2[Hospital B] --> L
+    H3[Hospital C] --> L
+end
+
+C --> H1
+C --> H2
+C --> H3
+H1 --> C
+H2 --> C
+H3 --> C
+
+MD[Medical Datasets] --> DL
+L --> D
+DL --> L
+D --> S
+```
+
 ## 🔬 RESEARCH QUESTIONS
 - Main: How does differential privacy impact model utility in federated medical imaging?
 - Secondary: What are the effects of data heterogeneity (non-IID) on federated convergence?
