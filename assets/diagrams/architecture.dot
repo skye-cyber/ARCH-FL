@@ -1,0 +1,64 @@
+digraph Architecture {
+    rankdir=TB;
+    node [shape=box, style=filled, fillcolor=lightblue];
+
+    // Coordinator Server
+    subgraph cluster_coordinator {
+        label="Coordinator Server";
+        style=filled;
+        fillcolor=lightgrey;
+
+        Coordinator [label="Coordinator\n(FedAvg)"];
+        Aggregation [label="Aggregation\nModule"];
+        PrivacyAccounting [label="Privacy\nAccounting"];
+        ClientManager [label="Client\nManagement"];
+        Evaluation [label="Evaluation\nDashboard"];
+
+        Coordinator -> Aggregation;
+        Coordinator -> PrivacyAccounting;
+        Coordinator -> ClientManager;
+        Coordinator -> Evaluation;
+    }
+
+    // Clients
+    subgraph cluster_clients {
+        label="Hospital Clients";
+        style=filled;
+        fillcolor=lightyellow;
+
+        Client1 [label="Hospital A\nClient Node"];
+        Client2 [label="Hospital B\nClient Node"];
+        Client3 [label="Hospital C\nClient Node"];
+
+        subgraph cluster_client_internal {
+            label="";
+            style=invis;
+
+            LocalModel [label="Local Model"];
+            DPModule [label="DP Module\n(DP-SGD)"];
+            DataLoader [label="Data Loader\n(Non-IID)"];
+            SecureComm [label="Secure\nCommunication"];
+
+            LocalModel -> DPModule;
+            DataLoader -> LocalModel;
+            DPModule -> SecureComm;
+        }
+
+        Client1 -> LocalModel [style=invis];
+        Client2 -> LocalModel [style=invis];
+        Client3 -> LocalModel [style=invis];
+    }
+
+    // Data flow
+    Coordinator -> Client1 [label="Global Model"];
+    Coordinator -> Client2 [label="Global Model"];
+    Coordinator -> Client3 [label="Global Model"];
+
+    Client1 -> Coordinator [label="Model Updates\n+ Noise"];
+    Client2 -> Coordinator [label="Model Updates\n+ Noise"];
+    Client3 -> Coordinator [label="Model Updates\n+ Noise"];
+
+    // External
+    MedicalData [shape=cylinder, label="Medical\nDatasets", fillcolor=lightgreen];
+    MedicalData -> DataLoader;
+}

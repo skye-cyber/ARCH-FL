@@ -1,0 +1,61 @@
+digraph PrivacyFlow {
+    rankdir=TB;
+    node [shape=box, style=filled];
+
+    // Inputs
+    GlobalModel [label="Global Model\nParameters", fillcolor=lightblue];
+    LocalData [label="Local Training Data", fillcolor=lightgreen];
+
+    // DP Process
+    subgraph cluster_dp_process {
+        label="Differential Privacy Process";
+        style=filled;
+        fillcolor=lightyellow;
+
+        GradientCompute [label="Gradient\nComputation"];
+        GradientClip [label="Gradient\nClipping\n(max_grad_norm)"];
+        NoiseAddition [label="Noise Addition\n(Gaussian)"];
+        ParameterUpdate [label="Parameter\nUpdate"];
+
+        GradientCompute -> GradientClip;
+        GradientClip -> NoiseAddition;
+        NoiseAddition -> ParameterUpdate;
+    }
+
+    // Privacy Accounting
+    subgraph cluster_accounting {
+        label="Privacy Accounting";
+        style=filled;
+        fillcolor=lightgrey;
+
+        EpsilonDelta [label="(ε,δ) Parameters", fillcolor=pink];
+        NoiseMultiplier [label="Noise\nMultiplier\n(σ)"];
+        PrivacySpent [label="Privacy\nSpent\nTracking"];
+
+        EpsilonDelta -> NoiseMultiplier;
+        NoiseMultiplier -> NoiseAddition;
+        NoiseAddition -> PrivacySpent;
+    }
+
+    // Outputs
+    PrivateUpdate [label="Private Model Update\n(Formal DP Guarantee)", fillcolor=orange];
+
+    // Flow
+    GlobalModel -> GradientCompute;
+    LocalData -> GradientCompute;
+
+    ParameterUpdate -> PrivateUpdate;
+    PrivacySpent -> PrivateUpdate;
+
+    // Annotations
+    subgraph cluster_annotations {
+        label="Key DP Operations";
+        style=dashed;
+
+        ClipNote [label="Clip gradients to\nbound sensitivity", shape=note, fillcolor=white];
+        NoiseNote [label="Add calibrated noise\nto guarantee privacy", shape=note, fillcolor=white];
+
+        GradientClip -> ClipNote [style=dashed, dir=none];
+        NoiseAddition -> NoiseNote [style=dashed, dir=none];
+    }
+}

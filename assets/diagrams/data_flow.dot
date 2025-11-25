@@ -1,0 +1,55 @@
+digraph DataFlow {
+    rankdir=LR;
+    node [shape=box, style=filled];
+
+    // Data sources
+    MedMNIST [label="MedMNIST\nDatasets", fillcolor=lightgreen];
+    COVIDx [label="COVIDx CXR", fillcolor=lightgreen];
+    Synthetic [label="Synthetic\nData", fillcolor=lightgreen];
+
+    // Partitioning
+    subgraph cluster_partitioning {
+        label="Data Partitioning";
+        style=filled;
+        fillcolor=lightyellow;
+
+        IID [label="IID\nPartition"];
+        NonIID [label="Non-IID\nPartition"];
+        Dirichlet [label="Dirichlet\nDistribution"];
+
+        IID -> NonIID [style=invis];
+        NonIID -> Dirichlet [style=invis];
+    }
+
+    // Clients
+    subgraph cluster_clients {
+        label="Client Data Distribution";
+        style=filled;
+        fillcolor=lightblue;
+
+        ClientData1 [label="Client 1\nData Split"];
+        ClientData2 [label="Client 2\nData Split"];
+        ClientDataN [label="Client N\nData Split"];
+
+        ClientData1 -> ClientData2 -> ClientDataN [style=invis];
+    }
+
+    // Training
+    LocalTrainer [label="Local Trainer", fillcolor=orange];
+    ModelUpdates [label="Model Updates", fillcolor=orange];
+
+    // Flow
+    MedMNIST -> IID;
+    COVIDx -> NonIID;
+    Synthetic -> Dirichlet;
+
+    IID -> ClientData1;
+    NonIID -> ClientData2;
+    Dirichlet -> ClientDataN;
+
+    ClientData1 -> LocalTrainer;
+    ClientData2 -> LocalTrainer;
+    ClientDataN -> LocalTrainer;
+
+    LocalTrainer -> ModelUpdates;
+}
