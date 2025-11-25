@@ -7,7 +7,6 @@
 ```python
 from datasets import load_dataset
 ds = load_dataset("danjacobellis/chexpert")
-
 ```
 - dask:
 ```python

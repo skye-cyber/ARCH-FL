@@ -1,3 +1,5 @@
 dask[complete]
 tensorflow
 matplotlib
+streamlit
+pandas
