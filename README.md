@@ -174,16 +174,16 @@ FLEMSIM/
 ├── src/
 │   ├── __init__.py
 │   ├── core/
-│   │   ├── coordinator.py
+│   │   ├── coordinator.py      # FedAvg server implementation
 │   │   ├── client.py
 │   │   └── aggregation.py
 │   ├── privacy/
-│   │   ├── dp_engine.py
+│   │   ├── dp_engine.py        # DP-SGD integration 
 │   │   ├── accounting.py
 │   │   └── noise_mechanisms.py
 │   ├── data/
 │   │   ├── loaders.py
-│   │   ├── partitioning.py
+│   │   ├── partitioning.py     # Non-IID data splits
 │   │   └── datasets.py
 │   ├── models/
 │   │   ├── architectures.py
@@ -197,7 +197,7 @@ FLEMSIM/
 │       └── visualization.py
 ├── experiments/
 │   ├── run_baseline.py
-│   ├── run_dp_experiment.py
+│   ├── run_dp_experiment.py    # Main experiment runner
 │   ├── run_non_iid.py
 │   └── ablation/
 │       ├── client_sampling.py
@@ -216,7 +216,7 @@ FLEMSIM/
 │   ├── logs/
 │   └── checkpoints/
 └── dashboard/
-    ├── app.py
+    ├── app.py                   # Streamlit visualization
     ├── components/
     └── assets/
 ```
