@@ -1,0 +1,20 @@
+# First cell - Baseline tests notebook
+import sys
+sys.path.append('..')
+from experiments.run_federated import main
+from config import Config
+import matplotlib.pyplot as plt
+
+# Run baseline experiment
+print("Running baseline FL experiment...")
+# main()  # Uncomment to run
+
+# Plotting template
+def plot_results(accuracies):
+    plt.figure(figsize=(10, 6))
+    plt.plot(accuracies)
+    plt.title('Federated Learning Accuracy Over Rounds')
+    plt.xlabel('Communication Round')
+    plt.ylabel('Test Accuracy (%)')
+    plt.grid(True)
+    plt.show()
