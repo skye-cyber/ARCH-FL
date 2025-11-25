@@ -1,0 +1,21 @@
+extends: "../base.yaml"
+
+data:
+  dataset: "PneumoniaMNIST"
+  iid: true
+  num_clients: 10
+  samples_per_client: 500
+
+model:
+  architecture: "SimpleCNN"
+  input_channels: 1
+  num_classes: 2
+
+training:
+  local_epochs: 1
+  batch_size: 32
+  learning_rate: 0.01
+  client_fraction: 1.0
+
+privacy:
+  enabled: false

@@ -1,0 +1,17 @@
+project:
+  name: "ARCH-FL"
+  version: "1.0"
+
+paths:
+  data_dir: "./data"
+  results_dir: "./results"
+  checkpoints_dir: "./results/checkpoints"
+
+experiment:
+  default_rounds: 100
+  eval_interval: 5
+  seed: 42
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

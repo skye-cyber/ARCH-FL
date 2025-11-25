@@ -1,0 +1,20 @@
+name: "SimpleCNN"
+
+architecture:
+  input_channels: 1
+  conv_layers:
+    - out_channels: 32
+      kernel_size: 3
+      stride: 1
+      padding: 1
+    - out_channels: 64
+      kernel_size: 3
+      stride: 1
+      padding: 1
+  fc_layers:
+    - out_features: 128
+    - out_features: 2
+
+activation: "ReLU"
+pooling: "MaxPool2d"
+pool_kernel: 2
