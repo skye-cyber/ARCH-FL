@@ -3,3 +3,12 @@ tensorflow
 matplotlib
 streamlit
 pandas
+torch
+torchvision
+opacus
+pytorch-lightning
+numpy
+scikit-learn
+pyyaml
+tqdm
+mlflow
