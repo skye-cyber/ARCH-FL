@@ -155,6 +155,72 @@ python main.py --mode non_iid --dp_epsilon 2.0
 streamlit run dashboard.py
 ```
 
+## Project Structure
+```text
+FLEMSIM/
+├── README.md
+├── requirements.txt
+├── setup.py
+├── .gitignore
+├── config/
+│   ├── base.yaml
+│   ├── experiment/
+│   │   ├── iid_baseline.yaml
+│   │   ├── non_iid_dp.yaml
+│   │   └── ablation.yaml
+│   └── model/
+│       ├── simple_cnn.yaml
+│       └── resnet18.yaml
+├── src/
+│   ├── __init__.py
+│   ├── core/
+│   │   ├── coordinator.py
+│   │   ├── client.py
+│   │   └── aggregation.py
+│   ├── privacy/
+│   │   ├── dp_engine.py
+│   │   ├── accounting.py
+│   │   └── noise_mechanisms.py
+│   ├── data/
+│   │   ├── loaders.py
+│   │   ├── partitioning.py
+│   │   └── datasets.py
+│   ├── models/
+│   │   ├── architectures.py
+│   │   └── utils.py
+│   ├── training/
+│   │   ├── local_trainer.py
+│   │   └── fedavg.py
+│   └── utils/
+│       ├── logger.py
+│       ├── metrics.py
+│       └── visualization.py
+├── experiments/
+│   ├── run_baseline.py
+│   ├── run_dp_experiment.py
+│   ├── run_non_iid.py
+│   └── ablation/
+│       ├── client_sampling.py
+│       └── dp_params.py
+├── tests/
+│   ├── test_coordinator.py
+│   ├── test_dp_engine.py
+│   ├── test_data_partitioning.py
+│   └── conftest.py
+├── docs/
+│   ├── api/
+│   ├── setup_guide.md
+│   └── experiment_protocols.md
+├── results/
+│   ├── figures/
+│   ├── logs/
+│   └── checkpoints/
+└── dashboard/
+    ├── app.py
+    ├── components/
+    └── assets/
+```
+
 ## 🆘 Support
 
 For support and questions:
