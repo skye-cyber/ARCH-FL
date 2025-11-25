@@ -1,3 +1,10 @@
+[![PyPI Version](https://img.shields.io/pypi/v/FLEMSIM)](https://pypi.org/project/FLEMSIM)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/skye-cyber/FLEMSIM/ci.yml?branch=main)](https://github.com/skye-cyber/FLEMSIM/actions)
+
+---
+
 ## FLEMSIM (Federated Learning for Medical Simulation)
 > Federated Medical Image Analysis Project - **Onboarding Mind Map**
 
@@ -147,3 +154,31 @@ python main.py --mode non_iid --dp_epsilon 2.0
 # Launch dashboard
 streamlit run dashboard.py
 ```
+
+## 🆘 Support
+
+For support and questions:
+- Check the documentation
+- Open an issue on GitHub
+- Contact the development team
+
+## Contributing
+Fore more information on how to contribute to this project see [contribbuting](CONTRIBUTING.md)
+
+## **Contributors**
+- **[Wambua]** – Repo Admin
+
+
+## Acknowledgements
+
+[Shields.io](https://shields.io/) – Status badges 
+
+
+---
+## 💡 Author
+``Skye - Wambua``
+- Made with 💻 and ☕ in Kenya
+
+---
+
+GitHub’s README guidelines 
