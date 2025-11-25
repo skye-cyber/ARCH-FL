@@ -17,6 +17,9 @@ pip install -r requirements.txt
 # Install project in development mode
 pip install -e .
 
+#
+sudo apt-get install graphviz
+
 # Create necessary directories
 mkdir -p data results/checkpoints results/figures results/logs
 
