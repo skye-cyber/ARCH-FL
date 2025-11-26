@@ -1,11 +1,11 @@
-[![PyPI Version](https://img.shields.io/pypi/v/FLEMSIM)](https://pypi.org/project/FLEMSIM)
+[![PyPI Version](https://img.shields.io/pypi/v/ARCH-FL)](https://pypi.org/project/ARCH-FL)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/skye-cyber/FLEMSIM/ci.yml?branch=main)](https://github.com/skye-cyber/FLEMSIM/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/skye-cyber/ARCH-FL/ci.yml?branch=main)](https://github.com/skye-cyber/ARCH-FL/actions)
 
 ---
 
-## FLEMSIM (Federated Learning for Medical Simulation)
+## ARCH-FL (Architecture for Federated Learning)
 > Federated Medical Image Analysis Project - **Onboarding Mind Map**
 
 ## 🎯 PROJECT CORE IDENTITY
@@ -14,7 +14,7 @@
 **Key Innovation:** Privacy-preserving medical AI that respects data sovereignty
 
 
-## Architecture in Mermaid
+## Architecture
 
 ```mermaid
 graph TB
@@ -196,7 +196,7 @@ streamlit run dashboard.py
 
 ## Project Structure
 ```text
-FLEMSIM/
+ARCH-FL/
 ├── README.md
 ├── requirements.txt
 ├── setup.py

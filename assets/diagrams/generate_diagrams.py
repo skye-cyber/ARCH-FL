@@ -29,3 +29,7 @@ dot -Tpng architecture.dot -o architecture.png -Gdpi=300
 dot -Tpng data_flow.dot -o data_flow.png -Gdpi=300
 dot -Tpng privacy_flow.dot -o privacy_flow.png -Gdpi=300
 """
+
+
+if __name__ == "__main__":
+    generate_diagrams()
