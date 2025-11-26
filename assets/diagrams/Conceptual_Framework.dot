@@ -1,0 +1,122 @@
+digraph ConceptualFramework {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fillcolor="lightblue"];
+    graph [fontname="Arial", fontsize=12];
+    edge [fontname="Arial", fontsize=10];
+
+    // Input Layer
+    subgraph cluster_inputs {
+        label="Input Data Sources";
+        style=filled;
+        fillcolor="lightgrey";
+
+        CheXpert [label="CheXpert Dataset\n(224,316 chest radiographs)", shape=cylinder, fillcolor="lightgreen"];
+        MIMIC_CXR [label="MIMIC-CXR Dataset\n(377,110 chest X-rays)", shape=cylinder, fillcolor="lightgreen"];
+    }
+
+    // Preprocessing Layer
+    subgraph cluster_preprocessing {
+        label="Data Preparation";
+        style=filled;
+        fillcolor="lightyellow";
+
+        DataPartitioning [label="Non-IID Data Partitioning\n(Dirichlet Distribution)"];
+        ClientSimulation [label="Client Simulation\n(Multi-hospital setup)"];
+        MultiLabelSetup [label="Multi-label Setup\n(14 thoracic conditions)"];
+
+        DataPartitioning -> ClientSimulation -> MultiLabelSetup [style=invis];
+    }
+
+    // Core ARCH-FL Pipeline
+    subgraph cluster_core {
+        label="ARCH-FL Core Pipeline";
+        style=filled;
+        fillcolor="lightblue";
+
+        LocalTraining [label="Local Client Training\n(Multi-label CNN)"];
+        DPMechanism [label="Privacy Mechanism\n(Sensitivity-Aware DP)"];
+        FedAggregation [label="Federated Aggregation\n(FedAvg Algorithm)"];
+        GlobalModel [label="Global Model Update"];
+
+        LocalTraining -> DPMechanism -> FedAggregation -> GlobalModel;
+    }
+
+    // Evaluation Layer
+    subgraph cluster_evaluation {
+        label="Evaluation & Analysis";
+        style=filled;
+        fillcolor="lightpink";
+
+        PrivacyAnalysis [label="Privacy Analysis\n(ε,δ)-DP Guarantees"];
+        UtilityAnalysis [label="Utility Analysis\n(AUROC per pathology)"];
+        TradeoffAnalysis [label="Privacy-Utility Trade-off"];
+        FairnessAnalysis [label="Fairness Analysis\n(Client performance variance)"];
+
+        PrivacyAnalysis -> UtilityAnalysis -> TradeoffAnalysis -> FairnessAnalysis [style=invis];
+    }
+
+    // Output Layer
+    subgraph cluster_outputs {
+        label="Research Outputs";
+        style=filled;
+        fillcolor="lightgrey";
+
+        Guidelines [label="Implementation Guidelines"];
+        Framework [label="Open-source Framework"];
+        Findings [label="Empirical Findings"];
+
+        Guidelines -> Framework -> Findings [style=invis];
+    }
+
+    // Feedback Loop
+    subgraph cluster_feedback {
+        label="Adaptive Feedback Loop";
+        style=dashed;
+        fillcolor="white";
+
+        Analysis [label="Performance Analysis"];
+        Optimization [label="Parameter Optimization"];
+
+        Analysis -> Optimization;
+    }
+
+    // Data Flow Connections
+    CheXpert -> DataPartitioning;
+    MIMIC_CXR -> DataPartitioning;
+    MultiLabelSetup -> LocalTraining;
+
+    GlobalModel -> PrivacyAnalysis;
+    GlobalModel -> UtilityAnalysis;
+    GlobalModel -> TradeoffAnalysis;
+    GlobalModel -> FairnessAnalysis;
+
+    PrivacyAnalysis -> Guidelines;
+    UtilityAnalysis -> Framework;
+    TradeoffAnalysis -> Findings;
+    FairnessAnalysis -> Findings;
+
+    // Feedback connections
+    UtilityAnalysis -> Analysis;
+    PrivacyAnalysis -> Analysis;
+    Analysis -> Optimization -> DPMechanism [constraint=false];
+    Analysis -> Optimization -> DataPartitioning [constraint=false];
+
+    // Styling for key components
+    DPMechanism [fillcolor="orange"];
+    TradeoffAnalysis [fillcolor="gold"];
+
+    // Annotations
+    subgraph cluster_annotations {
+        label="Key Innovations";
+        style=dashed;
+        node [shape=note, fillcolor="white"];
+
+        Note1 [label="Addresses uniform\nnoise limitation"];
+        Note2 [label="Quantifies non-IID\n& DP interaction"];
+        Note3 [label="Multi-label focus\non real datasets"];
+
+        DPMechanism -> Note1 [style=dashed, dir=none];
+        TradeoffAnalysis -> Note2 [style=dashed, dir=none];
+        MultiLabelSetup -> Note3 [style=dashed, dir=none];
+    }
+}
