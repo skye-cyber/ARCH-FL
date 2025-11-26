@@ -3,8 +3,8 @@ digraph DataFlow {
     node [shape=box, style=filled];
 
     // Data sources
-    MedMNIST [label="MedMNIST\nDatasets", fillcolor=lightgreen];
-    COVIDx [label="COVIDx CXR", fillcolor=lightgreen];
+    MIMIC_CXR [label="MIMIC-CXR\nDatasets", fillcolor=lightgreen];
+    CheXpert [label="CheXpert CXR", fillcolor=lightgreen];
     Synthetic [label="Synthetic\nData", fillcolor=lightgreen];
 
     // Partitioning
@@ -39,8 +39,8 @@ digraph DataFlow {
     ModelUpdates [label="Model Updates", fillcolor=orange];
 
     // Flow
-    MedMNIST -> IID;
-    COVIDx -> NonIID;
+    MIMIC_CXR -> IID;
+    CheXpert -> NonIID;
     Synthetic -> Dirichlet;
 
     IID -> ClientData1;

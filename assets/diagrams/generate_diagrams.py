@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import subprocess
 from pathlib import Path
 
@@ -15,7 +14,7 @@ def generate_diagrams():
             subprocess.run([
                 'dot', '-Tpng', str(dot_file),
                 '-o', str(png_file),
-                '-Gdpi=300'
+                '-Gdpi=600'
             ], check=True)
             print(f"Generated: {png_file}")
         except subprocess.CalledProcessError as e:
