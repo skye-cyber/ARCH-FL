@@ -1,0 +1,37 @@
+flowchart TB
+A[Independent Variables] --> B[Experimental Conditions]
+C[Dependent Variables] --> D[Measured Outcomes]
+
+subgraph A[Independent Variables]
+A1[Privacy Budget ε<br>1, 2, 4, 8, ∞]
+A2[Non-IID Severity<br>Low, Medium, High]
+A3[Client Fraction<br>0.1, 0.3, 0.5]
+end
+
+subgraph B[Experimental Conditions]
+B1[64 Total Experiments]
+B2[3 Replicates Each]
+B3[Cross-Validation]
+end
+
+subgraph C[Dependent Variables]
+C1[Model Accuracy]
+C2[Privacy Guarantees]
+C3[Convergence Speed]
+C4[Fairness Metric]
+end
+
+subgraph D[Measured Outcomes]
+D1[Privacy-Utility Curves]
+D2[Statistical Significance]
+D3[Practical Guidelines]
+end
+
+A --> B
+B --> C
+C --> D
+
+style A fill:#e6f7ff
+style B fill:#f0fff0
+style C fill:#fff0f5
+style D fill:#ffffe0
