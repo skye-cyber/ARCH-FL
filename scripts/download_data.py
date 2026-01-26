@@ -8,12 +8,12 @@ from pathlib import Path
 
 def download_medmnist():
     """Download MedMNIST datasets"""
-    data_dir = Path("data")
+    data_dir = Path(__file__).resove().parent.parent / "src/data/datasets"
     data_dir.mkdir(exist_ok=True)
 
     datasets = {
-        "pneumoniamnist": "https://zenodo.org/record/5208230/files/pneumoniamnist.npz?download=1",
-        "chestmnist": "https://zenodo.org/record/5208230/files/chestmnist.npz?download=1"
+        "chexpert": "https://huggingface.co/datasets/danjacobellis/chexpert1",
+        "mimi-cxr": "https://huggingface.co/datasets/itsanmolgupta/mimic-cxr-dataset?library=datasets"
     }
 
     for name, url in datasets.items():
