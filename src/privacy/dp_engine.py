@@ -31,4 +31,8 @@ class DPEngine:
         return 1.0 / self.epsilon if self.epsilon != float('inf') else 0.0
 
     def get_privacy_spent(self) -> Dict[str, float]:
-        return self.privacy_engine.get_privacy_spent()
+        epsilon = self.privacy_engine.get_epsilon(delta=self.delta)
+        return {
+            'epsilon': epsilon,
+            'delta': self.delta
+        }

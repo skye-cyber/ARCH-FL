@@ -1,4 +1,3 @@
-from ..training.local_trainer import LocalTrainer
 from typing import Dict, Any, Tuple
 import torch
 import torch.nn as nn
@@ -41,6 +40,8 @@ class XClient:
         self.model = model
         self.train_loader = train_loader
         self.device = device
+        # Import LocalTrainer locally to avoid circular imports
+        from ..training.local_trainer import LocalTrainer
         self.trainer = LocalTrainer(model, train_loader, device, dp_config)
 
     def local_train(self, global_params: Dict[str, torch.Tensor],

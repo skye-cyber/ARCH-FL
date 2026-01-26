@@ -5,6 +5,37 @@ from colorama import Fore, Style, init
 init(autoreset=True)
 
 
+def print_color(text: str, color: str = "white", bold: bool = False, underline: bool = False) -> None:
+    """
+    Print text with specified color and style.
+    
+    Args:
+        text: Text to print
+        color: Color name (red, green, yellow, blue, magenta, cyan, white)
+        bold: Whether to make text bold
+        underline: Whether to underline text
+    """
+    color_map = {
+        "red": Fore.LIGHTRED_EX,
+        "green": Fore.LIGHTGREEN_EX,
+        "yellow": Fore.LIGHTYELLOW_EX,
+        "blue": Fore.LIGHTBLUE_EX,
+        "magenta": Fore.LIGHTMAGENTA_EX,
+        "cyan": Fore.LIGHTCYAN_EX,
+        "white": Fore.WHITE,
+        "black": Fore.BLACK,
+    }
+    
+    style = ""
+    if bold:
+        style += Style.BRIGHT
+    if underline:
+        style += Style.DIM  # Underline not directly supported in colorama, using dim as alternative
+    
+    selected_color = color_map.get(color.lower(), Fore.WHITE)
+    print(f"{style}{selected_color}{text}{Style.RESET_ALL}")
+
+
 class ForegroundColor:
     if os.name == "posix":
         RESET = "\033[0m"  # Reset to default text color
@@ -108,7 +139,7 @@ class ForegroundColor:
         FMAGENTA = Fore.MAGENTA
         IMAGENTA = Fore.LIGHTMAGENTA_EX
         LMAGENTA = Fore.LIGHTMAGENTA_EX  # Underlined MAGENTA
-        UMAGENTA = Fore.MAGENTA  # Blinking not directly supported, using MAGENTA
+        UMAGENTA = Fore.MAGENTA  # Blinking not directly supported, using MAGE
 
         # Cyan Variants
         CYAN = Fore.LIGHTCYAN_EX
