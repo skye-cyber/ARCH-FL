@@ -33,7 +33,7 @@ def weighted_aggregation(client_updates: List[Dict[str, torch.Tensor]],
             weighted_sum += update[key] * weights[i]
         averaged_params[key] = weighted_sum
 
-    logger.debug(f"Weighted aggregation with custom weights")
+    logger.debug(f"Weighted aggregation with custom weights for {len(client_updates)} clients")
     return averaged_params
 
 

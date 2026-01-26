@@ -1,17 +1,19 @@
 digraph ConceptualFramework {
     rankdir=TB;
-    node [shape=box, style="rounded,filled", fillcolor="lightblue"];
-    graph [fontname="Arial", fontsize=12];
-    edge [fontname="Arial", fontsize=10];
+    bgcolor="transparent";
+    node [shape=box, style="rounded,filled,bold", fontsize=20, fontcolor="white",fillcolor="#254a70"];
+    graph [fontname="Arial", fontsize=20];
+    edge [fontname="Arial", color="#fffff", fontsize=10];
 
     // Input Layer
     subgraph cluster_inputs {
         label="Input Data Sources";
         style=filled;
         fillcolor="lightgrey";
+        //fontsize=14;
 
-        CheXpert [label="CheXpert Dataset\n(224,316 chest radiographs)", shape=cylinder, fillcolor="lightgreen"];
-        MIMIC_CXR [label="MIMIC-CXR Dataset\n(377,110 chest X-rays)", shape=cylinder, fillcolor="lightgreen"];
+        CheXpert [label="CheXpert Dataset\n(224,316 chest radiographs)", shape=cylinder, fillcolor="#707054"];
+        MIMIC_CXR [label="MIMIC-CXR Dataset\n(377,110 chest X-rays)", shape=cylinder, fillcolor="#707054"];
     }
 
     // Preprocessing Layer
@@ -31,10 +33,10 @@ digraph ConceptualFramework {
     subgraph cluster_core {
         label="ARCH-FL Core Pipeline";
         style=filled;
-        fillcolor="lightblue";
+        fillcolor="#3871aa";
 
         LocalTraining [label="Local Client Training\n(Multi-label CNN)"];
-        DPMechanism [label="Privacy Mechanism\n(Sensitivity-Aware DP)"];
+        DPMechanism [label="Privacy Mechanism\n(Sensitivity-Aware DP)", fontcolor="#241f31"];
         FedAggregation [label="Federated Aggregation\n(FedAvg Algorithm)"];
         GlobalModel [label="Global Model Update"];
 
@@ -72,7 +74,9 @@ digraph ConceptualFramework {
     subgraph cluster_feedback {
         label="Adaptive Feedback Loop";
         style=dashed;
-        fillcolor="white";
+        bgcolor="#5e5c64";
+        fontcolor="white";
+        color="white";
 
         Analysis [label="Performance Analysis"];
         Optimization [label="Parameter Optimization"];
@@ -102,14 +106,16 @@ digraph ConceptualFramework {
     Analysis -> Optimization -> DataPartitioning [constraint=false];
 
     // Styling for key components
-    DPMechanism [fillcolor="orange"];
-    TradeoffAnalysis [fillcolor="gold"];
+    DPMechanism [fillcolor="#ffbe6f"];
+    TradeoffAnalysis [fillcolor="#a51d2d"];
 
     // Annotations
     subgraph cluster_annotations {
         label="Key Innovations";
         style=dashed;
-        node [shape=note, fillcolor="white"];
+        fontcolor="white";
+        color="white";
+        node [shape=note, fontcolor="black", color="white", fillcolor="#99c1f1"];
 
         Note1 [label="Addresses uniform\nnoise limitation"];
         Note2 [label="Quantifies non-IID\n& DP interaction"];

@@ -1,12 +1,15 @@
 digraph Architecture {
     rankdir=TB;
-    node [shape=box, style=filled, fillcolor=lightblue];
+    bgcolor="#00293d";
+    fontsize=20;
+    node [shape=box, style=filled, fillcolor=lightblue, fontsize=20];
+    edge [fontcolor="#ffbe6f", fontsize=20];
 
     // Coordinator Server
     subgraph cluster_coordinator {
         label="Coordinator Server";
         style=filled;
-        fillcolor=lightgrey;
+        fillcolor="#fff0f5";
 
         Coordinator [label="Coordinator\n(FedAvg)"];
         Aggregation [label="Aggregation\nModule"];
@@ -24,7 +27,7 @@ digraph Architecture {
     subgraph cluster_clients {
         label="Hospital Clients";
         style=filled;
-        fillcolor=lightyellow;
+        fillcolor="#e6f7ff";
 
         Client1 [label="Hospital A\nClient Node"];
         Client2 [label="Hospital B\nClient Node"];
@@ -50,15 +53,15 @@ digraph Architecture {
     }
 
     // Data flow
-    Coordinator -> Client1 [label="Global Model"];
-    Coordinator -> Client2 [label="Global Model"];
-    Coordinator -> Client3 [label="Global Model"];
+    Coordinator -> Client1 [label="Global Model", color="#ff7800"];
+    Coordinator -> Client2 [label="Global Model", color="#ff7800"];
+    Coordinator -> Client3 [label="Global Model", fontcolor="#ff7800"];
 
-    Client1 -> Coordinator [label="Model Updates\n+ Noise"];
-    Client2 -> Coordinator [label="Model Updates\n+ Noise"];
-    Client3 -> Coordinator [label="Model Updates\n+ Noise"];
+    Client1 -> Coordinator [label="Model Updates\n+ Noise", color="#ff7800"];
+    Client2 -> Coordinator [label="Model Updates\n+ Noise", color="#ff7800"];
+    Client3 -> Coordinator [label="Model Updates\n+ Noise", fontcolor=black];
 
     // External
     MedicalData [shape=cylinder, label="Medical\nDatasets", fillcolor=lightgreen];
-    MedicalData -> DataLoader;
+    MedicalData -> DataLoader [color="#ffa348"];
 }

@@ -66,8 +66,19 @@ class LocalTrainer:
         local_params, privacy_spent = self.train_epoch(global_params, local_epochs, lr)
 
         # Compute update as difference from global model
+        # Handle case where DP wrapping changes parameter names
         update = {}
         for key in global_params.keys():
-            update[key] = local_params[key] - global_params[key]
+            if key in local_params:
+                update[key] = local_params[key] - global_params[key]
+            else:
+                # Try to find matching parameter by shape
+                for local_key, local_param in local_params.items():
+                    if global_params[key].shape == local_param.shape:
+                        update[key] = local_param - global_params[key]
+                        break
+                else:
+                    # If no match found, use zeros
+                    update[key] = torch.zeros_like(global_params[key])
 
         return update, privacy_spent
