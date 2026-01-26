@@ -1,12 +1,18 @@
+import sys
 import pytest
-# import path_init
-from src.models.architectures import SimpleCNN
-from src.data.datasets import MedicalDataset
-from src.core.coordinator import Coordinator
-from src.core.client import Client
-from src.training.local_trainer import LocalTrainer
-from src.privacy.dp_engine import DPEngine
 import numpy as np
+from pathlib import Path
+sys.path.insert(0, Path(__file__).resolve().parent.parent.as_posix())
+
+try:
+    from src.models.architectures import SimpleCNN
+    from src.data.datasets import MedicalDataset
+    from src.core.coordinator import Coordinator
+    from src.core.client import Client
+    from src.training.local_trainer import LocalTrainer
+    from src.privacy.dp_engine import DPEngine
+except Exception as e:
+    print(e)
 
 
 @pytest.fixture

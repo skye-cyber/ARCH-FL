@@ -1,8 +1,4 @@
-import pytest
-import numpy as np
-import torch
 from src.data.partitioning import partition_iid, partition_non_iid
-from src.data.datasets import MedicalDataset
 
 
 def test_iid_partitioning(synthetic_dataset):
