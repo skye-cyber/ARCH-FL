@@ -37,43 +37,13 @@ This directory contains visual assets generated for the **Phase 3: AutoML Archit
 - **`architecture_distribution.json`** - Data for architecture distribution
 - **`constraint_impact.json`** - Data for constraint impact analysis
 
-## 🎯 Usage
+## 🎯Visualizations
 
-### In Documentation
+### Architecture
+![Phase 3 Architecture](./phase3_architecture.png)
 
-These visualizations can be directly embedded in documentation:
 
-```markdown
-![Phase 3 Architecture](assets/phase3_results/phase3_architecture.png)
-```
-
-### In Presentations
-
-The high-resolution PNG files (300 DPI) are suitable for presentations and reports.
-
-### Data Analysis
-
-The JSON files contain raw data that can be used for further analysis or to regenerate visualizations.
-
-## 🚀 Integration
-
-### With Documentation
-
-1. **Markdown Integration:**
-   ```markdown
-   ## System Architecture
-   
-   ![ARCH-FL System Architecture](assets/phase3_results/phase3_architecture.png)
-   
-   *Figure: ARCH-FL system with AutoML Architecture Generator*
-   ```
-
-2. **HTML Integration:**
-   ```html
-   <img src="assets/phase3_results/phase3_architecture.png" alt="ARCH-FL Architecture" width="800">
-   ```
-
-### With Code
+### Code
 
 ```python
 import matplotlib.pyplot as plt
