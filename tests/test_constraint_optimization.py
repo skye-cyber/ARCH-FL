@@ -258,7 +258,7 @@ class TestTrainingTimeOptimization:
 
         validation = config['validation']
 
-        assert validation['valid'] == True
+        assert validation['valid'] is True
         assert len(validation['errors']) == 0
 
 
