@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-01-27T16:47:57.076692",
+  "results": [
+    {
+      "constraint": "50 MB",
+      "parameters": 355586,
+      "memory": 0.38946533203125
+    },
+    {
+      "constraint": "100 MB",
+      "parameters": 355586,
+      "memory": 0.38946533203125
+    },
+    {
+      "constraint": "No Constraint",
+      "parameters": 355586,
+      "memory": 0.38946533203125
+    }
+  ],
+  "summary": {
+    "memory_reduction": 1.0,
+    "parameter_reduction": 1.0
+  }
+}

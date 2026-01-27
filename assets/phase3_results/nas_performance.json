@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-01-27T16:45:47.177676",
+  "results": [
+    {
+      "trials": 3,
+      "duration": 0.0017647743225097656,
+      "best_score": 0.560199094331864,
+      "avg_score": 0.5345470511208869,
+      "score_std": 0.021342890083711936,
+      "architectures_generated": 3
+    },
+    {
+      "trials": 5,
+      "duration": 0.002355337142944336,
+      "best_score": 0.6202713081961675,
+      "avg_score": 0.5749878202175364,
+      "score_std": 0.03366594529666069,
+      "architectures_generated": 5
+    },
+    {
+      "trials": 10,
+      "duration": 0.005273342132568359,
+      "best_score": 0.6134755923714718,
+      "avg_score": 0.5385020944148534,
+      "score_std": 0.05096481152507312,
+      "architectures_generated": 10
+    }
+  ],
+  "summary": {
+    "trial_counts": [
+      3,
+      5,
+      10
+    ],
+    "avg_time_per_trial": 0.0005288865831163194,
+    "best_overall_score": 0.6202713081961675
+  }
+}

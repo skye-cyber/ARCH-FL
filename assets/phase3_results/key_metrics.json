@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-01-27T16:47:55.879007",
+  "datasets": [
+    {
+      "dataset": "mimic_cxr",
+      "parameters": 355586,
+      "memory": 0.38946533203125,
+      "training_time": 17.5
+    },
+    {
+      "dataset": "chexpert",
+      "parameters": 1670030,
+      "memory": 1.182586669921875,
+      "training_time": 56.25
+    },
+    {
+      "dataset": "pneumoniamnist",
+      "parameters": 150274,
+      "memory": 0.19537353515625,
+      "training_time": 7.5
+    }
+  ],
+  "summary": {
+    "avg_parameters": 725296.6666666666,
+    "avg_memory": 0.589141845703125,
+    "avg_training_time": 27.083333333333332
+  }
+}
