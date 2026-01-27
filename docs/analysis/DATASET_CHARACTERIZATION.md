@@ -267,11 +267,11 @@ model = factory.create_model(config, input_shape)
 
 The Dataset Characterization System provides:
 
-✅ **Automatic dataset analysis** for known datasets
-✅ **Generic analysis** for unknown datasets  
-✅ **Intelligent architecture recommendations** based on data characteristics
-✅ **Seamless integration** with ModelFactory
-✅ **Extensible design** for future datasets
-✅ **Comprehensive documentation** of dataset properties
+- [ ] **Automatic dataset analysis** for known datasets
+- [ ] **Generic analysis** for unknown datasets  
+- [ ] **Intelligent architecture recommendations** based on data characteristics
+- [ ] **Seamless integration** with ModelFactory
+- [ ] **Extensible design** for future datasets
+- [ ] **Comprehensive documentation** of dataset properties
 
 This system enables ARCH-FL to be truly adaptive and work with any medical imaging dataset, fulfilling the project's vision of a flexible, configurable federated learning framework.
