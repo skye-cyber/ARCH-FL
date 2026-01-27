@@ -1,5 +1,4 @@
 import math
-from typing import Tuple
 
 
 def compute_sigma(target_epsilon: float, target_delta: float,

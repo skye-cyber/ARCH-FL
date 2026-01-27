@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-01-27T16:45:45.120157",
+  "datasets": [
+    {
+      "dataset": "mimic_cxr",
+      "architecture_type": "medium_cnn",
+      "parameters": 355586,
+      "memory_mb": 0.38946533203125,
+      "training_time": 17.5,
+      "conv_layers": 3,
+      "fc_layers": 2
+    },
+    {
+      "dataset": "chexpert",
+      "architecture_type": "large_cnn",
+      "parameters": 1670030,
+      "memory_mb": 1.182586669921875,
+      "training_time": 56.25,
+      "conv_layers": 4,
+      "fc_layers": 2
+    },
+    {
+      "dataset": "pneumoniamnist",
+      "architecture_type": "simple_cnn",
+      "parameters": 150274,
+      "memory_mb": 0.19537353515625,
+      "training_time": 7.5,
+      "conv_layers": 2,
+      "fc_layers": 2
+    }
+  ],
+  "summary": {
+    "total_datasets": 3,
+    "avg_parameters": 725296.6666666666,
+    "avg_memory": 0.589141845703125,
+    "avg_training_time": 27.083333333333332
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-01-27T16:45:49.287898",
+  "results": [
+    {
+      "constraint": "50 MB",
+      "actual_memory": 0.38946533203125,
+      "parameters": 355586,
+      "training_time": 17.5,
+      "conv_layers": 3,
+      "total_layers": 5
+    },
+    {
+      "constraint": "100 MB",
+      "actual_memory": 0.38946533203125,
+      "parameters": 355586,
+      "training_time": 17.5,
+      "conv_layers": 3,
+      "total_layers": 5
+    },
+    {
+      "constraint": "200 MB",
+      "actual_memory": 0.38946533203125,
+      "parameters": 355586,
+      "training_time": 17.5,
+      "conv_layers": 3,
+      "total_layers": 5
+    },
+    {
+      "constraint": "No Constraint",
+      "actual_memory": 0.38946533203125,
+      "parameters": 355586,
+      "training_time": 17.5,
+      "conv_layers": 3,
+      "total_layers": 5
+    }
+  ],
+  "summary": {
+    "constraint_levels": [
+      50,
+      100,
+      200,
+      null
+    ],
+    "memory_reduction": 1.0,
+    "parameter_reduction": 1.0
+  }
+}

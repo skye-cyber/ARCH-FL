@@ -1,0 +1,49 @@
+{
+  "dataset_name": "chexpert",
+  "dataset_path": null,
+  "analysis_timestamp": "2026-01-27T11:24:59.687299",
+  "properties": {
+    "image_size": [
+      320,
+      320
+    ],
+    "channels": 1,
+    "num_classes": 14,
+    "image_format": "grayscale",
+    "task_type": "multi_label_classification",
+    "data_type": "chest_xray",
+    "expected_input_shape": [
+      1,
+      320,
+      320
+    ],
+    "dataset_size": "very_large",
+    "recommended_architecture": "large_cnn",
+    "normalization": {
+      "mean": [
+        0.485
+      ],
+      "std": [
+        0.229
+      ]
+    },
+    "class_distribution": "multi_label_imbalanced",
+    "metadata_available": true,
+    "labels": [
+      "No Finding",
+      "Enlarged Cardiomediastinum",
+      "Cardiomegaly",
+      "Lung Opacity",
+      "Lung Lesion",
+      "Edema",
+      "Consolidation",
+      "Pneumonia",
+      "Atelectasis",
+      "Pneumothorax",
+      "Pleural Effusion",
+      "Pleural Other",
+      "Fracture",
+      "Support Devices"
+    ]
+  }
+}
