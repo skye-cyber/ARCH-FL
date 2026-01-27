@@ -1,0 +1,102 @@
+# Architecture Generation Rules
+# Rules for automatically generating optimal model architectures based on dataset characteristics
+
+version: "1.0"
+description: "AutoML rules for adaptive architecture generation"
+
+# Image size categories (in pixels)
+size_categories:
+  small:
+    max_area: 10000      # < 100x100
+    description: "Small images (e.g., 28x28, 32x32)"
+    recommended_architecture: "simple_cnn"
+    complexity: "low"
+  
+  medium:
+    min_area: 10000      # >= 100x100
+    max_area: 100000     # < 300x300
+    description: "Medium images (e.g., 224x224)"
+    recommended_architecture: "medium_cnn"
+    complexity: "medium"
+  
+  large:
+    min_area: 100000     # >= 300x300
+    description: "Large images (e.g., 512x512, 1024x1024)"
+    recommended_architecture: "large_cnn"
+    complexity: "high"
+
+# Architecture templates
+architecture_templates:
+  simple_cnn:
+    description: "Lightweight CNN for small images"
+    conv_layers: 2
+    conv_depth: [32, 64]
+    fc_layers: 2
+    fc_depth: [128, num_classes]
+    stride_pattern: [1, 1]
+    
+  medium_cnn:
+    description: "Balanced CNN for medium-sized medical images"
+    conv_layers: 3
+    conv_depth: [32, 64, 128]
+    fc_layers: 2
+    fc_depth: [256, num_classes]
+    stride_pattern: [2, 2, 2]
+    
+  large_cnn:
+    description: "Deep CNN for high-resolution medical images"
+    conv_layers: 4
+    conv_depth: [32, 64, 128, 256]
+    fc_layers: 2
+    fc_depth: [512, num_classes]
+    stride_pattern: [2, 2, 2, 2]
+
+# Task complexity multipliers
+task_complexity:
+  binary_classification: 1.0
+  multi_label_classification: 1.5
+  segmentation: 2.0
+  detection: 1.8
+
+# Architecture generation algorithm
+-generation_algorithm:
+  - Calculate image area (width × height)
+  - Determine size category based on area
+  - Get base architecture template
+  - Adjust based on task complexity
+  - Apply dataset-specific overrides if available
+  - Validate architecture (check tensor shapes)
+  - Return final configuration
+
+# Validation rules
+validation_rules:
+  - Check that conv layers produce reasonable feature maps
+  - Ensure fc layers match flattened conv output size
+  - Verify output layer matches number of classes
+  - Check memory requirements don't exceed limits
+  - Validate stride and padding combinations
+
+# Performance estimation rules
+performance_estimation:
+  simple_cnn:
+    memory_mb: 50-100
+    training_time_epoch: 1-5 seconds
+    inference_time: 1-10 ms
+    
+  medium_cnn:
+    memory_mb: 100-300
+    training_time_epoch: 5-20 seconds
+    inference_time: 10-50 ms
+    
+  large_cnn:
+    memory_mb: 300-800
+    training_time_epoch: 20-60 seconds
+    inference_time: 50-200 ms
+
+# Fallback rules
+fallback:
+  default_architecture: "medium_cnn"
+  default_num_classes: 2
+  default_image_size: [224, 224]
+  default_channels: 1
+  default_task_type: "binary_classification"

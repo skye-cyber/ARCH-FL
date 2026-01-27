@@ -1,0 +1,94 @@
+# Medical CNN Configuration
+# Base configuration for medical imaging tasks
+# This configuration is designed for medium-sized medical images (224x224)
+
+name: "MedicalCNN"
+version: "1.0"
+description: "Base medical CNN configuration for chest X-ray analysis"
+
+architecture:
+  input_channels: 1
+  conv_layers:
+    - out_channels: 32
+      kernel_size: 3
+      stride: 2
+      padding: 1
+    - out_channels: 64
+      kernel_size: 3
+      stride: 2
+      padding: 1
+    - out_channels: 128
+      kernel_size: 3
+      stride: 2
+      padding: 1
+  fc_layers:
+    - out_features: 256
+    - out_features: 2  # Default for binary classification
+  activation: "ReLU"
+  pooling: "MaxPool2d"
+  pool_kernel: 2
+  dropout: 0.5
+
+normalization:
+  mean: [0.485]
+  std: [0.229]
+
+training:
+  learning_rate: 0.001
+  batch_size: 32
+  epochs: 100
+
+# Task-specific configurations
+tasks:
+  binary_classification:
+    num_classes: 2
+    loss_function: "CrossEntropyLoss"
+    output_activation: "softmax"
+  
+  multi_label_classification:
+    num_classes: 14
+    loss_function: "BCEWithLogitsLoss"
+    output_activation: "sigmoid"
+
+# Dataset-specific overrides
+dataset_overrides:
+  pneumoniamnist:
+    conv_layers:
+      - out_channels: 32
+        kernel_size: 3
+        stride: 1
+        padding: 1
+      - out_channels: 64
+        kernel_size: 3
+        stride: 1
+        padding: 1
+    fc_layers:
+      - out_features: 128
+      - out_features: 2
+    normalization:
+      mean: [0.5]
+      std: [0.5]
+  
+  chexpert:
+    conv_layers:
+      - out_channels: 32
+        kernel_size: 3
+        stride: 2
+        padding: 1
+      - out_channels: 64
+        kernel_size: 3
+        stride: 2
+        padding: 1
+      - out_channels: 128
+        kernel_size: 3
+        stride: 2
+        padding: 1
+      - out_channels: 256
+        kernel_size: 3
+        stride: 2
+        padding: 1
+    fc_layers:
+      - out_features: 512
+      - out_features: 14
+    num_classes: 14
+    task_type: "multi_label_classification"

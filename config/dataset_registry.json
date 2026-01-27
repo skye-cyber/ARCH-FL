@@ -1,0 +1,58 @@
+{
+  "datasets": {
+    "mimic_cxr": {
+      "name": "MIMIC-CXR",
+      "description": "MIMIC-CXR Chest X-ray Dataset",
+      "data_type": "chest_xray",
+      "image_format": "grayscale",
+      "default_size": [
+        224,
+        224
+      ],
+      "channels": 1,
+      "task_types": [
+        "binary_classification",
+        "multi_label_classification"
+      ],
+      "path": "src/datasets/mimic_cxr",
+      "supported": true,
+      "metadata_file": "src/datasets/mimic_cxr/datasetinfo.md"
+    },
+    "chexpert": {
+      "name": "CheXpert",
+      "description": "Stanford CheXpert Chest X-ray Dataset",
+      "data_type": "chest_xray",
+      "image_format": "grayscale",
+      "default_size": [
+        320,
+        320
+      ],
+      "channels": 1,
+      "task_types": [
+        "multi_label_classification"
+      ],
+      "path": "src/datasets/chexpert",
+      "supported": true,
+      "metadata_file": "src/datasets/chexpert/datasetinfo.md"
+    },
+    "pneumoniamnist": {
+      "name": "PneumoniaMNIST",
+      "description": "Pneumonia MNIST Dataset",
+      "data_type": "chest_xray",
+      "image_format": "grayscale",
+      "default_size": [
+        28,
+        28
+      ],
+      "channels": 1,
+      "task_types": [
+        "binary_classification"
+      ],
+      "path": null,
+      "supported": true,
+      "metadata_file": null
+    }
+  },
+  "version": "1.0",
+  "description": "ARCH-FL Dataset Registry"
+}
