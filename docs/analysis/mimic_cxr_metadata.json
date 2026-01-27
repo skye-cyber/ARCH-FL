@@ -1,0 +1,33 @@
+{
+  "dataset_name": "mimic_cxr",
+  "dataset_path": null,
+  "analysis_timestamp": "2026-01-27T11:24:59.662967",
+  "properties": {
+    "image_size": [
+      224,
+      224
+    ],
+    "channels": 1,
+    "num_classes": 2,
+    "image_format": "grayscale",
+    "task_type": "binary_classification",
+    "data_type": "chest_xray",
+    "expected_input_shape": [
+      1,
+      224,
+      224
+    ],
+    "dataset_size": "large",
+    "recommended_architecture": "medium_cnn",
+    "normalization": {
+      "mean": [
+        0.485
+      ],
+      "std": [
+        0.229
+      ]
+    },
+    "class_distribution": "imbalanced",
+    "metadata_available": true
+  }
+}

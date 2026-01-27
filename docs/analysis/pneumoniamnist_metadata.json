@@ -1,0 +1,33 @@
+{
+  "dataset_name": "pneumoniamnist",
+  "dataset_path": null,
+  "analysis_timestamp": "2026-01-27T11:24:59.687557",
+  "properties": {
+    "image_size": [
+      28,
+      28
+    ],
+    "channels": 1,
+    "num_classes": 2,
+    "image_format": "grayscale",
+    "task_type": "binary_classification",
+    "data_type": "chest_xray",
+    "expected_input_shape": [
+      1,
+      28,
+      28
+    ],
+    "dataset_size": "small",
+    "recommended_architecture": "simple_cnn",
+    "normalization": {
+      "mean": [
+        0.5
+      ],
+      "std": [
+        0.5
+      ]
+    },
+    "class_distribution": "balanced",
+    "metadata_available": true
+  }
+}
