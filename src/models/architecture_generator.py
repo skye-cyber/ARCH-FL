@@ -17,6 +17,7 @@ from datetime import datetime
 import warnings
 import random
 from copy import deepcopy
+from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -39,7 +40,10 @@ class ArchitectureGenerator:
     to automatically generate optimal model architectures for given datasets and constraints.
     """
 
-    def __init__(self, config_dir: str = "config/model"):
+    def __init__(
+        self,
+        config_dir: str = (Path(__file__).resolve().parent.parent.parent / "config/model")
+    ):
         """
         Initialize ArchitectureGenerator.
 
@@ -840,7 +844,7 @@ if __name__ == "__main__":
             print(f"   ❌ Model creation failed: {e}")
 
     # Test neural architecture search (small scale)
-    print(f"\n🔬 Testing Neural Architecture Search (3 trials)...")
+    print("\n🔬 Testing Neural Architecture Search (3 trials)...")
     nas_results = generator.neural_architecture_search(
         dataset_name='mimic_cxr',
         input_shape=(1, 224, 224),
@@ -848,7 +852,7 @@ if __name__ == "__main__":
         num_trials=3
     )
 
-    print(f"✅ NAS completed")
+    print("✅ NAS completed")
     print(f"   Best score: {nas_results['best_score']:.2f}")
     print(f"   Best architecture: {nas_results['best_architecture']['name']}")
 
