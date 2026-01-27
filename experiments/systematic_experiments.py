@@ -429,7 +429,7 @@ class ExperimentRunner:
             # Calculate privacy-utility ratio
             if max(accuracies) > 0:
                 ratios = [acc / (epsilon if epsilon != float('inf') else 1.0)
-                         for acc, epsilon in zip(accuracies, epsilons)]
+                          for acc, epsilon in zip(accuracies, epsilons)]
                 analysis['insights']['privacy_utility_ratio'] = {
                     'ratios': ratios,
                     'best_ratio': max(ratios),
