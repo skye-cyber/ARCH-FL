@@ -10,7 +10,6 @@ This script tests:
 """
 
 import sys
-import os
 
 # Add src to path
 from pathlib import Path
