@@ -6,4 +6,4 @@ Key papers for this project:
 2. **Differential Privacy**: Dwork et al. "The Algorithmic Foundations of Differential Privacy"
 3. **Medical FL**: Li et al. "Federated Learning in Medical Imaging"
 
-Add relevant PDFs or links here.
+...

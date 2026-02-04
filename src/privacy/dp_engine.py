@@ -1,6 +1,6 @@
 import torch
 from opacus import PrivacyEngine
-from typing import Optional, Dict, Any
+from typing import Dict
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)

@@ -1,4 +1,3 @@
-import torch
 from torch.utils.data import DataLoader, random_split
 from .partitioning import partition_iid, partition_non_iid
 from .datasets import MedicalDataset, get_transform

@@ -7,7 +7,6 @@ Comprehensive tests for constraint-based optimization functionality
 
 import pytest
 import torch
-import numpy as np
 from pathlib import Path
 import sys
 
@@ -144,7 +143,7 @@ class TestMemoryOptimization:
 
         validation = config['validation']
 
-        assert validation['valid'] == True
+        assert validation['valid'] is True
         assert len(validation['errors']) == 0
 
 
@@ -201,7 +200,7 @@ class TestParameterOptimization:
 
         validation = config['validation']
 
-        assert validation['valid'] == True
+        assert validation['valid'] is True
         assert len(validation['errors']) == 0
 
 
@@ -360,7 +359,7 @@ class TestConstraintEdgeCases:
 
         # Should still generate a valid architecture
         assert config is not None
-        assert config['validation']['valid'] == True
+        assert config['validation']['valid'] is True
 
     def test_very_loose_constraints(self, architecture_generator):
         """Test with very loose constraints"""
@@ -378,7 +377,7 @@ class TestConstraintEdgeCases:
 
         # Should generate architecture similar to unconstrained
         assert config is not None
-        assert config['validation']['valid'] == True
+        assert config['validation']['valid'] is True
 
     def test_empty_constraints(self, architecture_generator):
         """Test with empty constraints dict"""
@@ -392,7 +391,7 @@ class TestConstraintEdgeCases:
 
         # Should work like no constraints
         assert config is not None
-        assert config['validation']['valid'] == True
+        assert config['validation']['valid'] is True
 
     def test_none_constraints(self, architecture_generator):
         """Test with None constraints"""
@@ -404,7 +403,7 @@ class TestConstraintEdgeCases:
 
         # Should work like no constraints
         assert config is not None
-        assert config['validation']['valid'] == True
+        assert config['validation']['valid'] is True
 
 
 class TestConstraintModelCreation:
@@ -555,7 +554,7 @@ class TestConstraintIntegration:
 
         # All trials should respect constraints
         for trial in nas_results['trials']:
-            config = trial['config']
+            # config = trial['config']
             validation = trial['validation']
 
             assert validation['estimated_memory_mb'] <= constraints['max_memory_mb'] * 1.2
@@ -575,7 +574,7 @@ class TestConstraintIntegration:
 
             # Should work for all datasets
             assert config is not None
-            assert config['validation']['valid'] == True
+            assert config['validation']['valid'] is True
 
     def test_constraints_with_different_task_types(self, architecture_generator):
         """Test constraints with different task types"""
@@ -592,4 +591,4 @@ class TestConstraintIntegration:
 
             # Should work for all task types
             assert config is not None
-            assert config['validation']['valid'] == True
+            assert config['validation']['valid'] is True

@@ -1,8 +1,7 @@
-import pytest
 import torch
 import torch.nn as nn
 from src.privacy.dp_engine import DPEngine
-from src.models.architectures import SimpleCNN
+# from src.models.architectures import SimpleCNN
 
 
 def test_dp_engine_initialization(dp_config):

@@ -1,5 +1,5 @@
 import torch
-from typing import List, Dict, Any, Callable
+from typing import List, Dict
 from .aggregation import fed_avg, weighted_aggregation, secure_aggregation
 from ..utils.logger import get_logger
 

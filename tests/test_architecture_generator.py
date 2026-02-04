@@ -7,10 +7,9 @@ Comprehensive tests for ArchitectureGenerator
 
 import pytest
 import torch
-import numpy as np
 from pathlib import Path
 import sys
-
+# importlib.util.find_spec -> test for availability
 # Add project root to path
 sys.path.insert(0, Path(__file__).resolve().parent.parent.as_posix())
 
@@ -132,7 +131,7 @@ class TestArchitectureValidation:
         config = architecture_generator.generate_architecture('mimic_cxr')
         validation = config['validation']
 
-        assert validation['valid'] == True
+        assert validation['valid'] is True
         assert len(validation['errors']) == 0
 
     def test_validation_parameter_estimation(self, architecture_generator):
@@ -299,7 +298,7 @@ class TestFallbackMechanisms:
         assert 'name' in fallback_config
         assert fallback_config['name'] == 'FallbackCNN'
         assert 'fallback' in fallback_config
-        assert fallback_config['fallback'] == True
+        assert fallback_config['fallback'] is True
 
     def test_fallback_model_creation(self, architecture_generator):
         """Test that fallback model can be created"""

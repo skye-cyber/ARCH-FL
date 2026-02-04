@@ -86,7 +86,7 @@ class DatasetRegistry:
         dataset_name = dataset_name.lower()
         self.datasets[dataset_name] = dataset_info
         self._save_registry()
-        print(f"📊 Registered dataset: {dataset_name}")
+        print(f"Registered dataset: {dataset_name}")
 
     def get_dataset_info(self, dataset_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -216,17 +216,17 @@ def get_dataset_registry() -> DatasetRegistry:
 
 # Test the registry
 if __name__ == "__main__":
-    print("🧪 Testing DatasetRegistry...")
+    print(" Testing DatasetRegistry...")
 
     registry = DatasetRegistry()
 
     # List all datasets
-    print(f"\n📚 Registered datasets: {registry.list_datasets()}")
+    print(f"\n Registered datasets: {registry.list_datasets()}")
 
     # Get info for each dataset
     for dataset_name in registry.list_datasets():
         info = registry.get_dataset_info(dataset_name)
-        print(f"\n📊 {dataset_name}:")
+        print(f"\n {dataset_name}:")
         print(f"   Name: {info['name']}")
         print(f"   Description: {info['description']}")
         print(f"   Data Type: {info['data_type']}")
@@ -240,4 +240,4 @@ if __name__ == "__main__":
             print(f"   Image Size: {props.get('image_size', 'Unknown')}")
             print(f"   Channels: {props.get('channels', 'Unknown')}")
 
-    print("\n🎉 DatasetRegistry tests completed!")
+    print("\n DatasetRegistry tests completed!")

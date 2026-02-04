@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch
-from src.data.partitioning import partition_iid
-from src.core.client import Client
+# from src.data.partitioning import partition_iid
+# from src.core.client import Client
 from src.core.coordinator import Coordinator
 from config import Config
 import sys
@@ -26,12 +26,12 @@ class SimpleCNN(nn.Module):
 
 
 def main():
-    config = Config('config/experiment/iid_baseline.yaml')
+    Config('config/experiment/iid_baseline.yaml')
     print("Running baseline experiment...")
 
     # Initialize model
     model = SimpleCNN()
-    coordinator = Coordinator(model)
+    Coordinator(model)
 
     print("Baseline setup complete. Ready for federated training.")
 
