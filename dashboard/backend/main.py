@@ -513,6 +513,45 @@ def read_root():
     }
 
 
+# Add backend endpoint for creating architectures
+@app.post("/api/architectures/backend")
+def create_architecture_backend(architecture: ArchitectureCreate):
+    """Register a new architecture in the ARCH-FL backend registry."""
+    try:
+        from src.models.architecture_registry import get_architecture_registry
+        
+        registry = get_architecture_registry()
+        
+        # Register the architecture
+        registry.register_custom_architecture(
+            architecture.name,
+            architecture.config,
+            architecture.description,
+            architecture.compatible_datasets
+        )
+        
+        # Return success
+        return {
+            "status": "success",
+            "message": "Architecture registered successfully",
+            "architecture": {
+                "name": architecture.name,
+                "description": architecture.description,
+                "model_type": architecture.config.get("name", "Unknown")
+            }
+        }
+        
+    except ImportError:
+        raise HTTPException(
+            status_code=500,
+            detail="ARCH-FL core not available. Architecture registered in dashboard only."
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to register architecture: {str(e)}"
+        )
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8008, reload=True)
