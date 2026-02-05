@@ -25,19 +25,19 @@ graph TD
 
     A -->|Fetches data from| J
 
-    style A fill:#bbf,stroke:#333
-    style B fill:#99f,stroke:#333
-    style C fill:#99f,stroke:#333
-    style D fill:#66f,stroke:#333
-    style E fill:#66f,stroke:#333
-    style F fill:#66f,stroke:#333
-    style G fill:#66f,stroke:#333
-    style H fill:#66f,stroke:#333
-    style I fill:#66f,stroke:#333
-    style J fill:#f66,stroke:#333
-    style K fill:#f96,stroke:#333
-    style L fill:#f96,stroke:#333
-    style M fill:#f96,stroke:#333
-    style N fill:#66f,stroke:#333
+    style A fill:#bbf,stroke:#333,font-size:28px;
+    style B fill:#99f,stroke:#333,font-size:28px;
+    style C fill:#99f,stroke:#333,font-size:28px;
+    style D fill:#66f,stroke:#333,font-size:28px;
+    style E fill:#66f,stroke:#333,font-size:28px;
+    style F fill:#66f,stroke:#333,font-size:28px;
+    style G fill:#66f,stroke:#333,font-size:28px;
+    style H fill:#66f,stroke:#333,font-size:28px;
+    style I fill:#66f,stroke:#333,font-size:28px;
+    style J fill:#f66,stroke:#333,font-size:28px;
+    style K fill:#f96,stroke:#333,font-size:28px;
+    style L fill:#f96,stroke:#333,font-size:28px;
+    style M fill:#f96,stroke:#333,font-size:28px;
+    style N fill:#66f,stroke:#333,font-size:28px;
 ```
 

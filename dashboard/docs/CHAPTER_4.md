@@ -72,7 +72,7 @@ graph TD
     D -->|Uses| F[Architecture Registry]
     D -->|Uses| G[Model Factory]
     C -->|Stores in| H[SQLite Database]
-    
+
     style A fill:#f9f,stroke:#333
     style B fill:#bbf,stroke:#333
     style C fill:#bbf,stroke:#333
@@ -99,7 +99,7 @@ graph TD
         C --> H[Settings]
         C --> I[ExperimentCreate]
     end
-    
+
     subgraph Backend Services
         J[API Endpoints] --> K[ExperimentService]
         J --> L[ArchitectureService]
@@ -108,9 +108,9 @@ graph TD
         L --> N
         M --> N
     end
-    
+
     A -->|Fetches data from| J
-    
+
     style A fill:#bbf,stroke:#333
     style B fill:#99f,stroke:#333
     style C fill:#99f,stroke:#333
@@ -141,23 +141,25 @@ graph LR
         C -->|Accesses| D[Medical Datasets]
         C -->|Uses| E[PyTorch]
         C -->|Uses| F[Scikit-learn]
+        C -->|Uses| J[Opacus]
     end
-    
+
     subgraph Dashboard Components
         B --> G[Frontend UI]
         B --> H[Backend API]
         H --> I[SQLite Database]
     end
-    
-    style A fill:#f9f,stroke:#333
-    style B fill:#bbf,stroke:#333
-    style C fill:#f96,stroke:#333
-    style D fill:#9f9,stroke:#333
-    style E fill:#ff9,stroke:#333
-    style F fill:#ff9,stroke:#333
-    style G fill:#66f,stroke:#333
-    style H fill:#f66,stroke:#333
-    style I fill:#66f,stroke:#333
+
+    style A fill:#f9f,stroke:#333,font-size:20px;
+    style B fill:#bbf,stroke:#333,font-size:20px;
+    style C fill:#f96,stroke:#333,font-size:20px;
+    style D fill:#9f9,stroke:#333,font-size:20px;
+    style E fill:#ff9,stroke:#333,font-size:20px;
+    style F fill:#ff9,stroke:#333,font-size:20px;
+    style G fill:#66f,stroke:#333,font-size:20px;
+    style H fill:#f66,stroke:#333,font-size:20px;
+    style I fill:#66f,stroke:#333,font-size:20px;
+    style J fill:#66f,stroke:#333,font-size:20px;
 ```
 
 **Figure 4.3: Context Level Diagram**
@@ -262,7 +264,7 @@ graph LR
     H --> I[Analyze Results]
     I --> J[Save/Export]
     J --> K[End]
-    
+
     style A fill:#999,stroke:#333
     style B fill:#66f,stroke:#333
     style C fill:#66f,stroke:#333
@@ -276,8 +278,43 @@ graph LR
     style K fill:#999,stroke:#333
 ```
 
-**Figure 4.4: Experiment Creation Workflow**
+- V2
+```mermaid
+graph TB
+    A[Start] --> B[Configure Experiment]
 
+    subgraph Setup
+    direction TB
+        B --> C[Select Dataset]
+        C --> D[Choose Architecture]
+        D --> E[Set Parameters]
+    end
+
+    E --> F[Review Configuration]
+    F --> G[Start Experiment]
+
+    subgraph Monitoring
+    direction TB
+        G --> H[Monitor Progress]
+        H --> I[Analyze Results]
+    end
+
+    I --> J[Save/Export] --> K[End]
+
+    style A fill:#999,stroke:#333,font-size:24px;
+    style B fill:#aaaaff,stroke:#333,font-size:24px;
+    style C fill:#aa55ff,stroke:#333,font-size:24px;
+    style D fill:#aaaaff,stroke:#333,font-size:24px;
+    style E fill:#aa55ff,stroke:#333,font-size:24px;
+    style F fill:#aaaaff,stroke:#333,font-size:24px;
+    style G fill:#9f9,stroke:#333,font-size:24px;
+    style H fill:#ff9,stroke:#333,font-size:24px;
+    style I fill:#f96,stroke:#333,font-size:24px;
+    style J fill:#99f,stroke:#333,font-size:24px;
+    style K fill:#999,stroke:#333,font-size:24px;
+```
+**Figure 4.4: Experiment Creation Workflow**
+---
 ### 4.6.2 Data Flow Process
 
 ```mermaid
@@ -295,7 +332,7 @@ graph TD
     H --> B
     B --> I[UI Update]
     I --> A
-    
+
     style A fill:#f9f,stroke:#333
     style B fill:#bbf,stroke:#333
     style C fill:#66f,stroke:#333
@@ -322,7 +359,7 @@ graph TD
     G -->|Retry| B
     G -->|Cancel| H[Return to Safe State]
     C --> H
-    
+
     style A fill:#f9f,stroke:#333
     style B fill:#66f,stroke:#333
     style C fill:#9f9,stroke:#333
@@ -344,7 +381,7 @@ The dashboard uses a SQLite database with the following schema:
 ```mermaid
 erDiagram
     experiments ||--o{ experiment_results : "has"
-    
+
     experiments {
         int id PK
         string name
@@ -358,7 +395,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+
     experiment_results {
         int id PK
         int experiment_id FK
@@ -369,7 +406,7 @@ erDiagram
         json metrics
         datetime timestamp
     }
-    
+
     architectures {
         int id PK
         string name
