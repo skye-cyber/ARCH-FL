@@ -1,0 +1,5 @@
+For now the get_data_loaders uses synthetic dataset:
+We need it to be like a class allowing registration of new data loaderS concomitant to use of registry for the registered > registry.py datasets eg to check
+whether dataset is registered and path to load it.
+
+For the architecture we need to extend it ensure that user can specify/register their own architecture without having to rely on auto generation, we shall only ensure that it adheres to compartible/expected format. This shall give more control to the user.

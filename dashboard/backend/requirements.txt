@@ -1,0 +1,25 @@
+# ARCH-FL Dashboard Backend Requirements
+
+# FastAPI core
+fastapi==0.95.2
+uvicorn==0.22.0
+pydantic==1.10.7
+
+# Database
+sqlite3==3.0.0  # Included with Python, but listed for clarity
+
+# Async support
+aiosqlite==0.19.0
+
+# API documentation
+pyyaml==6.0
+
+# Type hints
+typing-extensions==4.5.0
+
+# For development
+debugpy==1.6.7
+python-multipart==0.0.6
+
+# WebSockets
+websockets==11.0.3

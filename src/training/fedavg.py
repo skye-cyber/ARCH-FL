@@ -1,5 +1,5 @@
 import torch
-from typing import List, Dict
+from typing import List
 from ..core.coordinator import Coordinator
 from ..core.client import Client
 from ..utils.logger import get_logger
@@ -44,5 +44,5 @@ class FederatedTrainer:
                 total += target.size(0)
 
         accuracy = 100. * correct / total
-        logger.info(f"Test Accuracy: {accuracy:.2f}%")
+        logger.info(f"[*] Accuracy: {accuracy:.2f}%")
         return accuracy

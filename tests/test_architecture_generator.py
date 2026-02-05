@@ -7,10 +7,9 @@ Comprehensive tests for ArchitectureGenerator
 
 import pytest
 import torch
-import numpy as np
 from pathlib import Path
 import sys
-
+# importlib.util.find_spec -> test for availability
 # Add project root to path
 sys.path.insert(0, Path(__file__).resolve().parent.parent.as_posix())
 
@@ -71,7 +70,7 @@ class TestArchitectureGeneration:
     def test_generate_architecture_basic(self, architecture_generator):
         """Test basic architecture generation"""
         config = architecture_generator.generate_architecture('mimic_cxr')
-        
+
         assert isinstance(config, dict)
         assert 'name' in config
         assert 'architecture' in config
@@ -85,7 +84,7 @@ class TestArchitectureGeneration:
             input_shape=(1, 224, 224),
             task_type='binary_classification'
         )
-        
+
         assert config['architecture']['input_channels'] == 1
         assert config['image_size'] == (224, 224)
         assert config['task_type'] == 'binary_classification'
@@ -93,7 +92,7 @@ class TestArchitectureGeneration:
     def test_generate_architecture_different_datasets(self, architecture_generator):
         """Test architecture generation for different datasets"""
         datasets = ['mimic_cxr', 'chexpert', 'pneumoniamnist']
-        
+
         for dataset_name in datasets:
             config = architecture_generator.generate_architecture(dataset_name)
             assert config is not None
@@ -104,7 +103,7 @@ class TestArchitectureGeneration:
         """Test fallback architecture generation"""
         # Test with unknown dataset
         config = architecture_generator.generate_architecture('unknown_dataset')
-        
+
         assert config is not None
         assert 'name' in config
         assert 'architecture' in config
@@ -118,7 +117,7 @@ class TestArchitectureValidation:
         """Test that validation returns correct structure"""
         config = architecture_generator.generate_architecture('mimic_cxr')
         validation = config['validation']
-        
+
         assert isinstance(validation, dict)
         assert 'valid' in validation
         assert 'warnings' in validation
@@ -131,15 +130,15 @@ class TestArchitectureValidation:
         """Test validation of a valid architecture"""
         config = architecture_generator.generate_architecture('mimic_cxr')
         validation = config['validation']
-        
-        assert validation['valid'] == True
+
+        assert validation['valid'] is True
         assert len(validation['errors']) == 0
 
     def test_validation_parameter_estimation(self, architecture_generator):
         """Test parameter estimation"""
         config = architecture_generator.generate_architecture('mimic_cxr')
         validation = config['validation']
-        
+
         assert validation['estimated_parameters'] > 0
         assert validation['estimated_memory_mb'] > 0
         assert validation['estimated_training_time'] > 0
@@ -152,7 +151,7 @@ class TestModelCreation:
         """Test creating model from generated configuration"""
         config = architecture_generator.generate_architecture('mimic_cxr')
         model = architecture_generator.create_model_from_generated_config(config)
-        
+
         assert model is not None
         assert isinstance(model, torch.nn.Module)
 
@@ -160,15 +159,15 @@ class TestModelCreation:
         """Test that generated model can perform forward pass"""
         config = architecture_generator.generate_architecture('mimic_cxr')
         model = architecture_generator.create_model_from_generated_config(config)
-        
+
         # Create test input
         input_shape = (1, config['architecture']['input_channels'], *config['image_size'])
         test_input = torch.randn(input_shape)
-        
+
         # Perform forward pass
         with torch.no_grad():
             output = model(test_input)
-        
+
         assert output is not None
         assert output.shape[0] == 1  # Batch size
         assert output.shape[1] == config['num_classes']  # Number of classes
@@ -180,7 +179,7 @@ class TestModelCreation:
             input_shape=(1, 224, 224),
             task_type='binary_classification'
         )
-        
+
         assert model is not None
         assert isinstance(model, torch.nn.Module)
         assert config is not None
@@ -193,7 +192,7 @@ class TestArchitectureVariations:
     def test_different_input_shapes(self, architecture_generator):
         """Test architecture generation with different input shapes"""
         shapes = [(1, 28, 28), (1, 224, 224), (1, 320, 320)]
-        
+
         for shape in shapes:
             config = architecture_generator.generate_architecture(
                 'mimic_cxr',
@@ -205,7 +204,7 @@ class TestArchitectureVariations:
     def test_different_task_types(self, architecture_generator):
         """Test architecture generation with different task types"""
         task_types = ['binary_classification', 'multi_label_classification']
-        
+
         for task_type in task_types:
             config = architecture_generator.generate_architecture(
                 'mimic_cxr',
@@ -221,19 +220,19 @@ class TestArchitectureVariations:
             'mimic_cxr',
             input_shape=(1, 28, 28)  # 784 px area
         )
-        
+
         # Medium image (should be medium_cnn)
         config_medium = architecture_generator.generate_architecture(
             'mimic_cxr',
             input_shape=(1, 224, 224)  # 50176 px area
         )
-        
+
         # Large image (should be large_cnn)
         config_large = architecture_generator.generate_architecture(
             'mimic_cxr',
             input_shape=(1, 320, 320)  # 102400 px area
         )
-        
+
         # Verify architecture types
         assert config_small['architecture_type'] in ['simple_cnn', 'medium_cnn']
         assert config_medium['architecture_type'] in ['medium_cnn', 'large_cnn']
@@ -252,13 +251,13 @@ class TestHistoryTracking:
     def test_history_recording(self, architecture_generator):
         """Test that generation is recorded in history"""
         initial_length = len(architecture_generator.history)
-        
+
         # Generate an architecture
         config = architecture_generator.generate_architecture('mimic_cxr')
-        
+
         # Check that history was updated
         assert len(architecture_generator.history) == initial_length + 1
-        
+
         # Check history entry structure
         history_entry = architecture_generator.history[-1]
         assert 'config' in history_entry
@@ -270,7 +269,7 @@ class TestHistoryTracking:
         # Generate a few architectures
         for _ in range(3):
             architecture_generator.generate_architecture('mimic_cxr')
-        
+
         history = architecture_generator.get_generation_history()
         assert isinstance(history, list)
         assert len(history) >= 3
@@ -280,10 +279,10 @@ class TestHistoryTracking:
         # Generate some architectures
         for _ in range(3):
             architecture_generator.generate_architecture('mimic_cxr')
-        
+
         # Clear history
         architecture_generator.clear_history()
-        
+
         # Verify history is cleared
         assert len(architecture_generator.history) == 0
 
@@ -294,18 +293,18 @@ class TestFallbackMechanisms:
     def test_fallback_config_generation(self, architecture_generator):
         """Test fallback configuration generation"""
         fallback_config = architecture_generator._generate_fallback_config()
-        
+
         assert fallback_config is not None
         assert 'name' in fallback_config
         assert fallback_config['name'] == 'FallbackCNN'
         assert 'fallback' in fallback_config
-        assert fallback_config['fallback'] == True
+        assert fallback_config['fallback'] is True
 
     def test_fallback_model_creation(self, architecture_generator):
         """Test that fallback model can be created"""
         fallback_config = architecture_generator._generate_fallback_config()
         model = architecture_generator.create_model_from_generated_config(fallback_config)
-        
+
         assert model is not None
         assert isinstance(model, torch.nn.Module)
 
@@ -317,14 +316,14 @@ class TestIntegrationWithModelFactory:
         """Test that ArchitectureGenerator integrates with ModelFactory"""
         # Generate architecture
         config = architecture_generator.generate_architecture('mimic_cxr')
-        
+
         # Create model using ModelFactory directly
         input_shape = (config['architecture']['input_channels'], *config['image_size'])
         model_factory_model = model_factory.create_model(config, input_shape)
-        
+
         # Create model using ArchitectureGenerator
         generator_model = architecture_generator.create_model_from_generated_config(config)
-        
+
         # Both should be valid models
         assert model_factory_model is not None
         assert generator_model is not None
@@ -335,18 +334,18 @@ class TestIntegrationWithModelFactory:
         """Test that both methods create consistent models"""
         config = architecture_generator.generate_architecture('mimic_cxr')
         input_shape = (config['architecture']['input_channels'], *config['image_size'])
-        
+
         # Create models
         model_factory_model = model_factory.create_model(config, input_shape)
         generator_model = architecture_generator.create_model_from_generated_config(config)
-        
+
         # Test with same input
         test_input = torch.randn(1, *input_shape)
-        
+
         with torch.no_grad():
             output1 = model_factory_model(test_input)
             output2 = generator_model(test_input)
-        
+
         # Outputs should have same shape
         assert output1.shape == output2.shape
 
@@ -362,7 +361,7 @@ class TestErrorHandling:
             input_shape=None,
             task_type=None
         )
-        
+
         # Should still generate a valid config
         assert config is not None
         assert 'name' in config
@@ -377,7 +376,7 @@ class TestErrorHandling:
                 # Missing required fields
             }
         }
-        
+
         # Should handle gracefully (may return fallback)
         try:
             model = architecture_generator.create_model_from_generated_config(invalid_config)
@@ -398,7 +397,7 @@ class TestPerformanceCharacteristics:
         for size in [(1, 28, 28), (1, 224, 224), (1, 320, 320)]:
             config = architecture_generator.generate_architecture('mimic_cxr', input_shape=size)
             configs.append(config)
-        
+
         # Parameter counts should vary
         param_counts = [config['validation']['estimated_parameters'] for config in configs]
         assert len(set(param_counts)) > 1  # Should have different parameter counts
@@ -409,7 +408,7 @@ class TestPerformanceCharacteristics:
         for size in [(1, 28, 28), (1, 224, 224), (1, 320, 320)]:
             config = architecture_generator.generate_architecture('mimic_cxr', input_shape=size)
             configs.append(config)
-        
+
         # Memory usage should vary
         memory_usage = [config['validation']['estimated_memory_mb'] for config in configs]
         assert len(set(memory_usage)) > 1  # Should have different memory usage
@@ -429,7 +428,7 @@ class TestReproducibility:
                 task_type='binary_classification'
             )
             configs.append(config)
-        
+
         # Configurations should be identical (deterministic)
         # Note: This might not be true if there's randomness in generation
         # If they're not identical, at least they should be valid
@@ -445,18 +444,18 @@ class TestDocumentationIntegration:
     def test_generation_metadata(self, architecture_generator):
         """Test that generation includes proper metadata"""
         config = architecture_generator.generate_architecture('mimic_cxr')
-        
+
         metadata = config['generation_metadata']
         assert isinstance(metadata, dict)
         assert 'dataset_name' in metadata
-        assert 'generation_timestamp' in metadata
+        assert 'timestamp' in metadata
         assert 'generator_version' in config
         assert 'generator_timestamp' in config
 
     def test_architecture_documentation(self, architecture_generator):
         """Test that generated architectures include documentation"""
         config = architecture_generator.generate_architecture('mimic_cxr')
-        
+
         # Should include informative fields
         assert 'name' in config
         assert 'version' in config

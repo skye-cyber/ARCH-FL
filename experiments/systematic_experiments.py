@@ -7,11 +7,9 @@ testing privacy-utility trade-offs and non-IID impacts on federated learning per
 
 import os
 import sys
-import time
 import json
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Tuple, Any
+import torch
+from typing import Dict, Any
 from datetime import datetime
 
 # Add project root to path
@@ -23,9 +21,9 @@ try:
     from src.core.coordinator import Coordinator
     from src.data.loaders import get_data_loaders
     from src.data.mimic_cxr_loader import create_mimic_cxr_data_loaders
-    from src.models.architectures import SimpleCNN
+    # from src.models.architectures import SimpleCNN
     from src.models.large_cnn import MediumCNN
-except Exceptions as e:
+except Exception as e:
     print(e)
 
 
@@ -58,18 +56,18 @@ class ExperimentRunner:
         print(f"📁 Results will be saved to: {results_dir}")
 
     def run_privacy_utility_experiment(self, dataset: str = "mimic_cxr", sample_size: int = 1000,
-                                      num_clients: int = 5,
-                                      client_fraction: float = 0.5,
-                                      iid: bool = True,
-                                      alpha: float = 1.0,
-                                      num_rounds: int = 10,
-                                      local_epochs: int = 1) -> Dict[str, Any]:
+                                       num_clients: int = 5,
+                                       client_fraction: float = 0.5,
+                                       iid: bool = True,
+                                       alpha: float = 1.0,
+                                       num_rounds: int = 10,
+                                       local_epochs: int = 1) -> Dict[str, Any]:
         """
         Run privacy-utility trade-off experiment.
 
         Tests different privacy levels (ε) while keeping other variables constant.
         """
-        print(f"\n🔒 Running Privacy-Utility Experiment")
+        print("\n🔒 Running Privacy-Utility Experiment")
         print(f"   Dataset: {dataset}")
         print(f"   Sample Size: {sample_size}")
         print(f"   Clients: {num_clients}")
@@ -199,18 +197,18 @@ class ExperimentRunner:
         return results
 
     def run_non_iid_experiment(self, dataset: str = "mimic_cxr",
-                              sample_size: int = 1000,
-                              num_clients: int = 5,
-                              client_fraction: float = 0.5,
-                              epsilon: float = float('inf'),
-                              num_rounds: int = 10,
-                              local_epochs: int = 1) -> Dict[str, Any]:
+                               sample_size: int = 1000,
+                               num_clients: int = 5,
+                               client_fraction: float = 0.5,
+                               epsilon: float = float('inf'),
+                               num_rounds: int = 10,
+                               local_epochs: int = 1) -> Dict[str, Any]:
         """
         Run non-IID data distribution experiment.
 
         Tests different non-IID levels (α) while keeping other variables constant.
         """
-        print(f"\n📊 Running Non-IID Experiment")
+        print("\n Running Non-IID Experiment")
         print(f"   Dataset: {dataset}")
         print(f"   Sample Size: {sample_size}")
         print(f"   Clients: {num_clients}")
@@ -331,7 +329,7 @@ class ExperimentRunner:
 
         This implements the full experimental design matrix from the proposal.
         """
-        print(f"\n🎯 Running Comprehensive Experiment")
+        print("\n Running Comprehensive Experiment")
         print(f"   Dataset: {dataset}")
         print(f"   Sample Size: {sample_size}")
 

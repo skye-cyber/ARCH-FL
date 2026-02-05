@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import os
 import requests
-import tarfile
 from pathlib import Path
 
 

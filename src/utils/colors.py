@@ -8,7 +8,7 @@ init(autoreset=True)
 def print_color(text: str, color: str = "white", bold: bool = False, underline: bool = False) -> None:
     """
     Print text with specified color and style.
-    
+
     Args:
         text: Text to print
         color: Color name (red, green, yellow, blue, magenta, cyan, white)
@@ -25,18 +25,28 @@ def print_color(text: str, color: str = "white", bold: bool = False, underline: 
         "white": Fore.WHITE,
         "black": Fore.BLACK,
     }
-    
+
     style = ""
     if bold:
         style += Style.BRIGHT
     if underline:
         style += Style.DIM  # Underline not directly supported in colorama, using dim as alternative
-    
+
     selected_color = color_map.get(color.lower(), Fore.WHITE)
     print(f"{style}{selected_color}{text}{Style.RESET_ALL}")
 
 
 class ForegroundColor:
+    """
+    Color class - provides forground colors (text colors). It supports posix colors using ASCII and other systems using colorama.\n
+    Color prefixed:\n
+        F: Faint\n
+        I: Indented\n
+        L: Underlined\n
+        U: Blinking\n
+        B: Bold\n
+        BU: Bold Blinking\n
+    """
     if os.name == "posix":
         RESET = "\033[0m"  # Reset to default text color
 
@@ -90,7 +100,7 @@ class ForegroundColor:
 
         # White Variants
         BWHITE = "\033[1m"  # Bold white
-        BBWHITE = "\033[5;97;1m"  # Bold Blinking white
+        BUWHITE = "\033[5;97;1m"  # Bold Blinking white
         WHITE = "\033[97m"  # Normal white
         DWHITE = "\033[1;97m"  # Deep white
         FWHITE = "\033[2;97m"  # Faint white
@@ -151,7 +161,7 @@ class ForegroundColor:
 
         # White Variants
         BWHITE = Fore.WHITE
-        BBWHITE = Fore.WHITE  # Blinking not directly supported, using WHITE
+        BUWHITE = Fore.WHITE  # Blinking not directly supported, using WHITE
         WHITE = Fore.WHITE
         DWHITE = Fore.WHITE  # Deep white (not distinct in colorama)
         FWHITE = Fore.WHITE  # Faint white (not distinct in colorama)
@@ -161,6 +171,16 @@ class ForegroundColor:
 
 
 class BackgroundColor:
+    """
+    Color class - provides background colors (highlight colors). It supports posix colors using ASCII and other systems using colorama.\n
+    Color prefixed:\n
+        F: Faint\n
+        I: Indented\n
+        L: Underlined\n
+        U: Blinking\n
+        B: Bold\n
+        BU: Bold Blinking\n
+    """
     if os.name == "posix":
         RESET = "\033[0m"  # Reset to default text color
 
@@ -214,7 +234,7 @@ class BackgroundColor:
 
         # White Variants
         BWHITE = "\033[1m"  # Bold white
-        BBWHITE = "\033[5;47;1m"  # Bold Blinking white
+        BUWHITE = "\033[5;47;1m"  # Bold Blinking white
         WHITE = "\033[47m"  # Normal white
         DWHITE = "\033[1;47m"  # Deep white
         FWHITE = "\033[2;47m"  # Faint white
@@ -277,7 +297,7 @@ class BackgroundColor:
 
         # White Variants
         BWHITE = Fore.WHITE
-        BBWHITE = Fore.WHITE  # Blinking not directly supported, using WHITE
+        BUWHITE = Fore.WHITE  # Blinking not directly supported, using WHITE
         WHITE = Fore.WHITE
         DWHITE = Fore.WHITE  # Deep white (not distinct in colorama)
         FWHITE = Fore.WHITE  # Faint white (not distinct in colorama)
@@ -292,7 +312,16 @@ rs = fg.RESET
 
 
 class OutputFormater:
-    """ANSI styles for output display"""
+    """
+    ANSI styles for output display\n
+    Levels:\n
+        INFO: Blue color for info logs\n
+        WARN: Yellow for warning\n
+        ERR: Red for errors\n
+        EXP: Magenta for exceptions\n
+        OK: Green color\n
+        RESET: Color reset\n
+    """
 
     INFO = f"{fg.BLUE}[i]{rs}"
     WARN = f"{fg.YELLOW}[!]{rs}"
