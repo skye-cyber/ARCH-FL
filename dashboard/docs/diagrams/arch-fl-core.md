@@ -33,30 +33,33 @@ graph TD
     subgraph External Systems
         S[Medical Data Sources] -->|Provides| A
         T[PyTorch] -->|Used by| F
+        W[Opacus] -->|Used by| F
         U[Researcher] -->|Configures| O
     end
 
-    style A fill:#9f9,stroke:#333
-    style B fill:#66f,stroke:#333
-    style C fill:#f96,stroke:#333
-    style D fill:#9f9,stroke:#333
-    style E fill:#66f,stroke:#333
-    style F fill:#f96,stroke:#333
-    style G fill:#66f,stroke:#333
-    style H fill:#9f9,stroke:#333
-    style I fill:#f96,stroke:#333
-    style J fill:#f96,stroke:#333
-    style K fill:#f96,stroke:#333
-    style L fill:#ff9,stroke:#333
-    style M fill:#ff9,stroke:#333
-    style N fill:#ff9,stroke:#333
-    style O fill:#66f,stroke:#333
-    style P fill:#66f,stroke:#333
-    style Q fill:#ff9,stroke:#333
-    style R fill:#66f,stroke:#333
-    style S fill:#f9f,stroke:#333
-    style T fill:#bbf,stroke:#333
-    style U fill:#f9f,stroke:#333
+    style A fill:#9f9,stroke:#333,font-size:20px;
+    style B fill:#66f,stroke:#333,font-size:20px;
+    style C fill:#f96,stroke:#333,font-size:20px;
+    style D fill:#9f9,stroke:#333,font-size:20px;
+    style E fill:#66f,stroke:#333,font-size:20px;
+    style F fill:#f96,stroke:#333,font-size:20px;
+    style G fill:#66f,stroke:#333,font-size:20px;
+    style H fill:#9f9,stroke:#333,font-size:20px;
+    style I fill:#f96,stroke:#333,font-size:20px;
+    style J fill:#f96,stroke:#333,font-size:20px;
+    style K fill:#f96,stroke:#333,font-size:20px;
+    style L fill:#ff9,stroke:#333,font-size:20px;
+    style M fill:#ff9,stroke:#333,font-size:20px;
+    style N fill:#ff9,stroke:#333,font-size:20px;
+    style O fill:#66f,stroke:#333,font-size:20px;
+    style P fill:#66f,stroke:#333,font-size:20px;
+    style Q fill:#ff9,stroke:#333,font-size:20px;
+    style R fill:#66f,stroke:#333,font-size:20px;
+    style S fill:#f9f,stroke:#333,font-size:20px;
+    style T fill:#bbf,stroke:#333,font-size:20px;
+    style U fill:#f9f,stroke:#333,font-size:20px;
+    style W fill:#f9f,stroke:#333,font-size:20px;
+
 ```
 
 ## Key Components
