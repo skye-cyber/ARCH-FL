@@ -6,19 +6,19 @@ const api = axios.create({
 })
 
 // Add request interceptor for auth tokens if needed
-// api.interceptors.request.use(
-//   (config) => {
-//     // Add auth token if available
-//     const token = localStorage.getItem('authToken')
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`
-//     }
-//     return config
-//   },
-//   (error) => {
-//     return Promise.reject(error)
-//   }
-// )
+api.interceptors.request.use(
+  (config) => {
+    // Add auth token if available
+    const token = localStorage.getItem('authToken')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
 
 // Add response interceptor for error handling
 api.interceptors.response.use(
@@ -46,7 +46,7 @@ export const experimentService = {
 
 export const architectureService = {
   getAll: () => api.get('/architectures'),
-  getByName: (name) => api.get(`/architectures/${name}`),
+  getByName: (name) => api.get(`/architectures/view/${name}`),
   create: (architectureData) => api.post('/architectures', architectureData),
   getRegistry: () => api.get('/architectures/registry'),
 }

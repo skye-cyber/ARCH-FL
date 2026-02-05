@@ -373,7 +373,7 @@ def create_architecture(architecture: ArchitectureCreate):
         conn.close()
 
 
-@app.get("/api/architectures/{architecture_name}", response_model=Dict)
+@app.get("/api/architectures/view/{architecture_name}", response_model=Dict)
 def get_architecture(architecture_name: str):
     """Get a specific architecture by name."""
     conn = get_db_connection()
@@ -386,42 +386,6 @@ def get_architecture(architecture_name: str):
         raise HTTPException(status_code=404, detail="Architecture not found")
 
     return dict(architecture)
-
-# Dataset endpoints (integration with ARCH-FL core)
-
-
-@app.get("/api/datasets")
-def get_datasets():
-    """Get available datasets from ARCH-FL registry."""
-    try:
-        from src.data.loader_registry import get_data_loader_registry
-
-        registry = get_data_loader_registry()
-        datasets = registry.list_loaders()  # This should be list_datasets()
-
-        # Get detailed info for each dataset
-        dataset_list = []
-        for dataset_name in datasets:
-            try:
-                info = registry.get_dataset_info(dataset_name)
-                if info:
-                    dataset_list.append({
-                        "name": dataset_name,
-                        "description": info.get("description", ""),
-                        "supported": info.get("supported", True)
-                    })
-            except:
-                pass
-
-        return dataset_list
-
-    except ImportError:
-        # Fallback if ARCH-FL core not available
-        return [
-            {"name": "PneumoniaMNIST", "description": "Pneumonia MNIST Dataset", "supported": True},
-            {"name": "MIMIC-CXR", "description": "MIMIC Chest X-ray Dataset", "supported": True},
-            {"name": "CheXpert", "description": "CheXpert Chest X-ray Dataset", "supported": True}
-        ]
 
 
 @app.get("/api/architectures/registry")
@@ -457,6 +421,43 @@ def get_architecture_registry():
             {"name": "simple_cnn", "description": "Simple CNN", "model_type": "SimpleCNN", "compatible_datasets": ["pneumoniamnist"]},
             {"name": "medium_cnn", "description": "Medium CNN", "model_type": "ConfigurableCNN", "compatible_datasets": ["mimic_cxr"]},
             {"name": "resnet18", "description": "ResNet18", "model_type": "ResNet18", "compatible_datasets": ["chexpert"]}
+        ]
+
+
+# Dataset endpoints (integration with ARCH-FL core)
+
+
+@app.get("/api/datasets")
+def get_datasets():
+    """Get available datasets from ARCH-FL registry."""
+    try:
+        from src.data.loader_registry import get_data_loader_registry
+
+        registry = get_data_loader_registry()
+        datasets = registry.list_loaders()  # This should be list_datasets()
+
+        # Get detailed info for each dataset
+        dataset_list = []
+        for dataset_name in datasets:
+            try:
+                info = registry.get_dataset_info(dataset_name)
+                if info:
+                    dataset_list.append({
+                        "name": dataset_name,
+                        "description": info.get("description", ""),
+                        "supported": info.get("supported", True)
+                    })
+            except Exception:
+                pass
+
+        return dataset_list
+
+    except ImportError:
+        # Fallback if ARCH-FL core not available
+        return [
+            {"name": "PneumoniaMNIST", "description": "Pneumonia MNIST Dataset", "supported": True},
+            {"name": "MIMIC-CXR", "description": "MIMIC Chest X-ray Dataset", "supported": True},
+            {"name": "CheXpert", "description": "CheXpert Chest X-ray Dataset", "supported": True}
         ]
 
 
