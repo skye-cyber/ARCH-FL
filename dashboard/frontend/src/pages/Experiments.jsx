@@ -154,7 +154,7 @@ export default function Experiments() {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {filteredExperiments.map((experiment) => (
                                     <tr key={experiment.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-wrap">
                                             <div className="flex items-center">
                                                 <FaFlask className="text-blue-500 mr-2" />
                                                 <Link to={`/experiments/${experiment.id}`} className="text-blue-600 hover:text-blue-800 font-medium">
@@ -162,29 +162,29 @@ export default function Experiments() {
                                                 </Link>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-wrap">
                                             <div className="text-sm text-gray-900">{getDatasetName(experiment.dataset_name)}</div>
                                             <div className="text-xs text-gray-500">{experiment.dataset_name}</div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-wrap">
                                             <div className="text-sm text-gray-900">{getArchitectureName(experiment.architecture_name)}</div>
                                             <div className="text-xs text-gray-500">{experiment.architecture_name}</div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-wrap">
                                             <span className="text-sm text-gray-900">{experiment.num_clients}</span>
                                             <span className="text-xs text-gray-500 ml-1">
                                                 ({experiment.iid ? 'IID' : 'Non-IID'})
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-wrap">
                                             {getStatusBadge(experiment.status)}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-wrap">
                                             <span className="text-sm text-gray-900">
                                                 {new Date(experiment.created_at).toLocaleDateString()}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-wrap">
                                             <Link
                                                 to={`/experiments/${experiment.id}`}
                                                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"

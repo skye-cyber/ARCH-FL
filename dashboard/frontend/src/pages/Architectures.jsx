@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { architectureService } from '../services/api'
 import { FaProjectDiagram, FaSpinner, FaExclamationTriangle, FaCode, FaInfoCircle } from 'react-icons/fa'
+import { RenderJSONView } from '../components/jsonRenderer'
 
 export default function Architectures() {
     const [architectures, setArchitectures] = useState([])
@@ -102,8 +103,8 @@ export default function Architectures() {
                                     <p className="text-gray-600 mt-1">{selectedArchitecture.description}</p>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedArchitecture.compatible_datasets.length > 0
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-gray-100 text-gray-800'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100 text-gray-800'
                                     }`}>
                                     {selectedArchitecture.model_type}
                                 </span>
@@ -154,14 +155,7 @@ export default function Architectures() {
                                     Configuration Details
                                 </h4>
                                 <div className="overflow-x-auto">
-                                    <pre className="text-sm bg-white rounded p-4 overflow-auto">
-                                        {JSON.stringify({
-                                            name: selectedArchitecture.name,
-                                            model_type: selectedArchitecture.model_type,
-                                            compatible_datasets: selectedArchitecture.compatible_datasets,
-                                            description: selectedArchitecture.description
-                                        }, null, 2)}
-                                    </pre>
+                                    <RenderJSONView config={selectedArchitecture} />
                                 </div>
                             </div>
                         </div>
