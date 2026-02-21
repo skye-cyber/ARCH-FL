@@ -3,21 +3,16 @@ ARCH-FL Dashboard Backend - FastAPI Application
 
 Main application entry point with API endpoints for the dashboard.
 """
-
-from fastapi.responses import HTMLResponse
-from fastapi import WebSocket, WebSocketDisconnect
-import os
-import sys
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from fastapi import WebSocket, WebSocketDisconnect
+from typing import List, Dict
 from datetime import datetime
 import sqlite3
 import json
-
-# Add project root to path for ARCH-FL core integration
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
+import env
+from models import ArchitectureCreate, ExperimentUpdate, ExperimentCreate
+from db import dbmanager
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -38,101 +33,9 @@ app.add_middleware(
     max_age=600,
 )
 
-# Database setup
-
-
-def get_db_connection():
-    """Get SQLite database connection."""
-    db_path = os.path.join(os.path.dirname(__file__), "..", "data", "dashboard.db")
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def init_db():
-    """Initialize database tables."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Create experiments table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS experiments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT,
-            dataset_name TEXT NOT NULL,
-            architecture_name TEXT NOT NULL,
-            num_clients INTEGER NOT NULL,
-            iid BOOLEAN NOT NULL,
-            status TEXT DEFAULT 'pending',
-            parameters JSON NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    # Create experiment results table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS experiment_results (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            experiment_id INTEGER NOT NULL,
-            client_id INTEGER,
-            round INTEGER NOT NULL,
-            accuracy REAL,
-            loss REAL,
-            metrics JSON,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (experiment_id) REFERENCES experiments(id)
-        )
-    """)
-
-    # Create architectures table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS architectures (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE NOT NULL,
-            description TEXT,
-            config JSON NOT NULL,
-            compatible_datasets TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    conn.commit()
-    conn.close()
-
 
 # Initialize database on startup
-init_db()
-
-# Pydantic models for request/response validation
-
-
-class ExperimentCreate(BaseModel):
-    name: str
-    description: Optional[str] = ""
-    dataset_name: str
-    architecture_name: str
-    num_clients: int
-    iid: bool
-    parameters: Dict[str, Any]
-
-
-class ExperimentUpdate(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
-    status: Optional[str]
-    parameters: Optional[Dict[str, Any]]
-
-
-class ArchitectureCreate(BaseModel):
-    name: str
-    description: str = ""
-    config: Dict[str, Any]
-    compatible_datasets: Optional[List[str]] = []
-
-# API Endpoints
+dbmanager.init()
 
 
 @app.get("/api/health")
@@ -146,7 +49,7 @@ def health_check():
 @app.get("/api/experiments", response_model=List[Dict])
 def get_experiments():
     """Get all experiments."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM experiments ORDER BY created_at DESC")
     experiments = [dict(row) for row in cursor.fetchall()]
@@ -157,7 +60,7 @@ def get_experiments():
 @app.post("/api/experiments", response_model=Dict)
 def create_experiment(experiment: ExperimentCreate):
     """Create a new experiment."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
 
     try:
@@ -195,7 +98,7 @@ def create_experiment(experiment: ExperimentCreate):
 @app.get("/api/experiments/{experiment_id}", response_model=Dict)
 def get_experiment(experiment_id: int):
     """Get a specific experiment."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
     experiment = cursor.fetchone()
@@ -210,7 +113,7 @@ def get_experiment(experiment_id: int):
 @app.put("/api/experiments/{experiment_id}", response_model=Dict)
 def update_experiment(experiment_id: int, update_data: ExperimentUpdate):
     """Update an experiment."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
 
     # Get current experiment
@@ -267,7 +170,7 @@ def update_experiment(experiment_id: int, update_data: ExperimentUpdate):
 @app.get("/api/experiments/{experiment_id}/results", response_model=List[Dict])
 def get_experiment_results(experiment_id: int):
     """Get results for a specific experiment."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
     cursor.execute("""
         SELECT * FROM experiment_results
@@ -284,7 +187,7 @@ def get_experiment_results(experiment_id: int):
 @app.post("/api/experiments/{experiment_id}/results", response_model=Dict)
 def add_experiment_result(experiment_id: int, result: Dict):
     """Add a result for an experiment."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
 
     # Verify experiment exists
@@ -328,7 +231,7 @@ def add_experiment_result(experiment_id: int, result: Dict):
 @app.get("/api/architectures", response_model=List[Dict])
 def get_architectures():
     """Get all registered architectures."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM architectures ORDER BY name")
     architectures = [dict(row) for row in cursor.fetchall()]
@@ -339,7 +242,7 @@ def get_architectures():
 @app.post("/api/architectures", response_model=Dict)
 def create_architecture(architecture: ArchitectureCreate):
     """Register a new architecture."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
 
     try:
@@ -361,6 +264,9 @@ def create_architecture(architecture: ArchitectureCreate):
         cursor.execute("SELECT * FROM architectures WHERE id = ?", (architecture_id,))
         created_architecture = dict(cursor.fetchone())
 
+        from utils import register_architecture
+        register_architecture(architecture)
+
         return created_architecture
 
     except sqlite3.IntegrityError:
@@ -376,7 +282,7 @@ def create_architecture(architecture: ArchitectureCreate):
 @app.get("/api/architectures/view/{architecture_name}", response_model=Dict)
 def get_architecture(architecture_name: str):
     """Get a specific architecture by name."""
-    conn = get_db_connection()
+    conn = dbmanager.connection
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM architectures WHERE name = ?", (architecture_name,))
     architecture = cursor.fetchone()
@@ -395,6 +301,7 @@ def get_architecture_registry():
         from src.models.architecture_registry import get_architecture_registry
 
         registry = get_architecture_registry()
+
         architectures = registry.list_architectures()
 
         # Get detailed info for each architecture
@@ -410,9 +317,8 @@ def get_architecture_registry():
                         "model_type": config.get("name", "Unknown"),
                         "compatible_datasets": info.get("compatible_datasets", [])
                     })
-            except:
+            except Exception:
                 pass
-
         return architecture_list
 
     except ImportError:
@@ -514,14 +420,14 @@ def read_root():
 
 
 # Add backend endpoint for creating architectures
-@app.post("/api/architectures/backend")
+@app.post("/api/architectures/register")
 def create_architecture_backend(architecture: ArchitectureCreate):
     """Register a new architecture in the ARCH-FL backend registry."""
     try:
         from src.models.architecture_registry import get_architecture_registry
-        
+
         registry = get_architecture_registry()
-        
+
         # Register the architecture
         registry.register_custom_architecture(
             architecture.name,
@@ -529,7 +435,7 @@ def create_architecture_backend(architecture: ArchitectureCreate):
             architecture.description,
             architecture.compatible_datasets
         )
-        
+
         # Return success
         return {
             "status": "success",
@@ -540,7 +446,7 @@ def create_architecture_backend(architecture: ArchitectureCreate):
                 "model_type": architecture.config.get("name", "Unknown")
             }
         }
-        
+
     except ImportError:
         raise HTTPException(
             status_code=500,
@@ -551,6 +457,7 @@ def create_architecture_backend(architecture: ArchitectureCreate):
             status_code=400,
             detail=f"Failed to register architecture: {str(e)}"
         )
+
 
 if __name__ == "__main__":
     import uvicorn

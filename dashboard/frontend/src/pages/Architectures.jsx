@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { architectureService } from '../services/api'
-import { FaProjectDiagram, FaSpinner, FaExclamationTriangle, FaCode, FaInfoCircle } from 'react-icons/fa'
+import { FaProjectDiagram, FaSpinner, FaExclamationTriangle, FaCode, FaInfoCircle, FaPlus } from 'react-icons/fa'
 import { RenderJSONView } from '../components/jsonRenderer'
+import { Link } from 'react-router-dom'
 
 export default function Architectures() {
     const [architectures, setArchitectures] = useState([])
@@ -13,7 +14,7 @@ export default function Architectures() {
         const fetchArchitectures = async () => {
             try {
                 setLoading(true)
-                const response = await architectureService.getRegistry()
+                const response = await architectureService.getAll() //.getRegistry()
                 setArchitectures(response.data)
                 setLoading(false)
             } catch (err) {
@@ -58,7 +59,17 @@ export default function Architectures() {
         <div className="space-y-6">
             {/* Page header */}
             <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-2xl font-bold text-gray-800">Model Architectures</h2>
+                <div className="flex justify-between items-center">
+
+                    <h2 className="text-2xl font-bold text-gray-800">Model Architectures</h2>
+                    <Link
+                        to="/architectures/new"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                    >
+                        <FaPlus className="mr-2" />
+                        <span>New Architecture</span>
+                    </Link>
+                </div>
                 <p className="text-gray-600 mt-2">
                     Browse and manage model architectures for federated learning
                 </p>
