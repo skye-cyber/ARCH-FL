@@ -16,6 +16,7 @@ from datetime import datetime
 import sqlite3
 import json
 
+
 # Add project root to path for ARCH-FL core integration
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
@@ -25,7 +26,7 @@ app = FastAPI(
     description="Backend API for ARCH-FL Federated Learning Dashboard",
     version="1.0.0",
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
 )
 
 # CORS configuration
@@ -132,6 +133,7 @@ class ArchitectureCreate(BaseModel):
     config: Dict[str, Any]
     compatible_datasets: Optional[List[str]] = []
 
+
 # API Endpoints
 
 
@@ -139,6 +141,7 @@ class ArchitectureCreate(BaseModel):
 def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 
 # Experiment endpoints
 
@@ -161,20 +164,23 @@ def create_experiment(experiment: ExperimentCreate):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO experiments
             (name, description, dataset_name, architecture_name, num_clients, iid, status, parameters)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            experiment.name,
-            experiment.description,
-            experiment.dataset_name,
-            experiment.architecture_name,
-            experiment.num_clients,
-            experiment.iid,
-            "pending",
-            json.dumps(experiment.parameters)
-        ))
+        """,
+            (
+                experiment.name,
+                experiment.description,
+                experiment.dataset_name,
+                experiment.architecture_name,
+                experiment.num_clients,
+                experiment.iid,
+                "pending",
+                json.dumps(experiment.parameters),
+            ),
+        )
 
         experiment_id = cursor.lastrowid
         conn.commit()
@@ -269,11 +275,14 @@ def get_experiment_results(experiment_id: int):
     """Get results for a specific experiment."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT * FROM experiment_results
         WHERE experiment_id = ?
         ORDER BY round, timestamp
-    """, (experiment_id,))
+    """,
+        (experiment_id,),
+    )
 
     results = [dict(row) for row in cursor.fetchall()]
     conn.close()
@@ -294,18 +303,21 @@ def add_experiment_result(experiment_id: int, result: Dict):
         raise HTTPException(status_code=404, detail="Experiment not found")
 
     try:
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO experiment_results
             (experiment_id, client_id, round, accuracy, loss, metrics)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (
-            experiment_id,
-            result.get('client_id'),
-            result.get('round'),
-            result.get('accuracy'),
-            result.get('loss'),
-            json.dumps(result.get('metrics', {}))
-        ))
+        """,
+            (
+                experiment_id,
+                result.get("client_id"),
+                result.get("round"),
+                result.get("accuracy"),
+                result.get("loss"),
+                json.dumps(result.get("metrics", {})),
+            ),
+        )
 
         result_id = cursor.lastrowid
         conn.commit()
@@ -321,6 +333,7 @@ def add_experiment_result(experiment_id: int, result: Dict):
         raise HTTPException(status_code=400, detail=str(e))
     finally:
         conn.close()
+
 
 # Architecture endpoints
 
@@ -343,16 +356,19 @@ def create_architecture(architecture: ArchitectureCreate):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO architectures
             (name, description, config, compatible_datasets)
             VALUES (?, ?, ?, ?)
-        """, (
-            architecture.name,
-            architecture.description,
-            json.dumps(architecture.config),
-            json.dumps(architecture.compatible_datasets)
-        ))
+        """,
+            (
+                architecture.name,
+                architecture.description,
+                json.dumps(architecture.config),
+                json.dumps(architecture.compatible_datasets),
+            ),
+        )
 
         architecture_id = cursor.lastrowid
         conn.commit()
@@ -365,7 +381,9 @@ def create_architecture(architecture: ArchitectureCreate):
 
     except sqlite3.IntegrityError:
         conn.rollback()
-        raise HTTPException(status_code=400, detail="Architecture with this name already exists")
+        raise HTTPException(
+            status_code=400, detail="Architecture with this name already exists"
+        )
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=400, detail=str(e))
@@ -404,12 +422,14 @@ def get_architecture_registry():
                 info = registry.get_architecture_info(arch_name)
                 if info:
                     config = info.get("config", {})
-                    architecture_list.append({
-                        "name": arch_name,
-                        "description": info.get("description", ""),
-                        "model_type": config.get("name", "Unknown"),
-                        "compatible_datasets": info.get("compatible_datasets", [])
-                    })
+                    architecture_list.append(
+                        {
+                            "name": arch_name,
+                            "description": info.get("description", ""),
+                            "model_type": config.get("name", "Unknown"),
+                            "compatible_datasets": info.get("compatible_datasets", []),
+                        }
+                    )
             except:
                 pass
 
@@ -418,9 +438,24 @@ def get_architecture_registry():
     except ImportError:
         # Fallback if ARCH-FL core not available
         return [
-            {"name": "simple_cnn", "description": "Simple CNN", "model_type": "SimpleCNN", "compatible_datasets": ["pneumoniamnist"]},
-            {"name": "medium_cnn", "description": "Medium CNN", "model_type": "ConfigurableCNN", "compatible_datasets": ["mimic_cxr"]},
-            {"name": "resnet18", "description": "ResNet18", "model_type": "ResNet18", "compatible_datasets": ["chexpert"]}
+            {
+                "name": "simple_cnn",
+                "description": "Simple CNN",
+                "model_type": "SimpleCNN",
+                "compatible_datasets": ["pneumoniamnist"],
+            },
+            {
+                "name": "medium_cnn",
+                "description": "Medium CNN",
+                "model_type": "ConfigurableCNN",
+                "compatible_datasets": ["mimic_cxr"],
+            },
+            {
+                "name": "resnet18",
+                "description": "ResNet18",
+                "model_type": "ResNet18",
+                "compatible_datasets": ["chexpert"],
+            },
         ]
 
 
@@ -442,11 +477,13 @@ def get_datasets():
             try:
                 info = registry.get_dataset_info(dataset_name)
                 if info:
-                    dataset_list.append({
-                        "name": dataset_name,
-                        "description": info.get("description", ""),
-                        "supported": info.get("supported", True)
-                    })
+                    dataset_list.append(
+                        {
+                            "name": dataset_name,
+                            "description": info.get("description", ""),
+                            "supported": info.get("supported", True),
+                        }
+                    )
             except Exception:
                 pass
 
@@ -455,9 +492,21 @@ def get_datasets():
     except ImportError:
         # Fallback if ARCH-FL core not available
         return [
-            {"name": "PneumoniaMNIST", "description": "Pneumonia MNIST Dataset", "supported": True},
-            {"name": "MIMIC-CXR", "description": "MIMIC Chest X-ray Dataset", "supported": True},
-            {"name": "CheXpert", "description": "CheXpert Chest X-ray Dataset", "supported": True}
+            {
+                "name": "PneumoniaMNIST",
+                "description": "Pneumonia MNIST Dataset",
+                "supported": True,
+            },
+            {
+                "name": "MIMIC-CXR",
+                "description": "MIMIC Chest X-ray Dataset",
+                "supported": True,
+            },
+            {
+                "name": "CheXpert",
+                "description": "CheXpert Chest X-ray Dataset",
+                "supported": True,
+            },
         ]
 
 
@@ -499,6 +548,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
+
 # Root endpoint for testing
 
 
@@ -509,7 +559,7 @@ def read_root():
         "message": "ARCH-FL Dashboard API",
         "version": "1.0.0",
         "docs": "/api/docs",
-        "status": "running"
+        "status": "running",
     }
 
 
@@ -519,17 +569,17 @@ def create_architecture_backend(architecture: ArchitectureCreate):
     """Register a new architecture in the ARCH-FL backend registry."""
     try:
         from src.models.architecture_registry import get_architecture_registry
-        
+
         registry = get_architecture_registry()
-        
+
         # Register the architecture
         registry.register_custom_architecture(
             architecture.name,
             architecture.config,
             architecture.description,
-            architecture.compatible_datasets
+            architecture.compatible_datasets,
         )
-        
+
         # Return success
         return {
             "status": "success",
@@ -537,21 +587,22 @@ def create_architecture_backend(architecture: ArchitectureCreate):
             "architecture": {
                 "name": architecture.name,
                 "description": architecture.description,
-                "model_type": architecture.config.get("name", "Unknown")
-            }
+                "model_type": architecture.config.get("name", "Unknown"),
+            },
         }
-        
+
     except ImportError:
         raise HTTPException(
             status_code=500,
-            detail="ARCH-FL core not available. Architecture registered in dashboard only."
+            detail="ARCH-FL core not available. Architecture registered in dashboard only.",
         )
     except Exception as e:
         raise HTTPException(
-            status_code=400,
-            detail=f"Failed to register architecture: {str(e)}"
+            status_code=400, detail=f"Failed to register architecture: {str(e)}"
         )
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8008, reload=True)
