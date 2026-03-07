@@ -54,6 +54,9 @@ export const architectureService = {
   getByName: (name) => api.get(`/architectures/view/${name}`),
   create: (architectureData) => api.post('/architectures', architectureData),
   getRegistry: () => api.get('/architectures/registry'),
+  delete: (name) => api.post(`/architectures/${name}/delete`),
+  duplicate: (name) => api.post(`/architectures/${name}/duplicate`),
+  update: (name, updateData) => api.post(`/architectures/${name}/update`, updateData),
 }
 
 export const datasetService = {

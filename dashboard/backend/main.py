@@ -714,6 +714,133 @@ def batch_experiment_actions(action_data: Dict):
     }
 
 
+@app.post("/api/architectures/{architecture_name}/delete", response_model=Dict)
+def delete_architecture(architecture_name: str):
+    """Delete an architecture."""
+    # Check if architecture exists
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM architectures WHERE name = ?", (architecture_name,))
+    architecture = cursor.fetchone()
+    
+    if not architecture:
+        raise HTTPException(status_code=404, detail="Architecture not found")
+    
+    # Check if architecture is in use by any experiments
+    cursor.execute("SELECT COUNT(*) as count FROM experiments WHERE architecture_name = ?", (architecture_name,))
+    result = cursor.fetchone()
+    in_use_count = result["count"]
+    
+    if in_use_count > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete architecture. It is being used by {in_use_count} experiment(s)."
+        )
+    
+    # Delete the architecture
+    cursor.execute("DELETE FROM architectures WHERE name = ?", (architecture_name,))
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "deleted",
+        "message": "Architecture deleted successfully",
+        "architecture_name": architecture_name
+    }
+
+
+@app.post("/api/architectures/{architecture_name}/duplicate", response_model=Dict)
+def duplicate_architecture(architecture_name: str):
+    """Duplicate an architecture with a new name."""
+    # Get the original architecture
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM architectures WHERE name = ?", (architecture_name,))
+    architecture = cursor.fetchone()
+    
+    if not architecture:
+        raise HTTPException(status_code=404, detail="Architecture not found")
+    
+    architecture_dict = dict(architecture)
+    
+    # Generate new name
+    base_name = architecture_name
+    suffix = 1
+    new_name = f"{base_name}_copy"
+    
+    # Check if name already exists
+    while True:
+        cursor.execute("SELECT COUNT(*) as count FROM architectures WHERE name = ?", (new_name,))
+        result = cursor.fetchone()
+        if result["count"] == 0:
+            break
+        new_name = f"{base_name}_copy_{suffix}"
+        suffix += 1
+    
+    # Create the duplicate
+    cursor.execute(
+        """
+        INSERT INTO architectures
+        (name, description, config, compatible_datasets)
+        VALUES (?, ?, ?, ?)
+    """,
+        (
+            new_name,
+            f"Copy of {architecture_dict['description'] or architecture_name}",
+            architecture_dict["config"],
+            architecture_dict["compatible_datasets"],
+        ),
+    )
+    
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "created",
+        "message": "Architecture duplicated successfully",
+        "original_name": architecture_name,
+        "new_name": new_name
+    }
+
+
+@app.post("/api/architectures/{architecture_name}/update", response_model=Dict)
+def update_architecture(architecture_name: str, update_data: ArchitectureCreate):
+    """Update an architecture."""
+    # Check if architecture exists
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM architectures WHERE name = ?", (architecture_name,))
+    architecture = cursor.fetchone()
+    
+    if not architecture:
+        raise HTTPException(status_code=404, detail="Architecture not found")
+    
+    # Update the architecture
+    cursor.execute(
+        """
+        UPDATE architectures
+        SET name = ?, description = ?, config = ?, compatible_datasets = ?
+        WHERE name = ?
+    """,
+        (
+            update_data.name,
+            update_data.description,
+            json.dumps(update_data.config),
+            json.dumps(update_data.compatible_datasets),
+            architecture_name,
+        ),
+    )
+    
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "updated",
+        "message": "Architecture updated successfully",
+        "architecture_name": update_data.name
+    }
+
+
 # Architecture endpoints
 
 
