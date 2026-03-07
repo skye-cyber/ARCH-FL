@@ -335,6 +335,385 @@ def add_experiment_result(experiment_id: int, result: Dict):
         conn.close()
 
 
+@app.post("/api/experiments/{experiment_id}/run", response_model=Dict)
+def run_experiment(experiment_id: int):
+    """Run an experiment using ARCH-FL core."""
+    # Get experiment details
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
+    experiment = cursor.fetchone()
+    conn.close()
+
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment_dict = dict(experiment)
+    
+    # Check if experiment is already running
+    if experiment_dict["status"] == "running":
+        raise HTTPException(status_code=400, detail="Experiment is already running")
+    
+    # Update status to running
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
+        ("running", datetime.now().isoformat(), experiment_id),
+    )
+    conn.commit()
+    conn.close()
+
+    # Start experiment execution in background
+    import threading
+    
+    def execute_experiment():
+        try:
+            # Import ARCH-FL core components
+            from src.core.dashboard_integration import DashboardConnector, create_dashboard_callback
+            from src.models.architecture_registry import get_architecture_registry
+            from src.data.loader_registry import get_data_loader_registry
+            from src.core.coordinator import Coordinator
+            from src.training.fedavg import federated_average
+            
+            # Initialize dashboard connector
+            dashboard_connector = DashboardConnector()
+            
+            # Create progress callback
+            progress_callback = create_dashboard_callback(experiment_id, dashboard_connector)
+            
+            # Get architecture and dataset
+            try:
+                arch_registry = get_architecture_registry()
+                data_registry = get_data_loader_registry()
+                
+                # Get architecture
+                architecture_info = arch_registry.get_architecture_info(
+                    experiment_dict["architecture_name"]
+                )
+                
+                # Get dataset
+                dataset_info = data_registry.get_dataset_info(
+                    experiment_dict["dataset_name"]
+                )
+                
+                # Create model
+                model = arch_registry.create_model(
+                    experiment_dict["architecture_name"],
+                    input_size=dataset_info.get("input_size", 28)
+                )
+                
+                # Create coordinator with callback
+                coordinator = Coordinator(
+                    model,
+                    aggregation_method=experiment_dict["parameters"].get("aggregation_method", "fed_avg"),
+                    progress_callback=progress_callback
+                )
+                
+                # Get training parameters
+                params = json.loads(experiment_dict["parameters"])
+                num_rounds = params.get("num_rounds", 5)
+                num_clients = experiment_dict["num_clients"]
+                
+                # Run federated training
+                federated_average(
+                    coordinator=coordinator,
+                    dataset_name=experiment_dict["dataset_name"],
+                    num_clients=num_clients,
+                    num_rounds=num_rounds,
+                    iid=experiment_dict["iid"],
+                    progress_callback=progress_callback
+                )
+                
+                # Update final status
+                dashboard_connector.update_experiment_status(
+                    experiment_id, "completed", {"round": num_rounds, "status": "completed"}
+                )
+                
+            except ImportError as e:
+                # Fallback if ARCH-FL core not available
+                print(f"ARCH-FL core not available: {e}")
+                dashboard_connector.update_experiment_status(
+                    experiment_id, "failed", {"error": "ARCH-FL core not available"}
+                )
+            except Exception as e:
+                print(f"Experiment failed: {e}")
+                dashboard_connector.update_experiment_status(
+                    experiment_id, "failed", {"error": str(e)}
+                )
+        
+        except Exception as e:
+            print(f"Error in experiment execution: {e}")
+    
+    # Start execution thread
+    thread = threading.Thread(target=execute_experiment, daemon=True)
+    thread.start()
+    
+    return {
+        "status": "started",
+        "message": "Experiment execution started",
+        "experiment_id": experiment_id
+    }
+
+
+@app.post("/api/experiments/{experiment_id}/cancel", response_model=Dict)
+def cancel_experiment(experiment_id: int):
+    """Cancel a running experiment."""
+    # Get experiment details
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
+    experiment = cursor.fetchone()
+    conn.close()
+
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment_dict = dict(experiment)
+    
+    # Only allow cancellation of running experiments
+    if experiment_dict["status"] not in ["running", "pending"]:
+        raise HTTPException(
+            status_code=400, 
+            detail="Only running or pending experiments can be cancelled"
+        )
+    
+    # Update status to cancelled
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
+        ("cancelled", datetime.now().isoformat(), experiment_id),
+    )
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "cancelled",
+        "message": "Experiment cancelled successfully",
+        "experiment_id": experiment_id
+    }
+
+
+@app.post("/api/experiments/{experiment_id}/delete", response_model=Dict)
+def delete_experiment(experiment_id: int):
+    """Delete an experiment."""
+    # Get experiment details
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
+    experiment = cursor.fetchone()
+    conn.close()
+
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment_dict = dict(experiment)
+    
+    # Cannot delete running experiments
+    if experiment_dict["status"] == "running":
+        raise HTTPException(
+            status_code=400, 
+            detail="Cannot delete a running experiment. Please cancel it first."
+        )
+    
+    # Delete experiment results first
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM experiment_results WHERE experiment_id = ?", (experiment_id,))
+    
+    # Delete the experiment
+    cursor.execute("DELETE FROM experiments WHERE id = ?", (experiment_id,))
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "deleted",
+        "message": "Experiment deleted successfully",
+        "experiment_id": experiment_id
+    }
+
+
+@app.post("/api/experiments/{experiment_id}/restart", response_model=Dict)
+def restart_experiment(experiment_id: int):
+    """Restart a completed or cancelled experiment."""
+    # Get experiment details
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
+    experiment = cursor.fetchone()
+    conn.close()
+
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment_dict = dict(experiment)
+    
+    # Only allow restart of completed or cancelled experiments
+    if experiment_dict["status"] not in ["completed", "cancelled", "failed"]:
+        raise HTTPException(
+            status_code=400, 
+            detail="Only completed, cancelled, or failed experiments can be restarted"
+        )
+    
+    # Update status to pending (will be set to running when execution starts)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
+        ("pending", datetime.now().isoformat(), experiment_id),
+    )
+    conn.commit()
+    conn.close()
+
+    # Start experiment execution in background
+    import threading
+    
+    def execute_experiment():
+        try:
+            # Import ARCH-FL core components
+            from src.core.dashboard_integration import DashboardConnector, create_dashboard_callback
+            from src.models.architecture_registry import get_architecture_registry
+            from src.data.loader_registry import get_data_loader_registry
+            from src.core.coordinator import Coordinator
+            from src.training.fedavg import federated_average
+            
+            # Initialize dashboard connector
+            dashboard_connector = DashboardConnector()
+            
+            # Create progress callback
+            progress_callback = create_dashboard_callback(experiment_id, dashboard_connector)
+            
+            # Get architecture and dataset
+            try:
+                arch_registry = get_architecture_registry()
+                data_registry = get_data_loader_registry()
+                
+                # Get architecture
+                architecture_info = arch_registry.get_architecture_info(
+                    experiment_dict["architecture_name"]
+                )
+                
+                # Get dataset
+                dataset_info = data_registry.get_dataset_info(
+                    experiment_dict["dataset_name"]
+                )
+                
+                # Create model
+                model = arch_registry.create_model(
+                    experiment_dict["architecture_name"],
+                    input_size=dataset_info.get("input_size", 28)
+                )
+                
+                # Create coordinator with callback
+                coordinator = Coordinator(
+                    model,
+                    aggregation_method=experiment_dict["parameters"].get("aggregation_method", "fed_avg"),
+                    progress_callback=progress_callback
+                )
+                
+                # Get training parameters
+                params = json.loads(experiment_dict["parameters"])
+                num_rounds = params.get("num_rounds", 5)
+                num_clients = experiment_dict["num_clients"]
+                
+                # Run federated training
+                federated_average(
+                    coordinator=coordinator,
+                    dataset_name=experiment_dict["dataset_name"],
+                    num_clients=num_clients,
+                    num_rounds=num_rounds,
+                    iid=experiment_dict["iid"],
+                    progress_callback=progress_callback
+                )
+                
+                # Update final status
+                dashboard_connector.update_experiment_status(
+                    experiment_id, "completed", {"round": num_rounds, "status": "completed"}
+                )
+                
+            except ImportError as e:
+                # Fallback if ARCH-FL core not available
+                print(f"ARCH-FL core not available: {e}")
+                dashboard_connector.update_experiment_status(
+                    experiment_id, "failed", {"error": "ARCH-FL core not available"}
+                )
+            except Exception as e:
+                print(f"Experiment failed: {e}")
+                dashboard_connector.update_experiment_status(
+                    experiment_id, "failed", {"error": str(e)}
+                )
+        
+        except Exception as e:
+            print(f"Error in experiment execution: {e}")
+    
+    # Start execution thread
+    thread = threading.Thread(target=execute_experiment, daemon=True)
+    thread.start()
+    
+    return {
+        "status": "restarted",
+        "message": "Experiment restarted successfully",
+        "experiment_id": experiment_id
+    }
+
+
+@app.post("/api/experiments/actions", response_model=Dict)
+def batch_experiment_actions(action_data: Dict):
+    """Perform batch actions on multiple experiments."""
+    action_type = action_data.get("action")
+    experiment_ids = action_data.get("experiment_ids", [])
+    
+    if not action_type:
+        raise HTTPException(status_code=400, detail="Action type is required")
+    
+    if not experiment_ids:
+        raise HTTPException(status_code=400, detail="No experiments selected")
+    
+    results = []
+    errors = []
+    
+    for experiment_id in experiment_ids:
+        try:
+            if action_type == "delete":
+                result = delete_experiment(experiment_id)
+            elif action_type == "cancel":
+                result = cancel_experiment(experiment_id)
+            elif action_type == "run":
+                result = run_experiment(experiment_id)
+            elif action_type == "restart":
+                result = restart_experiment(experiment_id)
+            else:
+                raise HTTPException(status_code=400, detail=f"Unknown action: {action_type}")
+            
+            results.append({
+                "experiment_id": experiment_id,
+                "status": "success",
+                "message": result.get("message")
+            })
+        except HTTPException as e:
+            errors.append({
+                "experiment_id": experiment_id,
+                "status": "error",
+                "message": e.detail
+            })
+        except Exception as e:
+            errors.append({
+                "experiment_id": experiment_id,
+                "status": "error",
+                "message": str(e)
+            })
+    
+    return {
+        "action": action_type,
+        "total_experiments": len(experiment_ids),
+        "successful": len(results),
+        "failed": len(errors),
+        "results": results,
+        "errors": errors
+    }
+
+
 # Architecture endpoints
 
 

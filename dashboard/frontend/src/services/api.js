@@ -42,6 +42,11 @@ export const experimentService = {
   update: (id, updateData) => api.put(`/experiments/${id}`, updateData),
   getResults: (id) => api.get(`/experiments/${id}/results`),
   addResult: (id, resultData) => api.post(`/experiments/${id}/results`, resultData),
+  run: (id) => api.post(`/experiments/${id}/run`),
+  cancel: (id) => api.post(`/experiments/${id}/cancel`),
+  delete: (id) => api.post(`/experiments/${id}/delete`),
+  restart: (id) => api.post(`/experiments/${id}/restart`),
+  batchActions: (actionData) => api.post('/experiments/actions', actionData),
 }
 
 export const architectureService = {

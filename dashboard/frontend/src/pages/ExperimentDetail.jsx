@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { experimentService } from '../services/api'
-import { FaFlask, FaSpinner, FaExclamationTriangle, FaChartLine, FaClock, FaInfoCircle } from 'react-icons/fa'
+import { FaFlask, FaSpinner, FaExclamationTriangle, FaChartLine, FaClock, FaInfoCircle, FaPlay, FaStop, FaTrash, FaRedo } from 'react-icons/fa'
 import { Line } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
 
@@ -10,10 +10,13 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export default function ExperimentDetail() {
     const { id } = useParams()
+    const navigate = useNavigate()
     const [experiment, setExperiment] = useState(null)
     const [results, setResults] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [actionLoading, setActionLoading] = useState(false)
+    const [actionResult, setActionResult] = useState(null)
 
     useEffect(() => {
         const fetchExperimentData = async () => {
@@ -154,6 +157,50 @@ export default function ExperimentDetail() {
         )
     }
 
+    const performAction = async (actionType) => {
+        setActionLoading(true)
+        setActionResult(null)
+        
+        try {
+            let response
+            switch (actionType) {
+                case 'run':
+                    response = await experimentService.run(id)
+                    break
+                case 'cancel':
+                    response = await experimentService.cancel(id)
+                    break
+                case 'delete':
+                    response = await experimentService.delete(id)
+                    navigate('/experiments')
+                    return
+                case 'restart':
+                    response = await experimentService.restart(id)
+                    break
+                default:
+                    return
+            }
+            
+            // Refresh experiment data
+            const experimentResponse = await experimentService.getById(id)
+            setExperiment(experimentResponse.data)
+            
+            setActionResult({
+                type: 'success',
+                message: response.message
+            })
+            
+        } catch (error) {
+            console.error(`Error performing ${actionType} action:`, error)
+            setActionResult({
+                type: 'error',
+                message: `Failed to perform ${actionType} action: ${error.response?.data?.detail || error.message}`
+            })
+        } finally {
+            setActionLoading(false)
+        }
+    }
+
     if (!experiment) {
         return (
             <div className="bg-white rounded-lg shadow p-6 text-center">
@@ -165,6 +212,15 @@ export default function ExperimentDetail() {
 
     return (
         <div className="space-y-6">
+            {/* Action Result Notification */}
+            {actionResult && (
+                <div className={`fixed top-4 right-4 z-50 bg-${actionResult.type === 'success' ? 'green' : 'red'}-100 border border-${actionResult.type === 'success' ? 'green' : 'red'}-400 text-${actionResult.type === 'success' ? 'green' : 'red'}-700 px-4 py-3 rounded-lg flex items-center`}>
+                    <FaCheck className={`mr-2 ${actionResult.type === 'success' ? 'text-green-600' : 'text-red-600'}`} />
+                    <span>{actionResult.message}</span>
+                    <button onClick={() => setActionResult(null)} className="ml-2 text-xs underline">Dismiss</button>
+                </div>
+            )}
+
             {/* Back navigation */}
             <div className="bg-white rounded-lg shadow p-4">
                 <Link
@@ -185,13 +241,58 @@ export default function ExperimentDetail() {
                         </h2>
                         <p className="text-gray-600 mt-2">{experiment.description || 'No description provided'}</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${experiment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                            experiment.status === 'running' ? 'bg-blue-100 text-blue-800' :
-                                experiment.status === 'failed' ? 'bg-red-100 text-red-800' :
-                                    'bg-yellow-100 text-yellow-800'
+                    <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${experiment.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                experiment.status === 'running' ? 'bg-blue-100 text-blue-800' :
+                                    experiment.status === 'failed' ? 'bg-red-100 text-red-800' :
+                                        experiment.status === 'cancelled' ? 'bg-gray-100 text-gray-800' :
+                                            'bg-yellow-100 text-yellow-800'
                         }`}>
-                        {experiment.status}
-                    </span>
+                            {experiment.status}
+                        </span>
+                        <div className="flex items-center gap-2">
+                            {experiment.status === 'pending' && (
+                                <button
+                                    onClick={() => performAction('run')}
+                                    disabled={actionLoading}
+                                    className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
+                                >
+                                    <FaPlay className="mr-1" />
+                                    <span>Run</span>
+                                </button>
+                            )}
+                            {experiment.status === 'running' && (
+                                <button
+                                    onClick={() => performAction('cancel')}
+                                    disabled={actionLoading}
+                                    className="text-yellow-600 hover:text-yellow-700 text-sm font-medium flex items-center"
+                                >
+                                    <FaStop className="mr-1" />
+                                    <span>Cancel</span>
+                                </button>
+                            )}
+                            {(experiment.status === 'completed' || experiment.status === 'cancelled' || experiment.status === 'failed') && (
+                                <button
+                                    onClick={() => performAction('restart')}
+                                    disabled={actionLoading}
+                                    className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center"
+                                >
+                                    <FaRedo className="mr-1" />
+                                    <span>Restart</span>
+                                </button>
+                            )}
+                            {experiment.status !== 'running' && (
+                                <button
+                                    onClick={() => performAction('delete')}
+                                    disabled={actionLoading}
+                                    className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center"
+                                >
+                                    <FaTrash className="mr-1" />
+                                    <span>Delete</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
 
