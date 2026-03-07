@@ -46,20 +46,23 @@ class DataLoaderRegistry:
         self.register_loader(
             "synthetic",
             self._create_synthetic_loader,
-            description="Synthetic data loader for testing and development"
+            description="Synthetic data loader for testing and development",
         )
 
         # Register MedMNIST loader
         self.register_loader(
             "medmnist",
             self._create_medmnist_loader,
-            description="MedMNIST data loader for medical imaging datasets"
+            description="MedMNIST data loader for medical imaging datasets",
         )
 
-    def register_loader(self, loader_name: str,
-                        loader_factory: Callable,
-                        description: str = "",
-                        supported_datasets: Optional[List[str]] = None) -> None:
+    def register_loader(
+        self,
+        loader_name: str,
+        loader_factory: Callable,
+        description: str = "",
+        supported_datasets: Optional[List[str]] = None,
+    ) -> None:
         """
         Register a new data loader in the registry.
 
@@ -71,9 +74,9 @@ class DataLoaderRegistry:
         """
         loader_name = loader_name.lower()
         self.loaders[loader_name] = {
-            'factory': loader_factory,
-            'description': description,
-            'supported_datasets': supported_datasets or []
+            "factory": loader_factory,
+            "description": description,
+            "supported_datasets": supported_datasets or [],
         }
         print(f"Registered data loader: {loader_name}")
 
@@ -114,16 +117,23 @@ class DataLoaderRegistry:
 
         for loader_name, loader_info in self.loaders.items():
             # Check if this loader supports the dataset
-            if (not loader_info['supported_datasets']
-                    or dataset_name in loader_info['supported_datasets']):
+            if (
+                not loader_info["supported_datasets"]
+                or dataset_name in loader_info["supported_datasets"]
+            ):
                 supported_loaders.append(loader_name)
 
         return supported_loaders
 
-    def create_data_loaders(self, dataset_name: str, num_clients: int,
-                            iid: bool = True, batch_size: int = 32,
-                            alpha: float = 0.5,
-                            loader_type: Optional[str] = None) -> Tuple[List[DataLoader], DataLoader]:
+    def create_data_loaders(
+        self,
+        dataset_name: str,
+        num_clients: int,
+        iid: bool = True,
+        batch_size: int = 32,
+        alpha: float = 0.5,
+        loader_type: Optional[str] = None,
+    ) -> Tuple[List[DataLoader], DataLoader]:
         """
         Create data loaders for federated learning.
 
@@ -154,7 +164,7 @@ class DataLoaderRegistry:
             raise ValueError(f"Data loader '{loader_type}' not found")
 
         # Create data loaders using the factory
-        client_loaders, test_loader = loader_info['factory'](
+        client_loaders, test_loader = loader_info["factory"](
             dataset_name, num_clients, iid, batch_size, alpha
         )
 
@@ -176,9 +186,14 @@ class DataLoaderRegistry:
         # In future, this can be enhanced with more sophisticated selection logic
         return "synthetic"
 
-    def _create_synthetic_loader(self, dataset_name: str, num_clients: int,
-                                 iid: bool = True, batch_size: int = 32,
-                                 alpha: float = 0.5) -> Tuple[List[DataLoader], DataLoader]:
+    def _create_synthetic_loader(
+        self,
+        dataset_name: str,
+        num_clients: int,
+        iid: bool = True,
+        batch_size: int = 32,
+        alpha: float = 0.5,
+    ) -> Tuple[List[DataLoader], DataLoader]:
         """
         Create synthetic data loader (current implementation).
 
@@ -189,12 +204,12 @@ class DataLoaderRegistry:
 
         if dataset_info:
             # Use dataset characteristics for synthetic data
-            image_size = dataset_info.get('default_size', (28, 28))
-            channels = dataset_info.get('channels', 1)
+            image_size = dataset_info.get("default_size", (28, 28))
+            channels = dataset_info.get("channels", 1)
             num_classes = 2  # Default for binary classification
 
             # For specific datasets, use appropriate class counts
-            if dataset_name == 'chexpert':
+            if dataset_name == "chexpert":
                 num_classes = 14  # CheXpert has 14 classes
         else:
             # Fallback defaults
@@ -223,6 +238,7 @@ class DataLoaderRegistry:
 
         # Create test loader (20% of data)
         from torch.utils.data import random_split
+
         train_size = int(0.8 * len(dataset))
         test_size = len(dataset) - train_size
         train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
@@ -230,9 +246,14 @@ class DataLoaderRegistry:
 
         return client_loaders, test_loader
 
-    def _create_medmnist_loader(self, dataset_name: str, num_clients: int,
-                                iid: bool = True, batch_size: int = 32,
-                                alpha: float = 0.5) -> Tuple[List[DataLoader], DataLoader]:
+    def _create_medmnist_loader(
+        self,
+        dataset_name: str,
+        num_clients: int,
+        iid: bool = True,
+        batch_size: int = 32,
+        alpha: float = 0.5,
+    ) -> Tuple[List[DataLoader], DataLoader]:
         """
         Create MedMNIST data loader.
 
@@ -241,11 +262,17 @@ class DataLoaderRegistry:
         try:
             # This is a placeholder for the actual MedMNIST implementation
             # For now, fall back to synthetic data
-            print(f"MedMNIST loader for {dataset_name} not yet implemented, using synthetic data")
-            return self._create_synthetic_loader(dataset_name, num_clients, iid, batch_size, alpha)
+            print(
+                f"MedMNIST loader for {dataset_name} not yet implemented, using synthetic data"
+            )
+            return self._create_synthetic_loader(
+                dataset_name, num_clients, iid, batch_size, alpha
+            )
         except Exception as e:
             print(f"Error creating MedMNIST loader: {e}")
-            return self._create_synthetic_loader(dataset_name, num_clients, iid, batch_size, alpha)
+            return self._create_synthetic_loader(
+                dataset_name, num_clients, iid, batch_size, alpha
+            )
 
 
 def get_data_loader_registry() -> DataLoaderRegistry:
@@ -255,15 +282,22 @@ def get_data_loader_registry() -> DataLoaderRegistry:
 
 # Backward compatibility function
 # This maintains the original get_data_loaders function signature
-def get_data_loaders(dataset_name: str, num_clients: int, iid: bool = True,
-                     batch_size: int = 32, alpha: float = 0.5) -> tuple:
+def get_data_loaders(
+    dataset_name: str,
+    num_clients: int,
+    iid: bool = True,
+    batch_size: int = 32,
+    alpha: float = 0.5,
+) -> tuple:
     """
     Create data loaders for federated learning (backward compatibility).
 
     This function maintains the original API but uses the new registry system.
     """
     registry = get_data_loader_registry()
-    return registry.create_data_loaders(dataset_name, num_clients, iid, batch_size, alpha)
+    return registry.create_data_loaders(
+        dataset_name, num_clients, iid, batch_size, alpha
+    )
 
 
 # Test the registry
@@ -296,17 +330,19 @@ if __name__ == "__main__":
         client_loaders_non_iid, test_loader_non_iid = registry.create_data_loaders(
             "PneumoniaMNIST", num_clients=3, iid=False, batch_size=32, alpha=0.5
         )
-        print(f"✅ Created non-IID loaders with alpha=0.5")
+        print("✅ Created non-IID loaders with alpha=0.5")
 
     except Exception as e:
         print(f"❌ Error creating data loaders: {e}")
 
     # Test backward compatibility
-    print(f"\n🔄 Testing backward compatibility...")
+    print("\n🔄 Testing backward compatibility...")
     try:
-        client_loaders_old, test_loader_old = get_data_loaders("PneumoniaMNIST", 3, True, 32, 0.5)
-        print(f"✅ Backward compatibility function works")
+        client_loaders_old, test_loader_old = get_data_loaders(
+            "PneumoniaMNIST", 3, True, 32, 0.5
+        )
+        print("✅ Backward compatibility function works")
     except Exception as e:
         print(f"❌ Backward compatibility failed: {e}")
 
-    print(f"\n🎉 DataLoaderRegistry tests completed!")
+    print("\n🎉 DataLoaderRegistry tests completed!")

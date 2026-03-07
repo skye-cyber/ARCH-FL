@@ -2,29 +2,33 @@ import torch
 import torch.nn as nn
 from typing import Dict, Tuple
 from ..privacy.dp_engine import DPEngine
-from ..utils.logger import get_logger
-
-logger = get_logger(__name__)
+from ..utils.logger import logger
 
 
 class LocalTrainer:
-    def __init__(self, model: nn.Module, train_loader: torch.utils.data.DataLoader,
-                 device: str = "cpu", dp_config: Dict = None):
+    def __init__(
+        self,
+        model: nn.Module,
+        train_loader: torch.utils.data.DataLoader,
+        device: str = "cpu",
+        dp_config: Dict = None,
+    ):
         self.model = model
         self.train_loader = train_loader
         self.device = device
         self.dp_config = dp_config
         self.dp_engine = None
 
-        if dp_config and dp_config.get('enabled', False):
+        if dp_config and dp_config.get("enabled", False):
             self.dp_engine = DPEngine(
-                epsilon=dp_config.get('epsilon', 1.0),
-                delta=dp_config.get('delta', 1e-5),
-                max_grad_norm=dp_config.get('max_grad_norm', 1.0)
+                epsilon=dp_config.get("epsilon", 1.0),
+                delta=dp_config.get("delta", 1e-5),
+                max_grad_norm=dp_config.get("max_grad_norm", 1.0),
             )
 
-    def train_epoch(self, global_params: Dict[str, torch.Tensor],
-                    local_epochs: int, lr: float) -> Dict[str, torch.Tensor]:
+    def train_epoch(
+        self, global_params: Dict[str, torch.Tensor], local_epochs: int, lr: float
+    ) -> Dict[str, torch.Tensor]:
 
         self.model.load_state_dict(global_params)
         self.model.train()
@@ -60,8 +64,9 @@ class LocalTrainer:
 
         return self.model.state_dict(), privacy_spent
 
-    def compute_update(self, global_params: Dict[str, torch.Tensor],
-                       local_epochs: int, lr: float) -> Tuple[Dict[str, torch.Tensor], Dict]:
+    def compute_update(
+        self, global_params: Dict[str, torch.Tensor], local_epochs: int, lr: float
+    ) -> Tuple[Dict[str, torch.Tensor], Dict]:
 
         local_params, privacy_spent = self.train_epoch(global_params, local_epochs, lr)
 

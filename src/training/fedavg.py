@@ -2,20 +2,25 @@ import torch
 from typing import List
 from ..core.coordinator import Coordinator
 from ..core.client import Client
-from ..utils.logger import get_logger
-
-logger = get_logger(__name__)
+from ..utils.logger import logger
 
 
 class FederatedTrainer:
-    def __init__(self, coordinator: Coordinator, clients: List[Client],
-                 test_loader: torch.utils.data.DataLoader, device: str = "cpu"):
+    def __init__(
+        self,
+        coordinator: Coordinator,
+        clients: List[Client],
+        test_loader: torch.utils.data.DataLoader,
+        device: str = "cpu",
+    ):
         self.coordinator = coordinator
         self.clients = clients
         self.test_loader = test_loader
         self.device = device
 
-    def train_round(self, client_indices: List[int], local_epochs: int, lr: float) -> float:
+    def train_round(
+        self, client_indices: List[int], local_epochs: int, lr: float
+    ) -> float:
         client_updates = []
         client_sizes = []
 
@@ -43,6 +48,6 @@ class FederatedTrainer:
                 correct += pred.eq(target.view_as(pred)).sum().item()
                 total += target.size(0)
 
-        accuracy = 100. * correct / total
+        accuracy = 100.0 * correct / total
         logger.info(f"[*] Accuracy: {accuracy:.2f}%")
         return accuracy

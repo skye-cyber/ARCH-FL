@@ -9,13 +9,12 @@ import os
 import sys
 from pathlib import Path
 
-
 def generate_mermaid_diagrams():
     """Generate Mermaid.js diagrams for documentation."""
-
+    
     diagrams_dir = Path(__file__).parent / "docs" / "diagrams"
     diagrams_dir.mkdir(parents=True, exist_ok=True)
-
+    
     # 1. System Architecture Diagram
     architecture_diagram = """
 ```mermaid
@@ -27,7 +26,7 @@ graph TD
     D -->|Uses| F[Architecture Registry]
     D -->|Uses| G[Model Factory]
     C -->|Stores in| H[SQLite Database]
-
+    
     style A fill:#f9f,stroke:#333
     style B fill:#bbf,stroke:#333
     style C fill:#bbf,stroke:#333
@@ -38,7 +37,7 @@ graph TD
     style H fill:#66f,stroke:#333
 ```
 """
-
+    
     # 2. Federated Learning Process Diagram
     fl_process_diagram = """
 ```mermaid
@@ -51,13 +50,13 @@ graph LR
         C -->|Local Updates| A
         D -->|Local Updates| A
     end
-
+    
     subgraph Client Process
         B --> E[Train on Local Data]
         E --> F[Compute Updates]
         F --> B
     end
-
+    
     style A fill:#66f,stroke:#333
     style B fill:#9f9,stroke:#333
     style C fill:#9f9,stroke:#333
@@ -66,7 +65,7 @@ graph LR
     style F fill:#f96,stroke:#333
 ```
 """
-
+    
     # 3. Dashboard Component Diagram
     component_diagram = """
 ```mermaid
@@ -81,7 +80,7 @@ graph TD
         C --> H[Settings]
         C --> I[ExperimentCreate]
     end
-
+    
     subgraph Backend Services
         J[API Endpoints] --> K[ExperimentService]
         J --> L[ArchitectureService]
@@ -90,9 +89,9 @@ graph TD
         L --> N
         M --> N
     end
-
+    
     A -->|Fetches data from| J
-
+    
     style A fill:#bbf,stroke:#333
     style B fill:#99f,stroke:#333
     style C fill:#99f,stroke:#333
@@ -109,7 +108,7 @@ graph TD
     style N fill:#66f,stroke:#333
 ```
 """
-
+    
     # 4. Experiment Workflow Diagram
     workflow_diagram = """
 ```mermaid
@@ -124,7 +123,7 @@ graph LR
     H --> I[Analyze Results]
     I --> J[Save/Export]
     J --> K[End]
-
+    
     style A fill:#999,stroke:#333
     style B fill:#66f,stroke:#333
     style C fill:#66f,stroke:#333
@@ -138,7 +137,7 @@ graph LR
     style K fill:#999,stroke:#333
 ```
 """
-
+    
     # Write diagrams to files
     diagrams = [
         ("architecture.md", "ARCH-FL Dashboard Architecture", architecture_diagram),
@@ -146,7 +145,7 @@ graph LR
         ("components.md", "Dashboard Components", component_diagram),
         ("workflow.md", "Experiment Workflow", workflow_diagram)
     ]
-
+    
     for filename, title, content in diagrams:
         file_path = diagrams_dir / filename
         with open(file_path, 'w') as f:
@@ -154,16 +153,15 @@ graph LR
             f.write(content)
             f.write("\n")
         print(f"✅ Generated {filename}")
-
+    
     print(f"\n🎉 All diagrams generated in {diagrams_dir}")
-
 
 def generate_simple_visualizations():
     """Generate simple visual assets for the dashboard."""
-
+    
     assets_dir = Path(__file__).parent / "frontend" / "src" / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
-
+    
     # Create a simple CSS file for visual enhancements
     css_content = """
 /* Dashboard Visual Enhancements */
@@ -241,19 +239,18 @@ def generate_simple_visualizations():
   color: #92400e;
 }
 """
-
+    
     css_file = assets_dir / "dashboard.css"
     with open(css_file, 'w') as f:
         f.write(css_content)
     print(f"✅ Generated {css_file}")
 
-
 def main():
     """Main function to generate all diagrams and assets."""
-
+    
     print("🚀 Starting diagram and asset generation...")
     print("=" * 50)
-
+    
     try:
         generate_mermaid_diagrams()
         print()
@@ -264,11 +261,10 @@ def main():
         print("Generated files:")
         print("- Mermaid diagrams in dashboard/docs/diagrams/")
         print("- CSS enhancements in dashboard/frontend/src/assets/dashboard.css")
-
+        
     except Exception as e:
         print(f"❌ Error generating diagrams: {e}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

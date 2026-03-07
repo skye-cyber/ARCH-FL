@@ -2,7 +2,7 @@ import logging
 import sys
 
 
-def get_logger(name: str) -> logging.Logger:
+def get_logger(name: str = "ARCH-FL") -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
 
@@ -15,3 +15,6 @@ def get_logger(name: str) -> logging.Logger:
         logger.addHandler(handler)
 
     return logger
+
+
+logger = get_logger()

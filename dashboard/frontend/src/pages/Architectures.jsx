@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { architectureService } from '../services/api'
-import { FaProjectDiagram, FaSpinner, FaExclamationTriangle, FaCode, FaInfoCircle, FaPlus } from 'react-icons/fa'
-import { RenderJSONView } from '../components/jsonRenderer'
-import { Link } from 'react-router-dom'
+import { FaProjectDiagram, FaSpinner, FaExclamationTriangle, FaCode, FaInfoCircle } from 'react-icons/fa'
 
 export default function Architectures() {
     const [architectures, setArchitectures] = useState([])
@@ -14,7 +12,7 @@ export default function Architectures() {
         const fetchArchitectures = async () => {
             try {
                 setLoading(true)
-                const response = await architectureService.getAll() //.getRegistry()
+                const response = await architectureService.getRegistry()
                 setArchitectures(response.data)
                 setLoading(false)
             } catch (err) {
@@ -59,17 +57,7 @@ export default function Architectures() {
         <div className="space-y-6">
             {/* Page header */}
             <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex justify-between items-center">
-
-                    <h2 className="text-2xl font-bold text-gray-800">Model Architectures</h2>
-                    <Link
-                        to="/architectures/new"
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                    >
-                        <FaPlus className="mr-2" />
-                        <span>New Architecture</span>
-                    </Link>
-                </div>
+                <h2 className="text-2xl font-bold text-gray-800">Model Architectures</h2>
                 <p className="text-gray-600 mt-2">
                     Browse and manage model architectures for federated learning
                 </p>
@@ -114,8 +102,8 @@ export default function Architectures() {
                                     <p className="text-gray-600 mt-1">{selectedArchitecture.description}</p>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedArchitecture.compatible_datasets.length > 0
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-100 text-gray-800'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-800'
                                     }`}>
                                     {selectedArchitecture.model_type}
                                 </span>
@@ -166,7 +154,14 @@ export default function Architectures() {
                                     Configuration Details
                                 </h4>
                                 <div className="overflow-x-auto">
-                                    <RenderJSONView config={selectedArchitecture} />
+                                    <pre className="text-sm bg-white rounded p-4 overflow-auto">
+                                        {JSON.stringify({
+                                            name: selectedArchitecture.name,
+                                            model_type: selectedArchitecture.model_type,
+                                            compatible_datasets: selectedArchitecture.compatible_datasets,
+                                            description: selectedArchitecture.description
+                                        }, null, 2)}
+                                    </pre>
                                 </div>
                             </div>
                         </div>
