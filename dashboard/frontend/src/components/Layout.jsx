@@ -3,7 +3,7 @@ import { FaHome, FaFlask, FaProjectDiagram, FaCog } from "react-icons/fa";
 
 export default function Layout() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,10 +23,10 @@ export default function Layout() {
       </header>
 
       {/* Main content */}
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="max-w-full mx-auto px-2 sm:px-6 py-6">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* Sidebar */}
-          <aside className="lg:w-64 flex-shrink-0">
+          <aside className="lg:w-62 flex-shrink-0">
             <nav className="bg-white rounded-lg shadow p-4">
               <ul className="space-y-2">
                 <li>

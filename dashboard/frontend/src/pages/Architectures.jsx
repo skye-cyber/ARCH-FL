@@ -53,17 +53,21 @@ export default function Architectures() {
       setLoading(true);
       const response = await architectureService.getRegistry();
       setArchitectures(response.data);
-      
+
       // Get architectures in use by experiments
       try {
-        const experimentsResponse = await fetch('http://localhost:8008/api/experiments');
+        const experimentsResponse = await fetch(
+          "http://localhost:8008/api/experiments",
+        );
         const experiments = await experimentsResponse.json();
-        const usedArchitectures = new Set(experiments.map(exp => exp.architecture_name));
+        const usedArchitectures = new Set(
+          experiments.map((exp) => exp.architecture_name),
+        );
         setInUseArchitectures(usedArchitectures);
       } catch (err) {
         console.error("Error fetching experiments for usage check:", err);
       }
-      
+
       // Auto-select first architecture if none selected
       if (response.data.length > 0 && !selectedArchitecture) {
         setSelectedArchitecture(response.data[0]);
@@ -84,65 +88,82 @@ export default function Architectures() {
 
   const performAction = async (actionType) => {
     if (!selectedArchitecture) return;
-    
-    setActionLoading(true)
-    setActionResult(null)
-    
+
+    setActionLoading(true);
+    setActionResult(null);
+
     try {
-      let response
-      const architectureName = selectedArchitecture.name
-      
+      let response;
+      const architectureName = selectedArchitecture.name;
+
       switch (actionType) {
-        case 'delete':
-          response = await architectureService.delete(architectureName)
-          setSelectedArchitecture(null)
-          break
-        case 'duplicate':
-          response = await architectureService.duplicate(architectureName)
-          break
-        case 'edit':
+        case "delete":
+          response = await architectureService.delete(architectureName);
+          setSelectedArchitecture(null);
+          break;
+        case "duplicate":
+          response = await architectureService.duplicate(architectureName);
+          break;
+        case "edit":
           // Navigate to edit page
-          window.location.href = `/architectures/edit/${architectureName}`
-          return
+          window.location.href = `/architectures/edit/${architectureName}`;
+          return;
         default:
-          return
+          return;
       }
-      
+
       setActionResult({
-        type: 'success',
-        message: response.message
-      })
-      
+        type: "success",
+        message: response.message,
+      });
+
       // Refresh architectures list
-      await fetchArchitectures()
-      
+      await fetchArchitectures();
     } catch (error) {
-      console.error(`Error performing ${actionType} action:`, error)
+      console.error(`Error performing ${actionType} action:`, error);
       setActionResult({
-        type: 'error',
-        message: error.response?.data?.detail || error.message
-      })
+        type: "error",
+        message: error.response?.data?.detail || error.message,
+      });
     } finally {
-      setActionLoading(false)
-      setActionMenuOpen(false)
+      setActionLoading(false);
+      setActionMenuOpen(false);
     }
-  }
+  };
 
   const getAvailableActions = () => {
-    if (!selectedArchitecture) return []
-    
+    if (!selectedArchitecture) return [];
+
     const actions = [
-      { id: 'edit', label: 'Edit', icon: Edit, color: 'text-blue-600', bg: 'bg-blue-50' },
-      { id: 'duplicate', label: 'Duplicate', icon: Copy, color: 'text-green-600', bg: 'bg-green-50' },
-    ]
-    
+      {
+        id: "edit",
+        label: "Edit",
+        icon: Edit,
+        color: "text-blue-600",
+        bg: "bg-blue-50",
+      },
+      {
+        id: "duplicate",
+        label: "Duplicate",
+        icon: Copy,
+        color: "text-green-600",
+        bg: "bg-green-50",
+      },
+    ];
+
     // Only allow delete if not in use
     if (!inUseArchitectures.has(selectedArchitecture.name)) {
-      actions.push({ id: 'delete', label: 'Delete', icon: Trash2, color: 'text-red-600', bg: 'bg-red-50' })
+      actions.push({
+        id: "delete",
+        label: "Delete",
+        icon: Trash2,
+        color: "text-red-600",
+        bg: "bg-red-50",
+      });
     }
-    
-    return actions
-  }
+
+    return actions;
+  };
 
   const getArchitectureTypes = () => {
     const types = ["all", ...new Set(architectures.map((a) => a.model_type))];
@@ -239,10 +260,19 @@ export default function Architectures() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50">
       {/* Action Result Notification */}
       {actionResult && (
-        <div className={`fixed top-4 right-4 z-50 bg-${actionResult.type === 'success' ? 'green' : 'red'}-100 border border-${actionResult.type === 'success' ? 'green' : 'red'}-400 text-${actionResult.type === 'success' ? 'green' : 'red'}-700 px-4 py-3 rounded-lg flex items-center`}>
-          <Check className={`mr-2 ${actionResult.type === 'success' ? 'text-green-600' : 'text-red-600'}`} />
+        <div
+          className={`fixed top-4 right-4 z-50 bg-${actionResult.type === "success" ? "green" : "red"}-100 border border-${actionResult.type === "success" ? "green" : "red"}-400 text-${actionResult.type === "success" ? "green" : "red"}-700 px-4 py-3 rounded-lg flex items-center`}
+        >
+          <Check
+            className={`mr-2 ${actionResult.type === "success" ? "text-green-600" : "text-red-600"}`}
+          />
           <span>{actionResult.message}</span>
-          <button onClick={() => setActionResult(null)} className="ml-2 text-xs underline">Dismiss</button>
+          <button
+            onClick={() => setActionResult(null)}
+            className="ml-2 text-xs underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -251,8 +281,13 @@ export default function Architectures() {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Actions for "{selectedArchitecture.name}"</h3>
-              <button onClick={() => setActionMenuOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Actions for "{selectedArchitecture.name}"
+              </h3>
+              <button
+                onClick={() => setActionMenuOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -262,10 +297,12 @@ export default function Architectures() {
                   key={action.id}
                   onClick={() => performAction(action.id)}
                   disabled={actionLoading}
-                  className={`w-full flex items-center p-3 rounded-lg ${action.bg} hover:opacity-80 transition-opacity ${actionLoading ? 'opacity-50' : ''}`}
+                  className={`w-full flex items-center p-3 rounded-lg ${action.bg} hover:opacity-80 transition-opacity ${actionLoading ? "opacity-50" : ""}`}
                 >
                   <action.icon className={`w-5 h-5 ${action.color} mr-3`} />
-                  <span className="font-medium text-gray-900">{action.label}</span>
+                  <span className="font-medium text-gray-900">
+                    {action.label}
+                  </span>
                 </button>
               ))}
             </div>
@@ -457,7 +494,9 @@ export default function Architectures() {
                             <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
                               {selectedArchitecture.model_type}
                             </span>
-                            {inUseArchitectures.has(selectedArchitecture.name) && (
+                            {inUseArchitectures.has(
+                              selectedArchitecture.name,
+                            ) && (
                               <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full flex items-center">
                                 <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mr-1" />
                                 In Use
