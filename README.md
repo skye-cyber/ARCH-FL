@@ -275,6 +275,13 @@ For support and questions:
 ## Contributing
 Fore more information on how to contribute to this project see [contribbuting](CONTRIBUTING.md)
 
+## Usage guide
+Fore more information on how to use this project see [Guide](USAGE_GUIDE.md)
+
+## Experiment documentation
+Fore more information on about experiment actions see [Experiement](EXPERIMENT_ACTIONS.md)
+
+
 ## **Contributors**
 - **[Wambua]** – Repo Admin
 
