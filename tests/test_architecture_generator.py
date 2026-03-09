@@ -1,4 +1,4 @@
-# Copyright (c) 2024 ARCH-FL Project
+# Copyright (c) 2026 ARCH-FL Project
 # SPDX-License-Identifier: MIT
 
 """

@@ -1,52 +1,144 @@
 # ARCH-FL Usage Guide
 
-This guide provides comprehensive instructions for using the ARCH-FL federated learning framework and its dashboard.
+This guide provides comprehensive instructions for using the ARCH-FL (Adaptive Architecture Federated Learning) system.
 
-## 🚀 Quick Start
+## Table of Contents
 
-### Prerequisites
+- [Quick Start](#quick-start)
+- [Core Components](#core-components)
+- [Dataset Integration](#dataset-integration)
+- [Model Architecture Generation](#model-architecture-generation)
+- [Federated Learning Workflow](#federated-learning-workflow)
+- [Neural Architecture Search (NAS)](#neural-architecture-search-nas)
+- [Constraint-Based Optimization](#constraint-based-optimization)
+- [Dashboard Integration](#dashboard-integration)
+- [Experiments](#experiments)
+- [Configuration Management](#configuration-management)
+- [Advanced Usage](#advanced-usage)
 
-- Python 3.8+
-- Node.js 16+
-- npm or yarn
-- Git
+## Quick Start
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/ARCH-FL.git
+git clone https://github.com/your-org/ARCH-FL.git
 cd ARCH-FL
 
-# Install Python dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# Install dashboard dependencies
-cd dashboard/backend
-pip install -r requirements.txt
-cd ../frontend
-npm install
-cd ../..
+# Install in development mode (optional)
+pip install -e .
 ```
 
-## 🏗️ System Architecture
+### Basic Usage
 
-ARCH-FL consists of several key components:
+```python
+from src.models.model_factory import ModelFactory
+from src.core.coordinator import Coordinator
 
-1. **Core System** (`src/`)
-   - `core/`: Coordinator and aggregation logic
-   - `models/`: Model architectures and registry
-   - `data/`: Data loaders and partitioning
-   - `training/`: Federated learning algorithms
-   - `privacy/`: Differential privacy mechanisms
+# Create a model factory
+factory = ModelFactory()
 
-2. **Dashboard** (`dashboard/`)
-   - `backend/`: FastAPI server
-   - `frontend/`: React application
-   - `data/`: SQLite database
+# Create a model optimized for a specific dataset
+model = factory.create_model_from_dataset('mimic_cxr', (1, 224, 224))
 
-3. **Experiments** (`experiments/`)
-   - Pre-configured experiment scripts
+# Create a coordinator for federated learning
+coordinator = Coordinator(model)
+
+# Perform federated learning aggregation
+# (You would typically get client updates from actual clients)
+client_updates = [...]  # List of client model updates
+client_sizes = [...]    # List of client dataset sizes
+
+coordinator.aggregate(client_updates, client_sizes, round_num=1)
+```
+
+## Core Components
+
+### 1. ModelFactory
+
+The `ModelFactory` is the central component for creating models from configurations.
+
+```python
+from src.models.model_factory import ModelFactory
+
+factory = ModelFactory()
+
+# Create model from dataset name
+model = factory.create_model_from_dataset('mimic_cxr', (1, 224, 224))
+
+# Create model from configuration file
+config = factory.load_config_by_name('medical_cnn')
+model = factory.create_model(config, (1, 224, 224))
+
+# Create model from YAML file
+model = factory.create_model_from_yaml('config/model/medical_cnn.yaml', (1, 224, 224))
+```
+
+### 2. DatasetAnalyzer
+
+Analyzes datasets and provides recommendations for optimal architectures.
+
+```python
+from src.data.analyzer import DatasetAnalyzer
+
+analyzer = DatasetAnalyzer(dataset_name='mimic_cxr')
+metadata = analyzer.analyze()
+
+# Get recommended architecture configuration
+config = analyzer.get_recommended_architecture_config()
+
+# Get dataset characteristics
+print(f"Image size: {metadata['properties']['image_size']}")
+print(f"Number of classes: {metadata['properties']['num_classes']}")
+```
+
+### 3. ArchitectureGenerator
+
+Generates optimal architectures using AutoML techniques.
+
+```python
+from src.models.architecture_generator import ArchitectureGenerator
+
+generator = ArchitectureGenerator()
+
+# Generate architecture for a dataset
+config = generator.generate_architecture(
+    dataset_name='mimic_cxr',
+    input_shape=(1, 224, 224),
+    task_type='binary_classification'
+)
+
+# Create model from generated configuration
+model = generator.create_model_from_generated_config(config)
+```
+
+### 4. Coordinator
+
+Manages the federated learning process.
+
+```python
+from src.core.coordinator import Coordinator
+
+# Create coordinator with model
+coordinator = Coordinator(model, aggregation_method='fed_avg')
+
+# Get global model parameters
+params = coordinator.get_global_model()
+
+# Aggregate client updates
+client_updates = [...]  # List of Dict[str, torch.Tensor]
+client_sizes = [...]    # List of int
+
+coordinator.aggregate(client_updates, client_sizes, round_num=1)
+
+# Get model summary
+summary = coordinator.get_model_summary()
+print(f"Parameters: {summary['num_parameters']}")
+print(f"Layers: {summary['num_layers']}")
+```
 
 4. **Tests** (`tests/`)
    - Comprehensive test suite

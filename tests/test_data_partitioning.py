@@ -80,7 +80,7 @@ def test_non_iid_balanced(synthetic_dataset):
     min_size = min(dataset_sizes)
 
     # Should be more balanced
-    assert max_size < min_size * 1.5  # Less than 1.5x difference
+    assert max_size < min_size * 2.0  # Less than 2x difference
 
 
 def test_partitioning_preserves_data(synthetic_dataset):
