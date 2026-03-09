@@ -1,6 +1,6 @@
 # ARCH-FL Usage Guide
 
-This guide provides comprehensive instructions for using the ARCH-FL (Adaptive Architecture Federated Learning) system.
+This guide provides comprehensive instructions for using the ARCH-FL (Architecture for Federated Learning) system.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@ This guide provides comprehensive instructions for using the ARCH-FL (Adaptive A
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/ARCH-FL.git
+git clone https://github.com/ske-cyber/ARCH-FL.git
 cd ARCH-FL
 
 # Install dependencies
@@ -542,4 +542,4 @@ For issues and questions, please open an issue on GitHub or contact the maintain
 
 ---
 
-This guide provides a comprehensive overview of ARCH-FL usage. For more detailed information on specific components, refer to the individual module docstrings and the dashboard documentation.
+*Author*. *skye*
