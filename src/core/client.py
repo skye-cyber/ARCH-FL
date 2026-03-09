@@ -27,7 +27,8 @@ class Client:
 
         for epoch in range(local_epochs):
             for data, target in self.train_loader:
-                data, target = data.to(self.device), target.to(self.device)
+                data = data.to(self.device)
+                target = torch.tensor(target).to(self.device)
                 optimizer.zero_grad()
                 output = self.model(data)
                 loss = criterion(output, target)
