@@ -14,7 +14,7 @@ echo "✅ Dashboard directory structure verified"
 echo ""
 
 # Test backend
-cd backend
+cd backend || exit
 echo "🔧 Testing backend..."
 
 # Check if Python is available
@@ -51,11 +51,11 @@ else
     exit 1
 fi
 
-cd ..
+cd .. || exit
 echo ""
 
 # Test frontend
-cd frontend
+cd frontend || exit
 echo "🔧 Testing frontend..."
 
 # Check if Node.js is available
@@ -96,7 +96,7 @@ else
     exit 1
 fi
 
-cd ..
+cd .. || exit
 echo ""
 
 echo "🎉 Dashboard Setup Verification Complete!"
