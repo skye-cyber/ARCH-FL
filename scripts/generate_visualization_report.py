@@ -35,13 +35,20 @@ def load_experiment_results(results_dir: Path) -> Dict[str, Any]:
 def generate_scalability_charts(data: Dict[str, Any], output_dir: Path) -> None:
     """Generate scalability comparison charts."""
     print("📊 Generating scalability charts...")
-
+    matplotlib.use("Agg")  # Headless rendering
+    plt.rcParams["font.size"] = 11  # Reduce crowding
+    plt.rcParams["figure.dpi"] = 150  # Halve DPI
     # Use a subset of the data so as to fit in the visualizations
-    client_counts = data["clients"]
-    rounds_per_minute = data["round_per_min"]
-    avg_aggregation_time = data["time"]
-    max_memory = data["peak_memory"]
-    final_accuracy = data["accuracy"]
+    client_counts = data["clients"][10:]
+    rounds_per_minute = data["round_per_min"][10:]
+    avg_aggregation_time = data["time"][10:]
+    max_memory = data["peak_memory"][10:]
+    final_accuracy = data["accuracy"][10:]
+
+    # Normalize memory to gigabites
+    # max_memory = [client / 1024 for client in client_counts]
+    # Normalize client unit
+    client_counts = [client / 10_000 for client in client_counts]
 
     # Sort by client count
     sorted_indices = np.argsort(client_counts)
@@ -56,8 +63,9 @@ def generate_scalability_charts(data: Dict[str, Any], output_dir: Path) -> None:
     fig.suptitle("ARCH-FL Scalability Analysis", fontsize=16, fontweight="bold")
 
     # Plot 1: Throughput (Rounds per minute)
-    axes[0, 0].bar(
-        client_counts,
+    x_positions = range(len(client_counts))  # Create x positions for bars
+    bars1 = axes[0, 0].bar(
+        x_positions,
         rounds_per_minute,
         color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
     )
@@ -66,13 +74,23 @@ def generate_scalability_charts(data: Dict[str, Any], output_dir: Path) -> None:
     axes[0, 0].set_title(
         "Throughput vs Number of Clients", fontsize=14, fontweight="bold"
     )
+    axes[0, 0].set_xticks(x_positions)
+    axes[0, 0].set_xticklabels(client_counts)
     axes[0, 0].grid(True, alpha=0.3)
-    for i, v in enumerate(rounds_per_minute):
-        axes[0, 0].text(i, v + 0.5, f"{v:.1f}", ha="center", fontsize=10)
+    for i, (bar, v) in enumerate(zip(bars1, rounds_per_minute)):
+        height = bar.get_height()
+        axes[0, 0].text(
+            bar.get_x() + bar.get_width() / 2.0,
+            height + 0.5,
+            f"{v:.2f}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+        )
 
     # Plot 2: Aggregation Time
-    axes[0, 1].bar(
-        client_counts,
+    bars2 = axes[0, 1].bar(
+        x_positions,
         avg_aggregation_time,
         color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
     )
@@ -81,26 +99,48 @@ def generate_scalability_charts(data: Dict[str, Any], output_dir: Path) -> None:
     axes[0, 1].set_title(
         "Aggregation Time vs Number of Clients", fontsize=14, fontweight="bold"
     )
+    axes[0, 1].set_xticks(x_positions)
+    axes[0, 1].set_xticklabels(client_counts)
     axes[0, 1].grid(True, alpha=0.3)
-    for i, v in enumerate(avg_aggregation_time):
-        axes[0, 1].text(i, v + 0.05, f"{v:.3f}s", ha="center", fontsize=10)
+    for i, (bar, v) in enumerate(zip(bars2, avg_aggregation_time)):
+        height = bar.get_height()
+        axes[0, 1].text(
+            bar.get_x() + bar.get_width() / 2.0,
+            height + 0.05,
+            f"{v:.1f}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+        )
 
     # Plot 3: Memory Usage
-    axes[1, 0].bar(
-        client_counts, max_memory, color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
+    bars3 = axes[1, 0].bar(
+        x_positions,
+        max_memory,
+        color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
     )
     axes[1, 0].set_xlabel("Number of Clients", fontsize=12)
     axes[1, 0].set_ylabel("Max Memory Usage (MB)", fontsize=12)
     axes[1, 0].set_title(
         "Memory Usage vs Number of Clients", fontsize=14, fontweight="bold"
     )
+    axes[1, 0].set_xticks(x_positions)
+    axes[1, 0].set_xticklabels(client_counts)
     axes[1, 0].grid(True, alpha=0.3)
-    for i, v in enumerate(max_memory):
-        axes[1, 0].text(i, v + 5, f"{v:.0f}MB", ha="center", fontsize=10)
+    for i, (bar, v) in enumerate(zip(bars3, max_memory)):
+        height = bar.get_height()
+        axes[1, 0].text(
+            bar.get_x() + bar.get_width() / 2.0,
+            height + 5,
+            "",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+        )
 
     # Plot 4: Accuracy
-    axes[1, 1].bar(
-        client_counts,
+    bars4 = axes[1, 1].bar(
+        x_positions,
         final_accuracy,
         color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
     )
@@ -109,9 +149,19 @@ def generate_scalability_charts(data: Dict[str, Any], output_dir: Path) -> None:
     axes[1, 1].set_title(
         "Accuracy vs Number of Clients", fontsize=14, fontweight="bold"
     )
+    axes[1, 1].set_xticks(x_positions)
+    axes[1, 1].set_xticklabels(client_counts)
     axes[1, 1].grid(True, alpha=0.3)
-    for i, v in enumerate(final_accuracy):
-        axes[1, 1].text(i, v + 0.01, f"{v:.3f}", ha="center", fontsize=10)
+    for i, (bar, v) in enumerate(zip(bars4, final_accuracy)):
+        height = bar.get_height()
+        axes[1, 1].text(
+            bar.get_x() + bar.get_width() / 2.0,
+            height + 0.01,
+            f"{v:.2f}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+        )
 
     plt.tight_layout()
     output_path = output_dir / "scalability_comparison.png"
@@ -382,9 +432,16 @@ def generate_timeline_vs_clients_analysis(
 
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    # Plot aggregation times
+    # Plot aggregation times as LINE GRAPH
     clients = data["clients"][18:30]
-    ax.bar(clients, time_series, color="#1f77b4", alpha=0.7)
+    ax.plot(
+        clients,
+        time_series,
+        marker="o",
+        linewidth=2.5,
+        color="#1f77b4",
+        label="Aggregation Time",
+    )
 
     # Add average line
     avg_time = sum(time_series) / len(time_series)
@@ -392,7 +449,7 @@ def generate_timeline_vs_clients_analysis(
         y=avg_time,
         color="r",
         linestyle="--",
-        linewidth=1,
+        linewidth=2,
         label=f"Average: {avg_time:.4f}s",
     )
 
@@ -406,9 +463,17 @@ def generate_timeline_vs_clients_analysis(
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=10)
 
-    # Add values on bars
+    # Add values on points
     for i, t in enumerate(time_series):
-        ax.text(clients[i], t + 0.01, f"{t:.2f}s", ha="center", fontsize=8)
+        ax.annotate(
+            f"{t:.2f}s",
+            (clients[i], t),
+            textcoords="offset points",
+            xytext=(0, 10),
+            ha="center",
+            fontsize=9,
+            fontweight="bold",
+        )
 
     plt.tight_layout()
     output_path = output_dir / "aggregation_times_vs_client_count.png"
@@ -478,12 +543,13 @@ def main():
 
     # Generate visualizations
     try:
+        # generate_timeline_vs_clients_analysis(data, output_dir)
         generate_scalability_charts(data, output_dir)
         # generate_accuracy_curves(data, output_dir)
-        generate_resource_usage_plots(data, output_dir)
-        generate_performance_summary(data, output_dir)
-        generate_timeline_analysis(data, output_dir)
-        generate_timeline_vs_clients_analysis(data, output_dir)
+        # generate_resource_usage_plots(data, output_dir)
+        # generate_performance_summary(data, output_dir)
+        # generate_timeline_analysis(data, output_dir)
+        # generate_timeline_vs_clients_analysis(data, output_dir)
 
         print()
         print("=" * 60)
