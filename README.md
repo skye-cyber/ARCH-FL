@@ -178,20 +178,30 @@ Client Nodes (Simulated)
 ## 📝 QUICKSTART COMMANDS
 ```bash
 # Environment setup
-conda create -n fl-medical python=3.9 
+conda create -n archfl python=3.9 
 or
-pip venv fl-medical
+pip venv archfl
+# Then activate
+source archfl/bin/activate
 
-pip install torch torchvision opacus streamlit
+pip install -r requirements.txt
+
+cd ARCH-FL
 
 # Run baseline experiment
-python main.py --mode iid_baseline --dp_epsilon inf
+# python main.py --mode iid_baseline --dp_epsilon inf
 
 # Run DP experiment  
-python main.py --mode non_iid --dp_epsilon 2.0
+# python main.py --mode non_iid --dp_epsilon 2.0
 
 # Launch dashboard
-streamlit run dashboard.py
+# Start backend
+cd dashboard/backend && python main.py
+
+# Start frontend
+cd dashboard/frontend
+npm run install
+npm run dev
 ```
 
 ## Project Structure

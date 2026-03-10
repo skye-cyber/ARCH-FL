@@ -152,12 +152,15 @@ print(f"Layers: {summary['num_layers']}")
 1. **Start the backend**
    ```bash
    cd dashboard/backend
+   python main.py
+   # or
    uvicorn main:app --reload
    ```
 
 2. **Start the frontend**
    ```bash
    cd dashboard/frontend
+   npm install
    npm run dev
    ```
 
