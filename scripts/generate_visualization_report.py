@@ -37,11 +37,11 @@ def generate_scalability_charts(data: Dict[str, Any], output_dir: Path) -> None:
     print("📊 Generating scalability charts...")
 
     # Use a subset of the data so as to fit in the visualizations
-    client_counts = data["clients"][1:20]
-    rounds_per_minute = data["round_per_min"][1:20]
-    avg_aggregation_time = data["time"][1:20]
-    max_memory = data["peak_memory"][1:20]
-    final_accuracy = data["accuracy"][1:20]
+    client_counts = data["clients"]
+    rounds_per_minute = data["round_per_min"]
+    avg_aggregation_time = data["time"]
+    max_memory = data["peak_memory"]
+    final_accuracy = data["accuracy"]
 
     # Sort by client count
     sorted_indices = np.argsort(client_counts)
@@ -125,11 +125,11 @@ def generate_accuracy_curves(data: Dict[str, Any], output_dir: Path) -> None:
     print("📈 Generating accuracy curves...")
 
     # Use data subset
-    accuracy_series = data["accuracy"][1:10]
+    accuracy_series = data["accuracy"]
     fig, ax = plt.subplots(figsize=(12, 6))
 
     # Plot accuracy progression
-    rounds = data["round_per_min"][1:10]
+    rounds = data["round_per_min"]
     ax.plot(
         rounds,
         accuracy_series,
@@ -333,7 +333,7 @@ def generate_timeline_analysis(data: Dict[str, Any], output_dir: Path) -> None:
     """Generate timeline analysis of aggregation times."""
     print("⏱️  Generating timeline analysis...")
     # Take only a subset of the data
-    time_series = data["time"][1:31]
+    time_series = data["time"][18:30]
 
     fig, ax = plt.subplots(figsize=(12, 6))
 
@@ -363,12 +363,57 @@ def generate_timeline_analysis(data: Dict[str, Any], output_dir: Path) -> None:
 
     # Add values on bars
     for i, t in enumerate(time_series):
-        ax.text(rounds[i], t + 0.01, f"{t:.4f}s", ha="center", fontsize=8)
+        ax.text(rounds[i], t + 0.01, f"{t:.2f}s", ha="center", fontsize=8)
 
     plt.tight_layout()
     output_path = output_dir / "aggregation_times.png"
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     print(f"✅ Saved aggregation timeline to {output_path}")
+    plt.close()
+
+
+def generate_timeline_vs_clients_analysis(
+    data: Dict[str, Any], output_dir: Path
+) -> None:
+    """Generate timeline analysis of aggregation times."""
+    print("⏱️  Generating client timeline analysis...")
+    # Take only a subset of the data
+    time_series = data["time"][18:30]
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # Plot aggregation times
+    clients = data["clients"][18:30]
+    ax.bar(clients, time_series, color="#1f77b4", alpha=0.7)
+
+    # Add average line
+    avg_time = sum(time_series) / len(time_series)
+    ax.axhline(
+        y=avg_time,
+        color="r",
+        linestyle="--",
+        linewidth=1,
+        label=f"Average: {avg_time:.4f}s",
+    )
+
+    ax.set_xlabel("Number of clients", fontsize=12)
+    ax.set_ylabel("Aggregation Time (seconds)", fontsize=12)
+    ax.set_title(
+        "Aggregation Time per client count",
+        fontsize=14,
+        fontweight="bold",
+    )
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=10)
+
+    # Add values on bars
+    for i, t in enumerate(time_series):
+        ax.text(clients[i], t + 0.01, f"{t:.2f}s", ha="center", fontsize=8)
+
+    plt.tight_layout()
+    output_path = output_dir / "aggregation_times_vs_client_count.png"
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    print(f"✅ Saved aggregation vs client timeline to {output_path}")
     plt.close()
 
 
@@ -433,11 +478,12 @@ def main():
 
     # Generate visualizations
     try:
-        # generate_scalability_charts(data, output_dir)
+        generate_scalability_charts(data, output_dir)
         # generate_accuracy_curves(data, output_dir)
-        # generate_resource_usage_plots(data, output_dir)
+        generate_resource_usage_plots(data, output_dir)
         generate_performance_summary(data, output_dir)
-        # generate_timeline_analysis(data, output_dir)
+        generate_timeline_analysis(data, output_dir)
+        generate_timeline_vs_clients_analysis(data, output_dir)
 
         print()
         print("=" * 60)

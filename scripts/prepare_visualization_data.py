@@ -27,11 +27,11 @@ class DataHandler:
         for test in self.data:
             avg_time = test["resources"].get("duration_seconds", None)
             if avg_time:
-                self.timedata.append(avg_time)
+                self.timedata.append(float(f"{avg_time:.2f}"))
                 continue
             timedata = test["resources"]["timestamps"]
             time_difference = timedata[1] - timedata[0]
-            self.timedata.append(time_difference)
+            self.timedata.append(float(f"{time_difference:.2f}"))
         return self.timedata
 
     @property
@@ -58,11 +58,13 @@ class DataHandler:
 
     @property
     def timestamp_series(self):
-        return [t["resources"]["timestamps"][0] for t in self.data]
+        return [float(f"{t['resources']['timestamps'][0]:.2f}") for t in self.data]
 
     @property
     def cpu_percent_series(self):
-        return [t["resources"]["average_cpu_percent"] for t in self.data]
+        return [
+            float(f"{t['resources']['average_cpu_percent']:.2f}") for t in self.data
+        ]
 
     @property
     def round_per_min(self):
@@ -74,7 +76,7 @@ class DataHandler:
         fm = target/time
         """
         timedata = self.time_series
-        return [60 / t for t in timedata]
+        return [float(f"{(60 / t):.2f}") for t in timedata]
 
     def dummy_accuracy_series(self, size: int):
         import random

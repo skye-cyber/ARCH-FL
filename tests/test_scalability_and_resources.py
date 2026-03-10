@@ -299,16 +299,34 @@ if __name__ == "__main__":
 
     client_count = [
         1,
-        5,
-        10,
-        50,
         100,
-        300,
+        500,
         1_000,
+        2_000,
+        4_000,
+        6_000,
         10_000,
+        12_000,
+        16_000,
+        18_000,
+        20_000,
+        24_000,
+        28_000,
+        32_000,
+        36_000,
+        40_000,
+        44_0000,
+        50_000,
+        80_000,
         100_000,
+        140_000,
+        200_000,
         300_000,
+        400_000,
         500_000,
+        600_000,
+        800_000,
+        900_000,
         1_000_000,
     ]
 
@@ -323,12 +341,8 @@ if __name__ == "__main__":
     )
 
     with Progress() as progress:
-        task = progress.add_task(
-            "Progress", completed=0, total=len(range(1, 500_000, 1_000))
-        )
-        for count in range(1, 500_000, 1_000):
-            if count == 0:
-                continue
+        task = progress.add_task("Progress", completed=0, total=len(client_count))
+        for count in client_count:
             # print("Client count:", count)
             results_dir.mkdir(exist_ok=True)
             test_dashboard_integration_with_resources(results_dir, count)
