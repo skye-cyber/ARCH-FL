@@ -1,0 +1,4559 @@
+[
+  {
+    "experiment_name": "dashboard_integration_1",
+    "num_clients": 1,
+    "resources": {
+      "duration_seconds": 0.31134462356567383,
+      "average_cpu_percent": 2.45,
+      "max_memory_mb": 759.58984375,
+      "timestamps": [
+        1773069542.6230352,
+        1773069542.9343643
+      ],
+      "cpu_percentages": [
+        0.0,
+        4.9
+      ],
+      "memory_usage_mb": [
+        754.78125,
+        759.58984375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_1001",
+    "num_clients": 1001,
+    "resources": {
+      "duration_seconds": 0.30431604385375977,
+      "average_cpu_percent": 20.5,
+      "max_memory_mb": 759.76953125,
+      "timestamps": [
+        1773069543.0357475,
+        1773069543.3401437
+      ],
+      "cpu_percentages": [
+        7.7,
+        33.3
+      ],
+      "memory_usage_mb": [
+        759.58984375,
+        759.76953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_2001",
+    "num_clients": 2001,
+    "resources": {
+      "duration_seconds": 0.4021329879760742,
+      "average_cpu_percent": 27.5,
+      "max_memory_mb": 760.1171875,
+      "timestamps": [
+        1773069543.4437213,
+        1773069543.8455322
+      ],
+      "cpu_percentages": [
+        30.0,
+        25.0
+      ],
+      "memory_usage_mb": [
+        759.76953125,
+        760.1171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_3001",
+    "num_clients": 3001,
+    "resources": {
+      "duration_seconds": 0.46913576126098633,
+      "average_cpu_percent": 23.75,
+      "max_memory_mb": 760.453125,
+      "timestamps": [
+        1773069543.9492955,
+        1773069544.4179552
+      ],
+      "cpu_percentages": [
+        31.7,
+        15.8
+      ],
+      "memory_usage_mb": [
+        760.1171875,
+        760.453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_4001",
+    "num_clients": 4001,
+    "resources": {
+      "duration_seconds": 0.5016524791717529,
+      "average_cpu_percent": 25.15,
+      "max_memory_mb": 760.875,
+      "timestamps": [
+        1773069544.522384,
+        1773069545.023365
+      ],
+      "cpu_percentages": [
+        19.5,
+        30.8
+      ],
+      "memory_usage_mb": [
+        760.453125,
+        760.875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_5001",
+    "num_clients": 5001,
+    "resources": {
+      "duration_seconds": 0.5985147953033447,
+      "average_cpu_percent": 17.65,
+      "max_memory_mb": 762.08984375,
+      "timestamps": [
+        1773069545.1305733,
+        1773069545.729064
+      ],
+      "cpu_percentages": [
+        5.3,
+        30.0
+      ],
+      "memory_usage_mb": [
+        760.87890625,
+        762.08984375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_6001",
+    "num_clients": 6001,
+    "resources": {
+      "duration_seconds": 0.5817372798919678,
+      "average_cpu_percent": 5.05,
+      "max_memory_mb": 763.26171875,
+      "timestamps": [
+        1773069545.8363364,
+        1773069546.418012
+      ],
+      "cpu_percentages": [
+        5.1,
+        5.0
+      ],
+      "memory_usage_mb": [
+        762.09375,
+        763.26171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_7001",
+    "num_clients": 7001,
+    "resources": {
+      "duration_seconds": 0.7306332588195801,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 764.4453125,
+      "timestamps": [
+        1773069546.5261064,
+        1773069547.2567005
+      ],
+      "cpu_percentages": [
+        5.0,
+        2.6
+      ],
+      "memory_usage_mb": [
+        763.26171875,
+        764.4453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_8001",
+    "num_clients": 8001,
+    "resources": {
+      "duration_seconds": 0.8574392795562744,
+      "average_cpu_percent": 2.6,
+      "max_memory_mb": 765.63671875,
+      "timestamps": [
+        1773069547.36606,
+        1773069548.2234526
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.6
+      ],
+      "memory_usage_mb": [
+        764.44921875,
+        765.63671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_9001",
+    "num_clients": 9001,
+    "resources": {
+      "duration_seconds": 0.8448235988616943,
+      "average_cpu_percent": 4.95,
+      "max_memory_mb": 766.828125,
+      "timestamps": [
+        1773069548.334343,
+        1773069549.1791372
+      ],
+      "cpu_percentages": [
+        7.3,
+        2.6
+      ],
+      "memory_usage_mb": [
+        765.640625,
+        766.828125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_10001",
+    "num_clients": 10001,
+    "resources": {
+      "duration_seconds": 0.8431227207183838,
+      "average_cpu_percent": 16.65,
+      "max_memory_mb": 768.03125,
+      "timestamps": [
+        1773069549.2916086,
+        1773069550.1346946
+      ],
+      "cpu_percentages": [
+        28.2,
+        5.1
+      ],
+      "memory_usage_mb": [
+        766.8359375,
+        768.03125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_11001",
+    "num_clients": 11001,
+    "resources": {
+      "duration_seconds": 1.1260082721710205,
+      "average_cpu_percent": 7.7,
+      "max_memory_mb": 769.15234375,
+      "timestamps": [
+        1773069550.2479146,
+        1773069551.373908
+      ],
+      "cpu_percentages": [
+        15.4,
+        0.0
+      ],
+      "memory_usage_mb": [
+        768.04296875,
+        769.15234375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_12001",
+    "num_clients": 12001,
+    "resources": {
+      "duration_seconds": 0.9966349601745605,
+      "average_cpu_percent": 5.0,
+      "max_memory_mb": 770.35546875,
+      "timestamps": [
+        1773069551.4884875,
+        1773069552.485083
+      ],
+      "cpu_percentages": [
+        2.5,
+        7.5
+      ],
+      "memory_usage_mb": [
+        769.16796875,
+        770.35546875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_13001",
+    "num_clients": 13001,
+    "resources": {
+      "duration_seconds": 0.9949157238006592,
+      "average_cpu_percent": 3.8499999999999996,
+      "max_memory_mb": 771.54296875,
+      "timestamps": [
+        1773069552.6012492,
+        1773069553.5961227
+      ],
+      "cpu_percentages": [
+        2.6,
+        5.1
+      ],
+      "memory_usage_mb": [
+        770.36328125,
+        771.54296875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_14001",
+    "num_clients": 14001,
+    "resources": {
+      "duration_seconds": 1.0597081184387207,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 772.7890625,
+      "timestamps": [
+        1773069553.7143106,
+        1773069554.7739427
+      ],
+      "cpu_percentages": [
+        2.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        771.55859375,
+        772.7890625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_15001",
+    "num_clients": 15001,
+    "resources": {
+      "duration_seconds": 1.1314597129821777,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 773.94921875,
+      "timestamps": [
+        1773069554.892394,
+        1773069556.023797
+      ],
+      "cpu_percentages": [
+        2.6,
+        5.0
+      ],
+      "memory_usage_mb": [
+        772.8046875,
+        773.94921875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_16001",
+    "num_clients": 16001,
+    "resources": {
+      "duration_seconds": 1.2520742416381836,
+      "average_cpu_percent": 5.0,
+      "max_memory_mb": 775.21484375,
+      "timestamps": [
+        1773069556.14435,
+        1773069557.3963873
+      ],
+      "cpu_percentages": [
+        5.1,
+        4.9
+      ],
+      "memory_usage_mb": [
+        773.96875,
+        775.21484375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_17001",
+    "num_clients": 17001,
+    "resources": {
+      "duration_seconds": 1.6671168804168701,
+      "average_cpu_percent": 2.65,
+      "max_memory_mb": 776.640625,
+      "timestamps": [
+        1773069557.5181036,
+        1773069559.1851861
+      ],
+      "cpu_percentages": [
+        0.0,
+        5.3
+      ],
+      "memory_usage_mb": [
+        775.23828125,
+        776.640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_18001",
+    "num_clients": 18001,
+    "resources": {
+      "duration_seconds": 1.4379806518554688,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 777.6171875,
+      "timestamps": [
+        1773069559.307763,
+        1773069560.745715
+      ],
+      "cpu_percentages": [
+        2.6,
+        5.0
+      ],
+      "memory_usage_mb": [
+        776.640625,
+        777.6171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_19001",
+    "num_clients": 19001,
+    "resources": {
+      "duration_seconds": 1.3754515647888184,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 778.78125,
+      "timestamps": [
+        1773069560.872027,
+        1773069562.2474456
+      ],
+      "cpu_percentages": [
+        5.0,
+        2.6
+      ],
+      "memory_usage_mb": [
+        777.640625,
+        778.78125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_20001",
+    "num_clients": 20001,
+    "resources": {
+      "duration_seconds": 1.4744343757629395,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 780.05859375,
+      "timestamps": [
+        1773069562.3731692,
+        1773069563.8475661
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.6
+      ],
+      "memory_usage_mb": [
+        778.80078125,
+        780.05859375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_21001",
+    "num_clients": 21001,
+    "resources": {
+      "duration_seconds": 1.4736690521240234,
+      "average_cpu_percent": 2.55,
+      "max_memory_mb": 781.21484375,
+      "timestamps": [
+        1773069563.974008,
+        1773069565.4476388
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.5
+      ],
+      "memory_usage_mb": [
+        780.07421875,
+        781.21484375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_22001",
+    "num_clients": 22001,
+    "resources": {
+      "duration_seconds": 1.7675626277923584,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 782.46484375,
+      "timestamps": [
+        1773069565.5801926,
+        1773069567.3477185
+      ],
+      "cpu_percentages": [
+        2.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        781.23046875,
+        782.46484375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_23001",
+    "num_clients": 23001,
+    "resources": {
+      "duration_seconds": 1.6732077598571777,
+      "average_cpu_percent": 15.950000000000001,
+      "max_memory_mb": 783.640625,
+      "timestamps": [
+        1773069567.4856896,
+        1773069569.1588037
+      ],
+      "cpu_percentages": [
+        29.3,
+        2.6
+      ],
+      "memory_usage_mb": [
+        782.48046875,
+        783.640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_24001",
+    "num_clients": 24001,
+    "resources": {
+      "duration_seconds": 1.835193157196045,
+      "average_cpu_percent": 18.4,
+      "max_memory_mb": 784.76171875,
+      "timestamps": [
+        1773069569.290502,
+        1773069571.1257086
+      ],
+      "cpu_percentages": [
+        29.3,
+        7.5
+      ],
+      "memory_usage_mb": [
+        783.640625,
+        784.76171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_25001",
+    "num_clients": 25001,
+    "resources": {
+      "duration_seconds": 1.9456064701080322,
+      "average_cpu_percent": 6.6,
+      "max_memory_mb": 786.09765625,
+      "timestamps": [
+        1773069571.25801,
+        1773069573.203488
+      ],
+      "cpu_percentages": [
+        13.2,
+        0.0
+      ],
+      "memory_usage_mb": [
+        784.78125,
+        786.09765625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_26001",
+    "num_clients": 26001,
+    "resources": {
+      "duration_seconds": 2.2329704761505127,
+      "average_cpu_percent": 19.55,
+      "max_memory_mb": 787.23828125,
+      "timestamps": [
+        1773069573.3485873,
+        1773069575.5815527
+      ],
+      "cpu_percentages": [
+        34.1,
+        5.0
+      ],
+      "memory_usage_mb": [
+        786.11328125,
+        787.23828125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_27001",
+    "num_clients": 27001,
+    "resources": {
+      "duration_seconds": 1.918760061264038,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 788.4296875,
+      "timestamps": [
+        1773069575.7182603,
+        1773069577.6369712
+      ],
+      "cpu_percentages": [
+        2.5,
+        0.0
+      ],
+      "memory_usage_mb": [
+        787.25390625,
+        788.4296875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_28001",
+    "num_clients": 28001,
+    "resources": {
+      "duration_seconds": 1.9181036949157715,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 789.7421875,
+      "timestamps": [
+        1773069577.7745624,
+        1773069579.6926246
+      ],
+      "cpu_percentages": [
+        2.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        788.453125,
+        789.7421875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_29001",
+    "num_clients": 29001,
+    "resources": {
+      "duration_seconds": 2.0623128414154053,
+      "average_cpu_percent": 18.75,
+      "max_memory_mb": 790.87109375,
+      "timestamps": [
+        1773069579.830656,
+        1773069581.8929083
+      ],
+      "cpu_percentages": [
+        35.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        789.7578125,
+        790.87109375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_30001",
+    "num_clients": 30001,
+    "resources": {
+      "duration_seconds": 2.041361093521118,
+      "average_cpu_percent": 6.45,
+      "max_memory_mb": 792.05078125,
+      "timestamps": [
+        1773069582.0406358,
+        1773069584.0819936
+      ],
+      "cpu_percentages": [
+        7.5,
+        5.4
+      ],
+      "memory_usage_mb": [
+        790.890625,
+        792.05078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_31001",
+    "num_clients": 31001,
+    "resources": {
+      "duration_seconds": 2.1119000911712646,
+      "average_cpu_percent": 3.75,
+      "max_memory_mb": 793.46484375,
+      "timestamps": [
+        1773069584.2256167,
+        1773069586.337473
+      ],
+      "cpu_percentages": [
+        2.6,
+        4.9
+      ],
+      "memory_usage_mb": [
+        792.0703125,
+        793.46484375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_32001",
+    "num_clients": 32001,
+    "resources": {
+      "duration_seconds": 2.203272581100464,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 794.12890625,
+      "timestamps": [
+        1773069586.4787474,
+        1773069588.6819506
+      ],
+      "cpu_percentages": [
+        2.5,
+        5.1
+      ],
+      "memory_usage_mb": [
+        793.484375,
+        794.12890625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_33001",
+    "num_clients": 33001,
+    "resources": {
+      "duration_seconds": 2.1574645042419434,
+      "average_cpu_percent": 20.75,
+      "max_memory_mb": 795.609375,
+      "timestamps": [
+        1773069588.824714,
+        1773069590.9821532
+      ],
+      "cpu_percentages": [
+        36.6,
+        4.9
+      ],
+      "memory_usage_mb": [
+        794.1484375,
+        795.609375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_34001",
+    "num_clients": 34001,
+    "resources": {
+      "duration_seconds": 2.405266523361206,
+      "average_cpu_percent": 9.850000000000001,
+      "max_memory_mb": 796.84375,
+      "timestamps": [
+        1773069591.1326592,
+        1773069593.5378232
+      ],
+      "cpu_percentages": [
+        17.1,
+        2.6
+      ],
+      "memory_usage_mb": [
+        795.62890625,
+        796.84375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_35001",
+    "num_clients": 35001,
+    "resources": {
+      "duration_seconds": 2.2765402793884277,
+      "average_cpu_percent": 15.0,
+      "max_memory_mb": 798.24609375,
+      "timestamps": [
+        1773069593.6836672,
+        1773069595.9601653
+      ],
+      "cpu_percentages": [
+        27.5,
+        2.5
+      ],
+      "memory_usage_mb": [
+        796.86328125,
+        798.24609375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_36001",
+    "num_clients": 36001,
+    "resources": {
+      "duration_seconds": 2.319808006286621,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 799.1640625,
+      "timestamps": [
+        1773069596.1071992,
+        1773069598.4269803
+      ],
+      "cpu_percentages": [
+        5.1,
+        2.5
+      ],
+      "memory_usage_mb": [
+        798.26171875,
+        799.1640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_37001",
+    "num_clients": 37001,
+    "resources": {
+      "duration_seconds": 2.53920841217041,
+      "average_cpu_percent": 5.05,
+      "max_memory_mb": 800.4765625,
+      "timestamps": [
+        1773069598.5767188,
+        1773069601.115898
+      ],
+      "cpu_percentages": [
+        2.6,
+        7.5
+      ],
+      "memory_usage_mb": [
+        799.1796875,
+        800.4765625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_38001",
+    "num_clients": 38001,
+    "resources": {
+      "duration_seconds": 2.526690721511841,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 801.7109375,
+      "timestamps": [
+        1773069601.267202,
+        1773069603.7938666
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        800.49609375,
+        801.7109375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_39001",
+    "num_clients": 39001,
+    "resources": {
+      "duration_seconds": 2.7468392848968506,
+      "average_cpu_percent": 0.0,
+      "max_memory_mb": 803.35546875,
+      "timestamps": [
+        1773069603.9472606,
+        1773069606.6940103
+      ],
+      "cpu_percentages": [
+        0.0,
+        0.0
+      ],
+      "memory_usage_mb": [
+        801.7265625,
+        803.35546875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_40001",
+    "num_clients": 40001,
+    "resources": {
+      "duration_seconds": 2.845100164413452,
+      "average_cpu_percent": 15.0,
+      "max_memory_mb": 803.59765625,
+      "timestamps": [
+        1773069606.8602695,
+        1773069609.705223
+      ],
+      "cpu_percentages": [
+        30.0,
+        0.0
+      ],
+      "memory_usage_mb": [
+        803.37109375,
+        803.59765625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_41001",
+    "num_clients": 41001,
+    "resources": {
+      "duration_seconds": 2.938594102859497,
+      "average_cpu_percent": 29.5,
+      "max_memory_mb": 805.37890625,
+      "timestamps": [
+        1773069609.8780293,
+        1773069612.8165169
+      ],
+      "cpu_percentages": [
+        28.2,
+        30.8
+      ],
+      "memory_usage_mb": [
+        803.61328125,
+        805.37890625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_42001",
+    "num_clients": 42001,
+    "resources": {
+      "duration_seconds": 3.070206880569458,
+      "average_cpu_percent": 16.1,
+      "max_memory_mb": 806.56640625,
+      "timestamps": [
+        1773069612.9798343,
+        1773069616.0499861
+      ],
+      "cpu_percentages": [
+        17.9,
+        14.3
+      ],
+      "memory_usage_mb": [
+        805.40234375,
+        806.56640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_43001",
+    "num_clients": 43001,
+    "resources": {
+      "duration_seconds": 2.9637889862060547,
+      "average_cpu_percent": 8.65,
+      "max_memory_mb": 807.76171875,
+      "timestamps": [
+        1773069616.208492,
+        1773069619.1722322
+      ],
+      "cpu_percentages": [
+        7.3,
+        10.0
+      ],
+      "memory_usage_mb": [
+        806.58203125,
+        807.76171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_44001",
+    "num_clients": 44001,
+    "resources": {
+      "duration_seconds": 3.386688709259033,
+      "average_cpu_percent": 17.95,
+      "max_memory_mb": 809.3984375,
+      "timestamps": [
+        1773069619.3414,
+        1773069622.7279544
+      ],
+      "cpu_percentages": [
+        33.3,
+        2.6
+      ],
+      "memory_usage_mb": [
+        807.78125,
+        809.3984375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_45001",
+    "num_clients": 45001,
+    "resources": {
+      "duration_seconds": 3.0978636741638184,
+      "average_cpu_percent": 19.5,
+      "max_memory_mb": 809.69921875,
+      "timestamps": [
+        1773069622.930452,
+        1773069626.0281823
+      ],
+      "cpu_percentages": [
+        31.7,
+        7.3
+      ],
+      "memory_usage_mb": [
+        809.4140625,
+        809.69921875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_46001",
+    "num_clients": 46001,
+    "resources": {
+      "duration_seconds": 3.3127715587615967,
+      "average_cpu_percent": 3.75,
+      "max_memory_mb": 811.37109375,
+      "timestamps": [
+        1773069626.1934621,
+        1773069629.5061433
+      ],
+      "cpu_percentages": [
+        5.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        809.71484375,
+        811.37109375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_47001",
+    "num_clients": 47001,
+    "resources": {
+      "duration_seconds": 3.2226009368896484,
+      "average_cpu_percent": 2.6,
+      "max_memory_mb": 812.609375,
+      "timestamps": [
+        1773069629.6726727,
+        1773069632.8952067
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.6
+      ],
+      "memory_usage_mb": [
+        811.38671875,
+        812.609375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_48001",
+    "num_clients": 48001,
+    "resources": {
+      "duration_seconds": 3.4258387088775635,
+      "average_cpu_percent": 3.75,
+      "max_memory_mb": 813.796875,
+      "timestamps": [
+        1773069633.0584714,
+        1773069636.4842627
+      ],
+      "cpu_percentages": [
+        5.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        812.62890625,
+        813.796875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_49001",
+    "num_clients": 49001,
+    "resources": {
+      "duration_seconds": 3.509859800338745,
+      "average_cpu_percent": 2.55,
+      "max_memory_mb": 814.98828125,
+      "timestamps": [
+        1773069636.6522436,
+        1773069640.1620615
+      ],
+      "cpu_percentages": [
+        5.1,
+        0.0
+      ],
+      "memory_usage_mb": [
+        813.82421875,
+        814.98828125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_50001",
+    "num_clients": 50001,
+    "resources": {
+      "duration_seconds": 3.282745599746704,
+      "average_cpu_percent": 17.15,
+      "max_memory_mb": 816.40625,
+      "timestamps": [
+        1773069640.3351676,
+        1773069643.617788
+      ],
+      "cpu_percentages": [
+        31.7,
+        2.6
+      ],
+      "memory_usage_mb": [
+        815.00390625,
+        816.40625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_51001",
+    "num_clients": 51001,
+    "resources": {
+      "duration_seconds": 3.586244821548462,
+      "average_cpu_percent": 17.85,
+      "max_memory_mb": 816.8046875,
+      "timestamps": [
+        1773069643.7874875,
+        1773069647.373745
+      ],
+      "cpu_percentages": [
+        26.2,
+        9.5
+      ],
+      "memory_usage_mb": [
+        816.42578125,
+        816.8046875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_52001",
+    "num_clients": 52001,
+    "resources": {
+      "duration_seconds": 3.4478018283843994,
+      "average_cpu_percent": 6.15,
+      "max_memory_mb": 818.6015625,
+      "timestamps": [
+        1773069647.5481648,
+        1773069650.9959013
+      ],
+      "cpu_percentages": [
+        7.3,
+        5.0
+      ],
+      "memory_usage_mb": [
+        816.8203125,
+        818.6015625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_53001",
+    "num_clients": 53001,
+    "resources": {
+      "duration_seconds": 3.577415943145752,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 819.84375,
+      "timestamps": [
+        1773069651.1743913,
+        1773069654.75172
+      ],
+      "cpu_percentages": [
+        2.6,
+        5.0
+      ],
+      "memory_usage_mb": [
+        818.62109375,
+        819.84375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_54001",
+    "num_clients": 54001,
+    "resources": {
+      "duration_seconds": 3.574190378189087,
+      "average_cpu_percent": 16.25,
+      "max_memory_mb": 821.05078125,
+      "timestamps": [
+        1773069654.9667032,
+        1773069658.5408096
+      ],
+      "cpu_percentages": [
+        32.5,
+        0.0
+      ],
+      "memory_usage_mb": [
+        819.859375,
+        821.05078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_55001",
+    "num_clients": 55001,
+    "resources": {
+      "duration_seconds": 3.4558796882629395,
+      "average_cpu_percent": 3.65,
+      "max_memory_mb": 822.26953125,
+      "timestamps": [
+        1773069658.7166145,
+        1773069662.1724515
+      ],
+      "cpu_percentages": [
+        0.0,
+        7.3
+      ],
+      "memory_usage_mb": [
+        821.0703125,
+        822.26953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_56001",
+    "num_clients": 56001,
+    "resources": {
+      "duration_seconds": 3.8918192386627197,
+      "average_cpu_percent": 20.85,
+      "max_memory_mb": 823.85546875,
+      "timestamps": [
+        1773069662.3624864,
+        1773069666.2541869
+      ],
+      "cpu_percentages": [
+        26.3,
+        15.4
+      ],
+      "memory_usage_mb": [
+        822.296875,
+        823.85546875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_57001",
+    "num_clients": 57001,
+    "resources": {
+      "duration_seconds": 3.7173264026641846,
+      "average_cpu_percent": 15.85,
+      "max_memory_mb": 824.671875,
+      "timestamps": [
+        1773069666.4381585,
+        1773069670.1543496
+      ],
+      "cpu_percentages": [
+        31.7,
+        0.0
+      ],
+      "memory_usage_mb": [
+        823.875,
+        824.671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_58001",
+    "num_clients": 58001,
+    "resources": {
+      "duration_seconds": 3.9797396659851074,
+      "average_cpu_percent": 31.95,
+      "max_memory_mb": 825.94140625,
+      "timestamps": [
+        1773069670.3416195,
+        1773069674.3213055
+      ],
+      "cpu_percentages": [
+        28.9,
+        35.0
+      ],
+      "memory_usage_mb": [
+        824.6875,
+        825.94140625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_59001",
+    "num_clients": 59001,
+    "resources": {
+      "duration_seconds": 4.067012310028076,
+      "average_cpu_percent": 15.05,
+      "max_memory_mb": 827.125,
+      "timestamps": [
+        1773069674.51016,
+        1773069678.5770893
+      ],
+      "cpu_percentages": [
+        27.5,
+        2.6
+      ],
+      "memory_usage_mb": [
+        825.95703125,
+        827.125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_60001",
+    "num_clients": 60001,
+    "resources": {
+      "duration_seconds": 3.9628217220306396,
+      "average_cpu_percent": 6.4,
+      "max_memory_mb": 828.3359375,
+      "timestamps": [
+        1773069678.7589002,
+        1773069682.721721
+      ],
+      "cpu_percentages": [
+        12.8,
+        0.0
+      ],
+      "memory_usage_mb": [
+        827.140625,
+        828.3359375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_61001",
+    "num_clients": 61001,
+    "resources": {
+      "duration_seconds": 4.117093086242676,
+      "average_cpu_percent": 21.25,
+      "max_memory_mb": 829.51953125,
+      "timestamps": [
+        1773069682.9382474,
+        1773069687.055305
+      ],
+      "cpu_percentages": [
+        30.0,
+        12.5
+      ],
+      "memory_usage_mb": [
+        828.35546875,
+        829.51953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_62001",
+    "num_clients": 62001,
+    "resources": {
+      "duration_seconds": 4.155927896499634,
+      "average_cpu_percent": 6.5,
+      "max_memory_mb": 830.703125,
+      "timestamps": [
+        1773069687.2439153,
+        1773069691.3997674
+      ],
+      "cpu_percentages": [
+        10.5,
+        2.5
+      ],
+      "memory_usage_mb": [
+        829.53515625,
+        830.703125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_63001",
+    "num_clients": 63001,
+    "resources": {
+      "duration_seconds": 4.148753643035889,
+      "average_cpu_percent": 3.8499999999999996,
+      "max_memory_mb": 832.40234375,
+      "timestamps": [
+        1773069691.5846999,
+        1773069695.733405
+      ],
+      "cpu_percentages": [
+        2.6,
+        5.1
+      ],
+      "memory_usage_mb": [
+        830.71875,
+        832.40234375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_64001",
+    "num_clients": 64001,
+    "resources": {
+      "duration_seconds": 4.325190782546997,
+      "average_cpu_percent": 24.15,
+      "max_memory_mb": 832.421875,
+      "timestamps": [
+        1773069695.930584,
+        1773069700.2557163
+      ],
+      "cpu_percentages": [
+        33.3,
+        15.0
+      ],
+      "memory_usage_mb": [
+        832.421875,
+        831.953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_65001",
+    "num_clients": 65001,
+    "resources": {
+      "duration_seconds": 4.4272706508636475,
+      "average_cpu_percent": 17.4,
+      "max_memory_mb": 834.31640625,
+      "timestamps": [
+        1773069700.4512174,
+        1773069704.8784676
+      ],
+      "cpu_percentages": [
+        27.5,
+        7.3
+      ],
+      "memory_usage_mb": [
+        831.96875,
+        834.31640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_66001",
+    "num_clients": 66001,
+    "resources": {
+      "duration_seconds": 4.378003835678101,
+      "average_cpu_percent": 6.1,
+      "max_memory_mb": 835.5859375,
+      "timestamps": [
+        1773069705.0672145,
+        1773069709.445145
+      ],
+      "cpu_percentages": [
+        7.3,
+        4.9
+      ],
+      "memory_usage_mb": [
+        834.33203125,
+        835.5859375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_67001",
+    "num_clients": 67001,
+    "resources": {
+      "duration_seconds": 4.085345029830933,
+      "average_cpu_percent": 2.6,
+      "max_memory_mb": 836.80078125,
+      "timestamps": [
+        1773069709.6378145,
+        1773069713.7231216
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.6
+      ],
+      "memory_usage_mb": [
+        835.60546875,
+        836.80078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_68001",
+    "num_clients": 68001,
+    "resources": {
+      "duration_seconds": 4.263895750045776,
+      "average_cpu_percent": 5.05,
+      "max_memory_mb": 837.984375,
+      "timestamps": [
+        1773069713.915053,
+        1773069718.1788354
+      ],
+      "cpu_percentages": [
+        5.1,
+        5.0
+      ],
+      "memory_usage_mb": [
+        836.8203125,
+        837.984375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_69001",
+    "num_clients": 69001,
+    "resources": {
+      "duration_seconds": 4.295533180236816,
+      "average_cpu_percent": 14.1,
+      "max_memory_mb": 839.171875,
+      "timestamps": [
+        1773069718.4058688,
+        1773069722.7013311
+      ],
+      "cpu_percentages": [
+        28.2,
+        0.0
+      ],
+      "memory_usage_mb": [
+        838.0,
+        839.171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_70001",
+    "num_clients": 70001,
+    "resources": {
+      "duration_seconds": 4.361549139022827,
+      "average_cpu_percent": 15.35,
+      "max_memory_mb": 840.36328125,
+      "timestamps": [
+        1773069722.9067125,
+        1773069727.2681913
+      ],
+      "cpu_percentages": [
+        28.2,
+        2.5
+      ],
+      "memory_usage_mb": [
+        839.203125,
+        840.36328125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_71001",
+    "num_clients": 71001,
+    "resources": {
+      "duration_seconds": 4.526215314865112,
+      "average_cpu_percent": 2.5,
+      "max_memory_mb": 842.046875,
+      "timestamps": [
+        1773069727.4755476,
+        1773069732.001723
+      ],
+      "cpu_percentages": [
+        0.0,
+        5.0
+      ],
+      "memory_usage_mb": [
+        840.37890625,
+        842.046875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_72001",
+    "num_clients": 72001,
+    "resources": {
+      "duration_seconds": 4.441859722137451,
+      "average_cpu_percent": 4.85,
+      "max_memory_mb": 842.859375,
+      "timestamps": [
+        1773069732.2044976,
+        1773069736.6463113
+      ],
+      "cpu_percentages": [
+        2.6,
+        7.1
+      ],
+      "memory_usage_mb": [
+        842.0625,
+        842.859375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_73001",
+    "num_clients": 73001,
+    "resources": {
+      "duration_seconds": 4.560940742492676,
+      "average_cpu_percent": 17.5,
+      "max_memory_mb": 844.09765625,
+      "timestamps": [
+        1773069736.8994687,
+        1773069741.460364
+      ],
+      "cpu_percentages": [
+        30.0,
+        5.0
+      ],
+      "memory_usage_mb": [
+        842.875,
+        844.09765625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_74001",
+    "num_clients": 74001,
+    "resources": {
+      "duration_seconds": 4.663982152938843,
+      "average_cpu_percent": 3.75,
+      "max_memory_mb": 845.26953125,
+      "timestamps": [
+        1773069741.6634495,
+        1773069746.327335
+      ],
+      "cpu_percentages": [
+        2.6,
+        4.9
+      ],
+      "memory_usage_mb": [
+        844.11328125,
+        845.26953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_75001",
+    "num_clients": 75001,
+    "resources": {
+      "duration_seconds": 4.709974050521851,
+      "average_cpu_percent": 8.7,
+      "max_memory_mb": 846.45703125,
+      "timestamps": [
+        1773069746.528719,
+        1773069751.2386148
+      ],
+      "cpu_percentages": [
+        7.1,
+        10.3
+      ],
+      "memory_usage_mb": [
+        845.28515625,
+        846.45703125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_76001",
+    "num_clients": 76001,
+    "resources": {
+      "duration_seconds": 4.821343183517456,
+      "average_cpu_percent": 25.1,
+      "max_memory_mb": 847.64453125,
+      "timestamps": [
+        1773069751.4507802,
+        1773069756.2720659
+      ],
+      "cpu_percentages": [
+        28.2,
+        22.0
+      ],
+      "memory_usage_mb": [
+        846.47265625,
+        847.64453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_77001",
+    "num_clients": 77001,
+    "resources": {
+      "duration_seconds": 5.108791828155518,
+      "average_cpu_percent": 13.25,
+      "max_memory_mb": 848.8359375,
+      "timestamps": [
+        1773069756.4857993,
+        1773069761.5945199
+      ],
+      "cpu_percentages": [
+        21.4,
+        5.1
+      ],
+      "memory_usage_mb": [
+        847.66015625,
+        848.8359375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_78001",
+    "num_clients": 78001,
+    "resources": {
+      "duration_seconds": 4.970381736755371,
+      "average_cpu_percent": 22.3,
+      "max_memory_mb": 850.046875,
+      "timestamps": [
+        1773069761.8030276,
+        1773069766.773247
+      ],
+      "cpu_percentages": [
+        27.5,
+        17.1
+      ],
+      "memory_usage_mb": [
+        848.85546875,
+        850.046875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_79001",
+    "num_clients": 79001,
+    "resources": {
+      "duration_seconds": 5.036687850952148,
+      "average_cpu_percent": 13.75,
+      "max_memory_mb": 851.234375,
+      "timestamps": [
+        1773069766.991884,
+        1773069772.0284734
+      ],
+      "cpu_percentages": [
+        20.0,
+        7.5
+      ],
+      "memory_usage_mb": [
+        850.078125,
+        851.234375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_80001",
+    "num_clients": 80001,
+    "resources": {
+      "duration_seconds": 5.122430324554443,
+      "average_cpu_percent": 5.2,
+      "max_memory_mb": 852.9140625,
+      "timestamps": [
+        1773069772.239681,
+        1773069777.3620358
+      ],
+      "cpu_percentages": [
+        7.9,
+        2.5
+      ],
+      "memory_usage_mb": [
+        851.25,
+        852.9140625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_81001",
+    "num_clients": 81001,
+    "resources": {
+      "duration_seconds": 5.277737379074097,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 853.33984375,
+      "timestamps": [
+        1773069777.5735521,
+        1773069782.8512387
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        852.9296875,
+        853.33984375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_82001",
+    "num_clients": 82001,
+    "resources": {
+      "duration_seconds": 5.378258228302002,
+      "average_cpu_percent": 5.25,
+      "max_memory_mb": 854.96875,
+      "timestamps": [
+        1773069783.062027,
+        1773069788.4402115
+      ],
+      "cpu_percentages": [
+        7.9,
+        2.6
+      ],
+      "memory_usage_mb": [
+        853.35546875,
+        854.96875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_83001",
+    "num_clients": 83001,
+    "resources": {
+      "duration_seconds": 5.1392011642456055,
+      "average_cpu_percent": 3.7,
+      "max_memory_mb": 856.16015625,
+      "timestamps": [
+        1773069788.6568747,
+        1773069793.7960155
+      ],
+      "cpu_percentages": [
+        2.5,
+        4.9
+      ],
+      "memory_usage_mb": [
+        854.98828125,
+        856.16015625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_84001",
+    "num_clients": 84001,
+    "resources": {
+      "duration_seconds": 5.2436301708221436,
+      "average_cpu_percent": 2.5,
+      "max_memory_mb": 857.33984375,
+      "timestamps": [
+        1773069794.0082524,
+        1773069799.251843
+      ],
+      "cpu_percentages": [
+        5.0,
+        0.0
+      ],
+      "memory_usage_mb": [
+        856.17578125,
+        857.33984375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_85001",
+    "num_clients": 85001,
+    "resources": {
+      "duration_seconds": 5.238757371902466,
+      "average_cpu_percent": 2.45,
+      "max_memory_mb": 858.5390625,
+      "timestamps": [
+        1773069799.4689596,
+        1773069804.707682
+      ],
+      "cpu_percentages": [
+        0.0,
+        4.9
+      ],
+      "memory_usage_mb": [
+        857.3671875,
+        858.5390625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_86001",
+    "num_clients": 86001,
+    "resources": {
+      "duration_seconds": 5.292089939117432,
+      "average_cpu_percent": 18.3,
+      "max_memory_mb": 859.7265625,
+      "timestamps": [
+        1773069804.938221,
+        1773069810.2302446
+      ],
+      "cpu_percentages": [
+        26.3,
+        10.3
+      ],
+      "memory_usage_mb": [
+        858.5546875,
+        859.7265625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_87001",
+    "num_clients": 87001,
+    "resources": {
+      "duration_seconds": 5.3696441650390625,
+      "average_cpu_percent": 15.95,
+      "max_memory_mb": 860.91796875,
+      "timestamps": [
+        1773069810.4734647,
+        1773069815.8415692
+      ],
+      "cpu_percentages": [
+        24.4,
+        7.5
+      ],
+      "memory_usage_mb": [
+        859.7421875,
+        860.91796875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_88001",
+    "num_clients": 88001,
+    "resources": {
+      "duration_seconds": 5.4601263999938965,
+      "average_cpu_percent": 10.0,
+      "max_memory_mb": 862.10546875,
+      "timestamps": [
+        1773069816.0595696,
+        1773069821.519638
+      ],
+      "cpu_percentages": [
+        15.0,
+        5.0
+      ],
+      "memory_usage_mb": [
+        860.93359375,
+        862.10546875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_89001",
+    "num_clients": 89001,
+    "resources": {
+      "duration_seconds": 5.442603349685669,
+      "average_cpu_percent": 7.55,
+      "max_memory_mb": 864.5234375,
+      "timestamps": [
+        1773069821.7439287,
+        1773069827.186467
+      ],
+      "cpu_percentages": [
+        12.5,
+        2.6
+      ],
+      "memory_usage_mb": [
+        862.125,
+        864.5234375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_90001",
+    "num_clients": 90001,
+    "resources": {
+      "duration_seconds": 5.613869905471802,
+      "average_cpu_percent": 16.6,
+      "max_memory_mb": 863.1875,
+      "timestamps": [
+        1773069827.4285746,
+        1773069833.0423946
+      ],
+      "cpu_percentages": [
+        28.2,
+        5.0
+      ],
+      "memory_usage_mb": [
+        852.04296875,
+        863.1875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_91001",
+    "num_clients": 91001,
+    "resources": {
+      "duration_seconds": 5.979348182678223,
+      "average_cpu_percent": 18.25,
+      "max_memory_mb": 864.26171875,
+      "timestamps": [
+        1773069833.2699912,
+        1773069839.2482193
+      ],
+      "cpu_percentages": [
+        23.3,
+        13.2
+      ],
+      "memory_usage_mb": [
+        855.60546875,
+        864.26171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_92001",
+    "num_clients": 92001,
+    "resources": {
+      "duration_seconds": 6.115652561187744,
+      "average_cpu_percent": 19.15,
+      "max_memory_mb": 866.94921875,
+      "timestamps": [
+        1773069839.4829273,
+        1773069845.598523
+      ],
+      "cpu_percentages": [
+        30.8,
+        7.5
+      ],
+      "memory_usage_mb": [
+        864.296875,
+        866.94921875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_93001",
+    "num_clients": 93001,
+    "resources": {
+      "duration_seconds": 5.781630277633667,
+      "average_cpu_percent": 16.7,
+      "max_memory_mb": 868.25390625,
+      "timestamps": [
+        1773069845.8394167,
+        1773069851.6209764
+      ],
+      "cpu_percentages": [
+        30.8,
+        2.6
+      ],
+      "memory_usage_mb": [
+        866.97265625,
+        868.25390625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_94001",
+    "num_clients": 94001,
+    "resources": {
+      "duration_seconds": 5.753743886947632,
+      "average_cpu_percent": 15.4,
+      "max_memory_mb": 870.078125,
+      "timestamps": [
+        1773069851.856517,
+        1773069857.610204
+      ],
+      "cpu_percentages": [
+        28.2,
+        2.6
+      ],
+      "memory_usage_mb": [
+        868.26953125,
+        870.078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_95001",
+    "num_clients": 95001,
+    "resources": {
+      "duration_seconds": 5.789170265197754,
+      "average_cpu_percent": 15.0,
+      "max_memory_mb": 871.26953125,
+      "timestamps": [
+        1773069857.8546333,
+        1773069863.643747
+      ],
+      "cpu_percentages": [
+        30.0,
+        0.0
+      ],
+      "memory_usage_mb": [
+        870.09375,
+        871.26953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_96001",
+    "num_clients": 96001,
+    "resources": {
+      "duration_seconds": 5.999709367752075,
+      "average_cpu_percent": 16.55,
+      "max_memory_mb": 872.703125,
+      "timestamps": [
+        1773069863.900038,
+        1773069869.8996396
+      ],
+      "cpu_percentages": [
+        28.2,
+        4.9
+      ],
+      "memory_usage_mb": [
+        871.2890625,
+        872.703125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_97001",
+    "num_clients": 97001,
+    "resources": {
+      "duration_seconds": 6.100440502166748,
+      "average_cpu_percent": 9.9,
+      "max_memory_mb": 873.81640625,
+      "timestamps": [
+        1773069870.1328626,
+        1773069876.2332234
+      ],
+      "cpu_percentages": [
+        9.8,
+        10.0
+      ],
+      "memory_usage_mb": [
+        872.703125,
+        873.81640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_98001",
+    "num_clients": 98001,
+    "resources": {
+      "duration_seconds": 5.97754430770874,
+      "average_cpu_percent": 11.25,
+      "max_memory_mb": 875.0078125,
+      "timestamps": [
+        1773069876.4783216,
+        1773069882.4558089
+      ],
+      "cpu_percentages": [
+        20.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        873.84375,
+        875.0078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_99001",
+    "num_clients": 99001,
+    "resources": {
+      "duration_seconds": 6.244249105453491,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 876.3671875,
+      "timestamps": [
+        1773069882.7008202,
+        1773069888.9450064
+      ],
+      "cpu_percentages": [
+        2.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        875.0234375,
+        876.3671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_100001",
+    "num_clients": 100001,
+    "resources": {
+      "duration_seconds": 6.102076292037964,
+      "average_cpu_percent": 5.1,
+      "max_memory_mb": 877.5625,
+      "timestamps": [
+        1773069889.187767,
+        1773069895.2897367
+      ],
+      "cpu_percentages": [
+        7.7,
+        2.5
+      ],
+      "memory_usage_mb": [
+        876.3828125,
+        877.5625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_101001",
+    "num_clients": 101001,
+    "resources": {
+      "duration_seconds": 6.175153732299805,
+      "average_cpu_percent": 2.5,
+      "max_memory_mb": 879.58984375,
+      "timestamps": [
+        1773069895.5259666,
+        1773069901.7010481
+      ],
+      "cpu_percentages": [
+        5.0,
+        0.0
+      ],
+      "memory_usage_mb": [
+        877.57421875,
+        879.58984375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_102001",
+    "num_clients": 102001,
+    "resources": {
+      "duration_seconds": 6.23174524307251,
+      "average_cpu_percent": 17.1,
+      "max_memory_mb": 879.609375,
+      "timestamps": [
+        1773069901.9696717,
+        1773069908.201364
+      ],
+      "cpu_percentages": [
+        29.3,
+        4.9
+      ],
+      "memory_usage_mb": [
+        879.609375,
+        878.578125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_103001",
+    "num_clients": 103001,
+    "resources": {
+      "duration_seconds": 6.189602851867676,
+      "average_cpu_percent": 10.45,
+      "max_memory_mb": 881.2734375,
+      "timestamps": [
+        1773069908.501004,
+        1773069914.690531
+      ],
+      "cpu_percentages": [
+        18.4,
+        2.5
+      ],
+      "memory_usage_mb": [
+        878.578125,
+        881.2734375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_104001",
+    "num_clients": 104001,
+    "resources": {
+      "duration_seconds": 6.265172004699707,
+      "average_cpu_percent": 13.75,
+      "max_memory_mb": 882.5625,
+      "timestamps": [
+        1773069914.9924397,
+        1773069921.2575986
+      ],
+      "cpu_percentages": [
+        25.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        881.2890625,
+        882.5625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_105001",
+    "num_clients": 105001,
+    "resources": {
+      "duration_seconds": 6.412470102310181,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 883.76171875,
+      "timestamps": [
+        1773069921.5010407,
+        1773069927.9134512
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        882.578125,
+        883.76171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_106001",
+    "num_clients": 106001,
+    "resources": {
+      "duration_seconds": 6.584834814071655,
+      "average_cpu_percent": 5.0,
+      "max_memory_mb": 884.94140625,
+      "timestamps": [
+        1773069928.1844862,
+        1773069934.7692409
+      ],
+      "cpu_percentages": [
+        5.1,
+        4.9
+      ],
+      "memory_usage_mb": [
+        883.78125,
+        884.94140625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_107001",
+    "num_clients": 107001,
+    "resources": {
+      "duration_seconds": 6.386975049972534,
+      "average_cpu_percent": 5.0,
+      "max_memory_mb": 886.12109375,
+      "timestamps": [
+        1773069935.0271432,
+        1773069941.4140048
+      ],
+      "cpu_percentages": [
+        7.5,
+        2.5
+      ],
+      "memory_usage_mb": [
+        884.96875,
+        886.12109375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_108001",
+    "num_clients": 108001,
+    "resources": {
+      "duration_seconds": 6.483494520187378,
+      "average_cpu_percent": 4.9,
+      "max_memory_mb": 887.328125,
+      "timestamps": [
+        1773069941.675463,
+        1773069948.1588223
+      ],
+      "cpu_percentages": [
+        0.0,
+        9.8
+      ],
+      "memory_usage_mb": [
+        886.13671875,
+        887.328125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_109001",
+    "num_clients": 109001,
+    "resources": {
+      "duration_seconds": 6.495309352874756,
+      "average_cpu_percent": 15.0,
+      "max_memory_mb": 888.51953125,
+      "timestamps": [
+        1773069948.4540062,
+        1773069954.9480562
+      ],
+      "cpu_percentages": [
+        30.0,
+        0.0
+      ],
+      "memory_usage_mb": [
+        887.34375,
+        888.51953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_110001",
+    "num_clients": 110001,
+    "resources": {
+      "duration_seconds": 6.725419998168945,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 889.69921875,
+      "timestamps": [
+        1773069955.2117982,
+        1773069961.9371712
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        888.53515625,
+        889.69921875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_111001",
+    "num_clients": 111001,
+    "resources": {
+      "duration_seconds": 6.712789058685303,
+      "average_cpu_percent": 3.95,
+      "max_memory_mb": 890.89453125,
+      "timestamps": [
+        1773069962.191406,
+        1773069968.9041529
+      ],
+      "cpu_percentages": [
+        7.9,
+        0.0
+      ],
+      "memory_usage_mb": [
+        889.71484375,
+        890.89453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_112001",
+    "num_clients": 112001,
+    "resources": {
+      "duration_seconds": 6.670322895050049,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 892.08984375,
+      "timestamps": [
+        1773069969.1565628,
+        1773069975.8268082
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        890.921875,
+        892.08984375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_113001",
+    "num_clients": 113001,
+    "resources": {
+      "duration_seconds": 6.696639537811279,
+      "average_cpu_percent": 8.75,
+      "max_memory_mb": 894.63671875,
+      "timestamps": [
+        1773069976.0748804,
+        1773069982.771501
+      ],
+      "cpu_percentages": [
+        12.5,
+        5.0
+      ],
+      "memory_usage_mb": [
+        892.1171875,
+        894.63671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_114001",
+    "num_clients": 114001,
+    "resources": {
+      "duration_seconds": 6.951258659362793,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 895.06640625,
+      "timestamps": [
+        1773069983.0207229,
+        1773069989.9719467
+      ],
+      "cpu_percentages": [
+        5.1,
+        2.5
+      ],
+      "memory_usage_mb": [
+        894.66796875,
+        895.06640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_115001",
+    "num_clients": 115001,
+    "resources": {
+      "duration_seconds": 6.911164045333862,
+      "average_cpu_percent": 14.85,
+      "max_memory_mb": 895.6171875,
+      "timestamps": [
+        1773069990.238895,
+        1773069997.1500044
+      ],
+      "cpu_percentages": [
+        17.5,
+        12.2
+      ],
+      "memory_usage_mb": [
+        895.0859375,
+        895.6171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_116001",
+    "num_clients": 116001,
+    "resources": {
+      "duration_seconds": 6.955813884735107,
+      "average_cpu_percent": 16.25,
+      "max_memory_mb": 897.35546875,
+      "timestamps": [
+        1773069997.450121,
+        1773070004.4058995
+      ],
+      "cpu_percentages": [
+        30.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        895.6328125,
+        897.35546875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_117001",
+    "num_clients": 117001,
+    "resources": {
+      "duration_seconds": 6.893545866012573,
+      "average_cpu_percent": 5.0,
+      "max_memory_mb": 898.29296875,
+      "timestamps": [
+        1773070004.6608477,
+        1773070011.5543504
+      ],
+      "cpu_percentages": [
+        5.0,
+        5.0
+      ],
+      "memory_usage_mb": [
+        897.35546875,
+        898.29296875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_118001",
+    "num_clients": 118001,
+    "resources": {
+      "duration_seconds": 7.140000104904175,
+      "average_cpu_percent": 17.4,
+      "max_memory_mb": 899.453125,
+      "timestamps": [
+        1773070011.8036137,
+        1773070018.9435642
+      ],
+      "cpu_percentages": [
+        27.5,
+        7.3
+      ],
+      "memory_usage_mb": [
+        898.30859375,
+        899.453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_119001",
+    "num_clients": 119001,
+    "resources": {
+      "duration_seconds": 7.2632951736450195,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 900.875,
+      "timestamps": [
+        1773070019.2029595,
+        1773070026.466108
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        899.46875,
+        900.875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_120001",
+    "num_clients": 120001,
+    "resources": {
+      "duration_seconds": 7.2120890617370605,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 902.30859375,
+      "timestamps": [
+        1773070026.7211726,
+        1773070033.9331524
+      ],
+      "cpu_percentages": [
+        2.6,
+        5.0
+      ],
+      "memory_usage_mb": [
+        900.890625,
+        902.30859375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_121001",
+    "num_clients": 121001,
+    "resources": {
+      "duration_seconds": 7.242709398269653,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 903.50390625,
+      "timestamps": [
+        1773070034.190863,
+        1773070041.4335406
+      ],
+      "cpu_percentages": [
+        2.5,
+        0.0
+      ],
+      "memory_usage_mb": [
+        902.32421875,
+        903.50390625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_122001",
+    "num_clients": 122001,
+    "resources": {
+      "duration_seconds": 7.267192840576172,
+      "average_cpu_percent": 2.55,
+      "max_memory_mb": 904.9921875,
+      "timestamps": [
+        1773070041.688961,
+        1773070048.956104
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.5
+      ],
+      "memory_usage_mb": [
+        903.6796875,
+        904.9921875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_123001",
+    "num_clients": 123001,
+    "resources": {
+      "duration_seconds": 7.452046155929565,
+      "average_cpu_percent": 4.75,
+      "max_memory_mb": 906.046875,
+      "timestamps": [
+        1773070049.2155058,
+        1773070056.6675098
+      ],
+      "cpu_percentages": [
+        0.0,
+        9.5
+      ],
+      "memory_usage_mb": [
+        904.9921875,
+        906.046875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_124001",
+    "num_clients": 124001,
+    "resources": {
+      "duration_seconds": 7.428067684173584,
+      "average_cpu_percent": 16.2,
+      "max_memory_mb": 907.23828125,
+      "timestamps": [
+        1773070056.973207,
+        1773070064.4012282
+      ],
+      "cpu_percentages": [
+        27.5,
+        4.9
+      ],
+      "memory_usage_mb": [
+        906.05859375,
+        907.23828125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_125001",
+    "num_clients": 125001,
+    "resources": {
+      "duration_seconds": 7.2859556674957275,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 908.43359375,
+      "timestamps": [
+        1773070064.6601067,
+        1773070071.9460278
+      ],
+      "cpu_percentages": [
+        2.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        907.2578125,
+        908.43359375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_126001",
+    "num_clients": 126001,
+    "resources": {
+      "duration_seconds": 7.68157434463501,
+      "average_cpu_percent": 3.75,
+      "max_memory_mb": 909.65234375,
+      "timestamps": [
+        1773070072.2094676,
+        1773070079.8910089
+      ],
+      "cpu_percentages": [
+        2.6,
+        4.9
+      ],
+      "memory_usage_mb": [
+        908.44921875,
+        909.65234375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_127001",
+    "num_clients": 127001,
+    "resources": {
+      "duration_seconds": 7.7181925773620605,
+      "average_cpu_percent": 6.35,
+      "max_memory_mb": 912.68359375,
+      "timestamps": [
+        1773070080.1780539,
+        1773070087.8962033
+      ],
+      "cpu_percentages": [
+        7.7,
+        5.0
+      ],
+      "memory_usage_mb": [
+        909.66796875,
+        912.68359375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_128001",
+    "num_clients": 128001,
+    "resources": {
+      "duration_seconds": 7.752292633056641,
+      "average_cpu_percent": 3.9,
+      "max_memory_mb": 910.671875,
+      "timestamps": [
+        1773070088.1578555,
+        1773070095.9100971
+      ],
+      "cpu_percentages": [
+        5.3,
+        2.5
+      ],
+      "memory_usage_mb": [
+        895.484375,
+        910.671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_129001",
+    "num_clients": 129001,
+    "resources": {
+      "duration_seconds": 7.613277912139893,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 911.6171875,
+      "timestamps": [
+        1773070096.1861157,
+        1773070103.7993627
+      ],
+      "cpu_percentages": [
+        5.1,
+        2.5
+      ],
+      "memory_usage_mb": [
+        899.8515625,
+        911.6171875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_130001",
+    "num_clients": 130001,
+    "resources": {
+      "duration_seconds": 7.8508665561676025,
+      "average_cpu_percent": 6.1,
+      "max_memory_mb": 914.90234375,
+      "timestamps": [
+        1773070104.060069,
+        1773070111.9108896
+      ],
+      "cpu_percentages": [
+        7.3,
+        4.9
+      ],
+      "memory_usage_mb": [
+        911.6328125,
+        914.90234375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_131001",
+    "num_clients": 131001,
+    "resources": {
+      "duration_seconds": 7.744166135787964,
+      "average_cpu_percent": 4.95,
+      "max_memory_mb": 916.2578125,
+      "timestamps": [
+        1773070112.1893387,
+        1773070119.9334629
+      ],
+      "cpu_percentages": [
+        5.0,
+        4.9
+      ],
+      "memory_usage_mb": [
+        914.921875,
+        916.2578125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_132001",
+    "num_clients": 132001,
+    "resources": {
+      "duration_seconds": 8.014162540435791,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 917.4453125,
+      "timestamps": [
+        1773070120.2086437,
+        1773070128.222761
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.6
+      ],
+      "memory_usage_mb": [
+        916.28125,
+        917.4453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_133001",
+    "num_clients": 133001,
+    "resources": {
+      "duration_seconds": 7.830515384674072,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 918.6484375,
+      "timestamps": [
+        1773070128.4926815,
+        1773070136.3231378
+      ],
+      "cpu_percentages": [
+        2.5,
+        0.0
+      ],
+      "memory_usage_mb": [
+        917.4609375,
+        918.6484375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_134001",
+    "num_clients": 134001,
+    "resources": {
+      "duration_seconds": 8.314477920532227,
+      "average_cpu_percent": 2.55,
+      "max_memory_mb": 919.83203125,
+      "timestamps": [
+        1773070136.5979867,
+        1773070144.9124234
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.5
+      ],
+      "memory_usage_mb": [
+        918.6640625,
+        919.83203125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_135001",
+    "num_clients": 135001,
+    "resources": {
+      "duration_seconds": 8.028699159622192,
+      "average_cpu_percent": 3.55,
+      "max_memory_mb": 921.03515625,
+      "timestamps": [
+        1773070145.1952376,
+        1773070153.22389
+      ],
+      "cpu_percentages": [
+        0.0,
+        7.1
+      ],
+      "memory_usage_mb": [
+        919.85546875,
+        921.03515625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_136001",
+    "num_clients": 136001,
+    "resources": {
+      "duration_seconds": 8.051382303237915,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 922.22265625,
+      "timestamps": [
+        1773070153.5062656,
+        1773070161.5576093
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.6
+      ],
+      "memory_usage_mb": [
+        921.0546875,
+        922.22265625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_137001",
+    "num_clients": 137001,
+    "resources": {
+      "duration_seconds": 7.988006353378296,
+      "average_cpu_percent": 18.65,
+      "max_memory_mb": 923.41796875,
+      "timestamps": [
+        1773070161.83672,
+        1773070169.824647
+      ],
+      "cpu_percentages": [
+        30.0,
+        7.3
+      ],
+      "memory_usage_mb": [
+        922.23828125,
+        923.41796875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_138001",
+    "num_clients": 138001,
+    "resources": {
+      "duration_seconds": 8.30048656463623,
+      "average_cpu_percent": 2.55,
+      "max_memory_mb": 924.61328125,
+      "timestamps": [
+        1773070170.1135182,
+        1773070178.4139597
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.5
+      ],
+      "memory_usage_mb": [
+        923.4296875,
+        924.61328125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_139001",
+    "num_clients": 139001,
+    "resources": {
+      "duration_seconds": 8.151720762252808,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 925.85546875,
+      "timestamps": [
+        1773070178.6959748,
+        1773070186.8476534
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        924.6328125,
+        925.85546875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_140001",
+    "num_clients": 140001,
+    "resources": {
+      "duration_seconds": 8.351061344146729,
+      "average_cpu_percent": 4.9,
+      "max_memory_mb": 927.04296875,
+      "timestamps": [
+        1773070187.1414146,
+        1773070195.4924273
+      ],
+      "cpu_percentages": [
+        4.9,
+        4.9
+      ],
+      "memory_usage_mb": [
+        925.87109375,
+        927.04296875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_141001",
+    "num_clients": 141001,
+    "resources": {
+      "duration_seconds": 8.49204158782959,
+      "average_cpu_percent": 13.75,
+      "max_memory_mb": 928.23046875,
+      "timestamps": [
+        1773070195.7786412,
+        1773070204.2706306
+      ],
+      "cpu_percentages": [
+        25.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        927.05859375,
+        928.23046875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_142001",
+    "num_clients": 142001,
+    "resources": {
+      "duration_seconds": 8.321577310562134,
+      "average_cpu_percent": 2.55,
+      "max_memory_mb": 929.4375,
+      "timestamps": [
+        1773070204.5495396,
+        1773070212.8710678
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.5
+      ],
+      "memory_usage_mb": [
+        928.24609375,
+        929.4375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_143001",
+    "num_clients": 143001,
+    "resources": {
+      "duration_seconds": 8.538042545318604,
+      "average_cpu_percent": 3.7,
+      "max_memory_mb": 932.375,
+      "timestamps": [
+        1773070213.1557236,
+        1773070221.6937447
+      ],
+      "cpu_percentages": [
+        4.9,
+        2.5
+      ],
+      "memory_usage_mb": [
+        929.453125,
+        932.375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_144001",
+    "num_clients": 144001,
+    "resources": {
+      "duration_seconds": 8.352922201156616,
+      "average_cpu_percent": 7.8999999999999995,
+      "max_memory_mb": 932.390625,
+      "timestamps": [
+        1773070222.0301924,
+        1773070230.383046
+      ],
+      "cpu_percentages": [
+        13.2,
+        2.6
+      ],
+      "memory_usage_mb": [
+        932.390625,
+        929.9453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_145001",
+    "num_clients": 145001,
+    "resources": {
+      "duration_seconds": 8.635523557662964,
+      "average_cpu_percent": 4.85,
+      "max_memory_mb": 930.38671875,
+      "timestamps": [
+        1773070230.6701195,
+        1773070239.3055918
+      ],
+      "cpu_percentages": [
+        7.1,
+        2.6
+      ],
+      "memory_usage_mb": [
+        916.08203125,
+        930.38671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_146001",
+    "num_clients": 146001,
+    "resources": {
+      "duration_seconds": 8.687565803527832,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 933.56640625,
+      "timestamps": [
+        1773070239.607351,
+        1773070248.2948751
+      ],
+      "cpu_percentages": [
+        2.6,
+        5.0
+      ],
+      "memory_usage_mb": [
+        930.40234375,
+        933.56640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_147001",
+    "num_clients": 147001,
+    "resources": {
+      "duration_seconds": 8.455419540405273,
+      "average_cpu_percent": 6.15,
+      "max_memory_mb": 935.5078125,
+      "timestamps": [
+        1773070248.5955172,
+        1773070257.050889
+      ],
+      "cpu_percentages": [
+        5.0,
+        7.3
+      ],
+      "memory_usage_mb": [
+        933.5859375,
+        935.5078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_148001",
+    "num_clients": 148001,
+    "resources": {
+      "duration_seconds": 8.702497243881226,
+      "average_cpu_percent": 19.6,
+      "max_memory_mb": 937.0078125,
+      "timestamps": [
+        1773070257.3488498,
+        1773070266.0513074
+      ],
+      "cpu_percentages": [
+        31.7,
+        7.5
+      ],
+      "memory_usage_mb": [
+        935.5234375,
+        937.0078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_149001",
+    "num_clients": 149001,
+    "resources": {
+      "duration_seconds": 8.768341064453125,
+      "average_cpu_percent": 13.15,
+      "max_memory_mb": 938.0390625,
+      "timestamps": [
+        1773070266.3611975,
+        1773070275.1294765
+      ],
+      "cpu_percentages": [
+        26.3,
+        0.0
+      ],
+      "memory_usage_mb": [
+        937.0078125,
+        938.0390625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_150001",
+    "num_clients": 150001,
+    "resources": {
+      "duration_seconds": 8.691324234008789,
+      "average_cpu_percent": 16.25,
+      "max_memory_mb": 939.2421875,
+      "timestamps": [
+        1773070275.438552,
+        1773070284.1299095
+      ],
+      "cpu_percentages": [
+        27.5,
+        5.0
+      ],
+      "memory_usage_mb": [
+        938.05078125,
+        939.2421875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_151001",
+    "num_clients": 151001,
+    "resources": {
+      "duration_seconds": 9.011628150939941,
+      "average_cpu_percent": 14.65,
+      "max_memory_mb": 940.43359375,
+      "timestamps": [
+        1773070284.485354,
+        1773070293.4969006
+      ],
+      "cpu_percentages": [
+        26.8,
+        2.5
+      ],
+      "memory_usage_mb": [
+        939.2734375,
+        940.43359375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_152001",
+    "num_clients": 152001,
+    "resources": {
+      "duration_seconds": 8.977792739868164,
+      "average_cpu_percent": 14.65,
+      "max_memory_mb": 941.625,
+      "timestamps": [
+        1773070293.797523,
+        1773070302.775262
+      ],
+      "cpu_percentages": [
+        26.8,
+        2.5
+      ],
+      "memory_usage_mb": [
+        940.453125,
+        941.625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_153001",
+    "num_clients": 153001,
+    "resources": {
+      "duration_seconds": 8.802343606948853,
+      "average_cpu_percent": 5.05,
+      "max_memory_mb": 942.8203125,
+      "timestamps": [
+        1773070303.0844738,
+        1773070311.8867772
+      ],
+      "cpu_percentages": [
+        7.5,
+        2.6
+      ],
+      "memory_usage_mb": [
+        941.640625,
+        942.8203125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_154001",
+    "num_clients": 154001,
+    "resources": {
+      "duration_seconds": 9.137223482131958,
+      "average_cpu_percent": 2.45,
+      "max_memory_mb": 944.0078125,
+      "timestamps": [
+        1773070312.1944191,
+        1773070321.3315952
+      ],
+      "cpu_percentages": [
+        4.9,
+        0.0
+      ],
+      "memory_usage_mb": [
+        942.83984375,
+        944.0078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_155001",
+    "num_clients": 155001,
+    "resources": {
+      "duration_seconds": 9.323826551437378,
+      "average_cpu_percent": 2.55,
+      "max_memory_mb": 945.20703125,
+      "timestamps": [
+        1773070321.6306052,
+        1773070330.9543245
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.5
+      ],
+      "memory_usage_mb": [
+        944.02734375,
+        945.20703125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_156001",
+    "num_clients": 156001,
+    "resources": {
+      "duration_seconds": 9.35070013999939,
+      "average_cpu_percent": 16.15,
+      "max_memory_mb": 946.390625,
+      "timestamps": [
+        1773070331.270733,
+        1773070340.6213286
+      ],
+      "cpu_percentages": [
+        22.5,
+        9.8
+      ],
+      "memory_usage_mb": [
+        945.22265625,
+        946.390625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_157001",
+    "num_clients": 157001,
+    "resources": {
+      "duration_seconds": 9.24346375465393,
+      "average_cpu_percent": 16.25,
+      "max_memory_mb": 947.6015625,
+      "timestamps": [
+        1773070340.9674168,
+        1773070350.210821
+      ],
+      "cpu_percentages": [
+        30.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        946.40625,
+        947.6015625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_158001",
+    "num_clients": 158001,
+    "resources": {
+      "duration_seconds": 9.352375507354736,
+      "average_cpu_percent": 3.75,
+      "max_memory_mb": 948.78125,
+      "timestamps": [
+        1773070350.5145056,
+        1773070359.866798
+      ],
+      "cpu_percentages": [
+        4.9,
+        2.6
+      ],
+      "memory_usage_mb": [
+        947.61328125,
+        948.78125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_159001",
+    "num_clients": 159001,
+    "resources": {
+      "duration_seconds": 9.53507375717163,
+      "average_cpu_percent": 2.55,
+      "max_memory_mb": 949.98046875,
+      "timestamps": [
+        1773070360.1877036,
+        1773070369.7226956
+      ],
+      "cpu_percentages": [
+        2.6,
+        2.5
+      ],
+      "memory_usage_mb": [
+        948.80078125,
+        949.98046875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_160001",
+    "num_clients": 160001,
+    "resources": {
+      "duration_seconds": 9.63679027557373,
+      "average_cpu_percent": 7.6,
+      "max_memory_mb": 951.2421875,
+      "timestamps": [
+        1773070370.064306,
+        1773070379.7010212
+      ],
+      "cpu_percentages": [
+        7.7,
+        7.5
+      ],
+      "memory_usage_mb": [
+        950.0,
+        951.2421875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_161001",
+    "num_clients": 161001,
+    "resources": {
+      "duration_seconds": 9.78770899772644,
+      "average_cpu_percent": 14.75,
+      "max_memory_mb": 954.28515625,
+      "timestamps": [
+        1773070380.0582376,
+        1773070389.8458455
+      ],
+      "cpu_percentages": [
+        22.0,
+        7.5
+      ],
+      "memory_usage_mb": [
+        951.24609375,
+        954.28515625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_162001",
+    "num_clients": 162001,
+    "resources": {
+      "duration_seconds": 10.09101676940918,
+      "average_cpu_percent": 5.1,
+      "max_memory_mb": 954.64453125,
+      "timestamps": [
+        1773070390.1665025,
+        1773070400.257501
+      ],
+      "cpu_percentages": [
+        5.1,
+        5.1
+      ],
+      "memory_usage_mb": [
+        954.30078125,
+        954.64453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_163001",
+    "num_clients": 163001,
+    "resources": {
+      "duration_seconds": 9.897981882095337,
+      "average_cpu_percent": 3.85,
+      "max_memory_mb": 954.66015625,
+      "timestamps": [
+        1773070400.5835614,
+        1773070410.4815004
+      ],
+      "cpu_percentages": [
+        7.7,
+        0.0
+      ],
+      "memory_usage_mb": [
+        954.66015625,
+        952.62890625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_164001",
+    "num_clients": 164001,
+    "resources": {
+      "duration_seconds": 10.208363771438599,
+      "average_cpu_percent": 16.9,
+      "max_memory_mb": 953.5625,
+      "timestamps": [
+        1773070410.801102,
+        1773070421.0094223
+      ],
+      "cpu_percentages": [
+        26.3,
+        7.5
+      ],
+      "memory_usage_mb": [
+        941.921875,
+        953.5625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_165001",
+    "num_clients": 165001,
+    "resources": {
+      "duration_seconds": 10.108474731445312,
+      "average_cpu_percent": 21.950000000000003,
+      "max_memory_mb": 957.6328125,
+      "timestamps": [
+        1773070421.3459237,
+        1773070431.4542854
+      ],
+      "cpu_percentages": [
+        34.1,
+        9.8
+      ],
+      "memory_usage_mb": [
+        953.578125,
+        957.6328125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_166001",
+    "num_clients": 166001,
+    "resources": {
+      "duration_seconds": 10.218851566314697,
+      "average_cpu_percent": 20.0,
+      "max_memory_mb": 958.65625,
+      "timestamps": [
+        1773070431.7925436,
+        1773070442.0103984
+      ],
+      "cpu_percentages": [
+        32.5,
+        7.5
+      ],
+      "memory_usage_mb": [
+        957.6328125,
+        958.65625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_167001",
+    "num_clients": 167001,
+    "resources": {
+      "duration_seconds": 9.940412044525146,
+      "average_cpu_percent": 16.25,
+      "max_memory_mb": 959.81640625,
+      "timestamps": [
+        1773070442.3491504,
+        1773070452.2886076
+      ],
+      "cpu_percentages": [
+        32.5,
+        0.0
+      ],
+      "memory_usage_mb": [
+        958.66015625,
+        959.81640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_168001",
+    "num_clients": 168001,
+    "resources": {
+      "duration_seconds": 10.031738758087158,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 961.0078125,
+      "timestamps": [
+        1773070452.606569,
+        1773070462.6382039
+      ],
+      "cpu_percentages": [
+        2.5,
+        0.0
+      ],
+      "memory_usage_mb": [
+        959.83203125,
+        961.0078125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_169001",
+    "num_clients": 169001,
+    "resources": {
+      "duration_seconds": 10.085109949111938,
+      "average_cpu_percent": 13.9,
+      "max_memory_mb": 962.20703125,
+      "timestamps": [
+        1773070462.9980943,
+        1773070473.0831218
+      ],
+      "cpu_percentages": [
+        22.5,
+        5.3
+      ],
+      "memory_usage_mb": [
+        961.0234375,
+        962.20703125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_170001",
+    "num_clients": 170001,
+    "resources": {
+      "duration_seconds": 10.070068359375,
+      "average_cpu_percent": 17.1,
+      "max_memory_mb": 963.40234375,
+      "timestamps": [
+        1773070473.442357,
+        1773070483.5123668
+      ],
+      "cpu_percentages": [
+        31.7,
+        2.5
+      ],
+      "memory_usage_mb": [
+        962.21875,
+        963.40234375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_171001",
+    "num_clients": 171001,
+    "resources": {
+      "duration_seconds": 10.033774852752686,
+      "average_cpu_percent": 15.8,
+      "max_memory_mb": 964.6015625,
+      "timestamps": [
+        1773070483.8392968,
+        1773070493.872998
+      ],
+      "cpu_percentages": [
+        31.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        963.41796875,
+        964.6015625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_172001",
+    "num_clients": 172001,
+    "resources": {
+      "duration_seconds": 10.192915201187134,
+      "average_cpu_percent": 1.25,
+      "max_memory_mb": 965.79296875,
+      "timestamps": [
+        1773070494.198129,
+        1773070504.3910296
+      ],
+      "cpu_percentages": [
+        0.0,
+        2.5
+      ],
+      "memory_usage_mb": [
+        964.62890625,
+        965.79296875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_173001",
+    "num_clients": 173001,
+    "resources": {
+      "duration_seconds": 10.309203147888184,
+      "average_cpu_percent": 5.05,
+      "max_memory_mb": 966.98828125,
+      "timestamps": [
+        1773070504.716688,
+        1773070515.0258763
+      ],
+      "cpu_percentages": [
+        2.6,
+        7.5
+      ],
+      "memory_usage_mb": [
+        965.80859375,
+        966.98828125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_174001",
+    "num_clients": 174001,
+    "resources": {
+      "duration_seconds": 10.246851205825806,
+      "average_cpu_percent": 14.450000000000001,
+      "max_memory_mb": 968.17578125,
+      "timestamps": [
+        1773070515.3610234,
+        1773070525.6078622
+      ],
+      "cpu_percentages": [
+        26.3,
+        2.6
+      ],
+      "memory_usage_mb": [
+        967.0078125,
+        968.17578125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_175001",
+    "num_clients": 175001,
+    "resources": {
+      "duration_seconds": 10.392362356185913,
+      "average_cpu_percent": 15.0,
+      "max_memory_mb": 969.3671875,
+      "timestamps": [
+        1773070525.9493458,
+        1773070536.3416135
+      ],
+      "cpu_percentages": [
+        30.0,
+        0.0
+      ],
+      "memory_usage_mb": [
+        968.1953125,
+        969.3671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_176001",
+    "num_clients": 176001,
+    "resources": {
+      "duration_seconds": 10.50949740409851,
+      "average_cpu_percent": 2.5,
+      "max_memory_mb": 970.5703125,
+      "timestamps": [
+        1773070536.6726463,
+        1773070547.1820874
+      ],
+      "cpu_percentages": [
+        5.0,
+        0.0
+      ],
+      "memory_usage_mb": [
+        969.3828125,
+        970.5703125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_177001",
+    "num_clients": 177001,
+    "resources": {
+      "duration_seconds": 10.475429058074951,
+      "average_cpu_percent": 5.05,
+      "max_memory_mb": 971.75390625,
+      "timestamps": [
+        1773070547.5561652,
+        1773070558.0314941
+      ],
+      "cpu_percentages": [
+        2.6,
+        7.5
+      ],
+      "memory_usage_mb": [
+        970.5859375,
+        971.75390625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_178001",
+    "num_clients": 178001,
+    "resources": {
+      "duration_seconds": 10.5871901512146,
+      "average_cpu_percent": 15.0,
+      "max_memory_mb": 972.953125,
+      "timestamps": [
+        1773070558.3848298,
+        1773070568.9718752
+      ],
+      "cpu_percentages": [
+        27.5,
+        2.5
+      ],
+      "memory_usage_mb": [
+        971.76953125,
+        972.953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_179001",
+    "num_clients": 179001,
+    "resources": {
+      "duration_seconds": 10.736490488052368,
+      "average_cpu_percent": 26.65,
+      "max_memory_mb": 974.13671875,
+      "timestamps": [
+        1773070569.3137314,
+        1773070580.0501406
+      ],
+      "cpu_percentages": [
+        37.5,
+        15.8
+      ],
+      "memory_usage_mb": [
+        972.97265625,
+        974.13671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_180001",
+    "num_clients": 180001,
+    "resources": {
+      "duration_seconds": 11.458992004394531,
+      "average_cpu_percent": 18.75,
+      "max_memory_mb": 975.3359375,
+      "timestamps": [
+        1773070580.4696188,
+        1773070591.9285169
+      ],
+      "cpu_percentages": [
+        32.5,
+        5.0
+      ],
+      "memory_usage_mb": [
+        974.15234375,
+        975.3359375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_181001",
+    "num_clients": 181001,
+    "resources": {
+      "duration_seconds": 10.883511066436768,
+      "average_cpu_percent": 19.6,
+      "max_memory_mb": 978.78515625,
+      "timestamps": [
+        1773070592.2788305,
+        1773070603.1622326
+      ],
+      "cpu_percentages": [
+        36.6,
+        2.6
+      ],
+      "memory_usage_mb": [
+        975.3515625,
+        978.78515625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_182001",
+    "num_clients": 182001,
+    "resources": {
+      "duration_seconds": 10.920126914978027,
+      "average_cpu_percent": 7.7,
+      "max_memory_mb": 978.80859375,
+      "timestamps": [
+        1773070603.5205233,
+        1773070614.4405713
+      ],
+      "cpu_percentages": [
+        12.8,
+        2.6
+      ],
+      "memory_usage_mb": [
+        978.80859375,
+        977.53515625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_183001",
+    "num_clients": 183001,
+    "resources": {
+      "duration_seconds": 11.14707326889038,
+      "average_cpu_percent": 26.65,
+      "max_memory_mb": 977.87109375,
+      "timestamps": [
+        1773070614.7830412,
+        1773070625.930097
+      ],
+      "cpu_percentages": [
+        40.5,
+        12.8
+      ],
+      "memory_usage_mb": [
+        969.18359375,
+        977.87109375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_184001",
+    "num_clients": 184001,
+    "resources": {
+      "duration_seconds": 10.994096994400024,
+      "average_cpu_percent": 26.3,
+      "max_memory_mb": 978.59375,
+      "timestamps": [
+        1773070626.2920058,
+        1773070637.2860715
+      ],
+      "cpu_percentages": [
+        52.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        969.515625,
+        978.59375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_185001",
+    "num_clients": 185001,
+    "resources": {
+      "duration_seconds": 11.352793455123901,
+      "average_cpu_percent": 3.75,
+      "max_memory_mb": 981.49609375,
+      "timestamps": [
+        1773070637.6274328,
+        1773070648.9801788
+      ],
+      "cpu_percentages": [
+        4.9,
+        2.6
+      ],
+      "memory_usage_mb": [
+        978.609375,
+        981.49609375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_186001",
+    "num_clients": 186001,
+    "resources": {
+      "duration_seconds": 11.139291286468506,
+      "average_cpu_percent": 18.3,
+      "max_memory_mb": 982.83203125,
+      "timestamps": [
+        1773070649.3590055,
+        1773070660.4982219
+      ],
+      "cpu_percentages": [
+        31.7,
+        4.9
+      ],
+      "memory_usage_mb": [
+        981.51171875,
+        982.83203125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_187001",
+    "num_clients": 187001,
+    "resources": {
+      "duration_seconds": 11.126399993896484,
+      "average_cpu_percent": 20.0,
+      "max_memory_mb": 984.02734375,
+      "timestamps": [
+        1773070660.8614533,
+        1773070671.9877746
+      ],
+      "cpu_percentages": [
+        37.5,
+        2.5
+      ],
+      "memory_usage_mb": [
+        982.86328125,
+        984.02734375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_188001",
+    "num_clients": 188001,
+    "resources": {
+      "duration_seconds": 11.472542524337769,
+      "average_cpu_percent": 21.5,
+      "max_memory_mb": 985.21875,
+      "timestamps": [
+        1773070672.353706,
+        1773070683.8261468
+      ],
+      "cpu_percentages": [
+        40.5,
+        2.5
+      ],
+      "memory_usage_mb": [
+        984.04296875,
+        985.21875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_189001",
+    "num_clients": 189001,
+    "resources": {
+      "duration_seconds": 11.371675729751587,
+      "average_cpu_percent": 3.8499999999999996,
+      "max_memory_mb": 986.4140625,
+      "timestamps": [
+        1773070684.195014,
+        1773070695.5666382
+      ],
+      "cpu_percentages": [
+        5.1,
+        2.6
+      ],
+      "memory_usage_mb": [
+        985.23828125,
+        986.4140625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_190001",
+    "num_clients": 190001,
+    "resources": {
+      "duration_seconds": 11.335414171218872,
+      "average_cpu_percent": 15.4,
+      "max_memory_mb": 987.61328125,
+      "timestamps": [
+        1773070695.9364684,
+        1773070707.271778
+      ],
+      "cpu_percentages": [
+        28.2,
+        2.6
+      ],
+      "memory_usage_mb": [
+        986.43359375,
+        987.61328125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_191001",
+    "num_clients": 191001,
+    "resources": {
+      "duration_seconds": 11.389560461044312,
+      "average_cpu_percent": 6.25,
+      "max_memory_mb": 988.80859375,
+      "timestamps": [
+        1773070707.6448755,
+        1773070719.0344088
+      ],
+      "cpu_percentages": [
+        2.5,
+        10.0
+      ],
+      "memory_usage_mb": [
+        987.6328125,
+        988.80859375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_192001",
+    "num_clients": 192001,
+    "resources": {
+      "duration_seconds": 11.706238269805908,
+      "average_cpu_percent": 18.5,
+      "max_memory_mb": 989.99609375,
+      "timestamps": [
+        1773070719.411053,
+        1773070731.1172347
+      ],
+      "cpu_percentages": [
+        31.7,
+        5.3
+      ],
+      "memory_usage_mb": [
+        988.82421875,
+        989.99609375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_193001",
+    "num_clients": 193001,
+    "resources": {
+      "duration_seconds": 11.384148836135864,
+      "average_cpu_percent": 12.3,
+      "max_memory_mb": 991.1875,
+      "timestamps": [
+        1773070731.5180993,
+        1773070742.9021735
+      ],
+      "cpu_percentages": [
+        17.5,
+        7.1
+      ],
+      "memory_usage_mb": [
+        990.01171875,
+        991.1875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_194001",
+    "num_clients": 194001,
+    "resources": {
+      "duration_seconds": 11.518624067306519,
+      "average_cpu_percent": 17.2,
+      "max_memory_mb": 992.3828125,
+      "timestamps": [
+        1773070743.2665825,
+        1773070754.785168
+      ],
+      "cpu_percentages": [
+        29.3,
+        5.1
+      ],
+      "memory_usage_mb": [
+        991.20703125,
+        992.3828125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_195001",
+    "num_clients": 195001,
+    "resources": {
+      "duration_seconds": 11.621596097946167,
+      "average_cpu_percent": 11.55,
+      "max_memory_mb": 993.75,
+      "timestamps": [
+        1773070755.1483645,
+        1773070766.7699287
+      ],
+      "cpu_percentages": [
+        2.6,
+        20.5
+      ],
+      "memory_usage_mb": [
+        992.3984375,
+        993.75
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_196001",
+    "num_clients": 196001,
+    "resources": {
+      "duration_seconds": 11.798861503601074,
+      "average_cpu_percent": 4.9,
+      "max_memory_mb": 994.76953125,
+      "timestamps": [
+        1773070767.1606517,
+        1773070778.959441
+      ],
+      "cpu_percentages": [
+        4.9,
+        4.9
+      ],
+      "memory_usage_mb": [
+        993.75,
+        994.76953125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_197001",
+    "num_clients": 197001,
+    "resources": {
+      "duration_seconds": 11.997028112411499,
+      "average_cpu_percent": 20.05,
+      "max_memory_mb": 995.95703125,
+      "timestamps": [
+        1773070779.3296647,
+        1773070791.326613
+      ],
+      "cpu_percentages": [
+        37.5,
+        2.6
+      ],
+      "memory_usage_mb": [
+        994.7890625,
+        995.95703125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_198001",
+    "num_clients": 198001,
+    "resources": {
+      "duration_seconds": 11.980902433395386,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 997.1484375,
+      "timestamps": [
+        1773070791.696234,
+        1773070803.676202
+      ],
+      "cpu_percentages": [
+        2.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        995.97265625,
+        997.1484375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_199001",
+    "num_clients": 199001,
+    "resources": {
+      "duration_seconds": 12.104402542114258,
+      "average_cpu_percent": 3.8,
+      "max_memory_mb": 998.34765625,
+      "timestamps": [
+        1773070804.1055734,
+        1773070816.2098553
+      ],
+      "cpu_percentages": [
+        5.0,
+        2.6
+      ],
+      "memory_usage_mb": [
+        997.1640625,
+        998.34765625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_200001",
+    "num_clients": 200001,
+    "resources": {
+      "duration_seconds": 12.138376235961914,
+      "average_cpu_percent": 4.95,
+      "max_memory_mb": 999.53515625,
+      "timestamps": [
+        1773070816.6455061,
+        1773070828.783849
+      ],
+      "cpu_percentages": [
+        7.3,
+        2.6
+      ],
+      "memory_usage_mb": [
+        998.3671875,
+        999.53515625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_201001",
+    "num_clients": 201001,
+    "resources": {
+      "duration_seconds": 12.154855489730835,
+      "average_cpu_percent": 16.85,
+      "max_memory_mb": 1000.7265625,
+      "timestamps": [
+        1773070829.151857,
+        1773070841.30668
+      ],
+      "cpu_percentages": [
+        8.1,
+        25.6
+      ],
+      "memory_usage_mb": [
+        999.55078125,
+        1000.7265625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_202001",
+    "num_clients": 202001,
+    "resources": {
+      "duration_seconds": 12.295201301574707,
+      "average_cpu_percent": 3.75,
+      "max_memory_mb": 1001.921875,
+      "timestamps": [
+        1773070841.689016,
+        1773070853.9841728
+      ],
+      "cpu_percentages": [
+        2.5,
+        5.0
+      ],
+      "memory_usage_mb": [
+        1000.7421875,
+        1001.921875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_203001",
+    "num_clients": 203001,
+    "resources": {
+      "duration_seconds": 12.233712911605835,
+      "average_cpu_percent": 21.35,
+      "max_memory_mb": 1006.0859375,
+      "timestamps": [
+        1773070854.373505,
+        1773070866.607083
+      ],
+      "cpu_percentages": [
+        40.0,
+        2.7
+      ],
+      "memory_usage_mb": [
+        1001.94140625,
+        1006.0859375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_204001",
+    "num_clients": 204001,
+    "resources": {
+      "duration_seconds": 12.510105848312378,
+      "average_cpu_percent": 13.8,
+      "max_memory_mb": 1006.90625,
+      "timestamps": [
+        1773070867.0197926,
+        1773070879.5298512
+      ],
+      "cpu_percentages": [
+        22.5,
+        5.1
+      ],
+      "memory_usage_mb": [
+        1006.10546875,
+        1006.90625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_205001",
+    "num_clients": 205001,
+    "resources": {
+      "duration_seconds": 12.537300109863281,
+      "average_cpu_percent": 17.9,
+      "max_memory_mb": 1007.12890625,
+      "timestamps": [
+        1773070879.9598951,
+        1773070892.4971457
+      ],
+      "cpu_percentages": [
+        30.8,
+        5.0
+      ],
+      "memory_usage_mb": [
+        1006.90625,
+        1007.12890625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_206001",
+    "num_clients": 206001,
+    "resources": {
+      "duration_seconds": 12.34535813331604,
+      "average_cpu_percent": 17.15,
+      "max_memory_mb": 1007.46875,
+      "timestamps": [
+        1773070892.8856564,
+        1773070905.2309623
+      ],
+      "cpu_percentages": [
+        31.7,
+        2.6
+      ],
+      "memory_usage_mb": [
+        1007.1484375,
+        1007.46875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_207001",
+    "num_clients": 207001,
+    "resources": {
+      "duration_seconds": 12.585460901260376,
+      "average_cpu_percent": 5.05,
+      "max_memory_mb": 1007.89453125,
+      "timestamps": [
+        1773070905.6017182,
+        1773070918.1871338
+      ],
+      "cpu_percentages": [
+        5.1,
+        5.0
+      ],
+      "memory_usage_mb": [
+        1007.484375,
+        1007.89453125
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_208001",
+    "num_clients": 208001,
+    "resources": {
+      "duration_seconds": 12.48359227180481,
+      "average_cpu_percent": 1.3,
+      "max_memory_mb": 1009.80859375,
+      "timestamps": [
+        1773070918.5931106,
+        1773070931.0766444
+      ],
+      "cpu_percentages": [
+        2.6,
+        0.0
+      ],
+      "memory_usage_mb": [
+        1007.91015625,
+        1009.80859375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_209001",
+    "num_clients": 209001,
+    "resources": {
+      "duration_seconds": 12.370499610900879,
+      "average_cpu_percent": 16.3,
+      "max_memory_mb": 1010.74609375,
+      "timestamps": [
+        1773070931.473445,
+        1773070943.8438869
+      ],
+      "cpu_percentages": [
+        23.1,
+        9.5
+      ],
+      "memory_usage_mb": [
+        1009.82421875,
+        1010.74609375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_210001",
+    "num_clients": 210001,
+    "resources": {
+      "duration_seconds": 12.947889566421509,
+      "average_cpu_percent": 9.65,
+      "max_memory_mb": 1011.8671875,
+      "timestamps": [
+        1773070944.2299554,
+        1773070957.1777937
+      ],
+      "cpu_percentages": [
+        16.7,
+        2.6
+      ],
+      "memory_usage_mb": [
+        1010.76171875,
+        1011.8671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_211001",
+    "num_clients": 211001,
+    "resources": {
+      "duration_seconds": 12.565586805343628,
+      "average_cpu_percent": 3.8499999999999996,
+      "max_memory_mb": 1013.0546875,
+      "timestamps": [
+        1773070957.5907586,
+        1773070970.1563063
+      ],
+      "cpu_percentages": [
+        5.1,
+        2.6
+      ],
+      "memory_usage_mb": [
+        1011.88671875,
+        1013.0546875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_212001",
+    "num_clients": 212001,
+    "resources": {
+      "duration_seconds": 12.4719557762146,
+      "average_cpu_percent": 11.25,
+      "max_memory_mb": 1014.25390625,
+      "timestamps": [
+        1773070970.5848649,
+        1773070983.0567775
+      ],
+      "cpu_percentages": [
+        7.5,
+        15.0
+      ],
+      "memory_usage_mb": [
+        1013.06640625,
+        1014.25390625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_213001",
+    "num_clients": 213001,
+    "resources": {
+      "duration_seconds": 13.002342224121094,
+      "average_cpu_percent": 15.850000000000001,
+      "max_memory_mb": 1015.52734375,
+      "timestamps": [
+        1773070983.48851,
+        1773070996.490811
+      ],
+      "cpu_percentages": [
+        26.8,
+        4.9
+      ],
+      "memory_usage_mb": [
+        1014.26953125,
+        1015.52734375
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_214001",
+    "num_clients": 214001,
+    "resources": {
+      "duration_seconds": 12.645864725112915,
+      "average_cpu_percent": 14.65,
+      "max_memory_mb": 1016.63671875,
+      "timestamps": [
+        1773070996.9122906,
+        1773071009.5580792
+      ],
+      "cpu_percentages": [
+        29.3,
+        0.0
+      ],
+      "memory_usage_mb": [
+        1015.53125,
+        1016.63671875
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_215001",
+    "num_clients": 215001,
+    "resources": {
+      "duration_seconds": 13.049553394317627,
+      "average_cpu_percent": 17.15,
+      "max_memory_mb": 1017.81640625,
+      "timestamps": [
+        1773071009.9647312,
+        1773071023.0142372
+      ],
+      "cpu_percentages": [
+        29.3,
+        5.0
+      ],
+      "memory_usage_mb": [
+        1016.65234375,
+        1017.81640625
+      ]
+    }
+  },
+  {
+    "experiment_name": "dashboard_integration_216001",
+    "num_clients": 216001,
+    "resources": {
+      "duration_seconds": 12.767717361450195,
+      "average_cpu_percent": 22.85,
+      "max_memory_mb": 1019.09375,
+      "timestamps": [
+        1773071023.4582324,
+        1773071036.2258832
+      ],
+      "cpu_percentages": [
+        35.7,
+        10.0
+      ],
+      "memory_usage_mb": [
+        1017.8359375,
+        1019.09375
+      ]
+    }
+  }
+]
