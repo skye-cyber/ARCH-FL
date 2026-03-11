@@ -21,12 +21,13 @@ class ExperimentManager:
     """
 
     def __init__(
-        self, storage_path: Optional[str] = None, filewarp_path: Optional[str] = None
+        self, storage_path: Optional[str] = None, db_manager=None
     ):
         self.tasks: Dict[str, ExperimentModel] = {}
-        self.executor = Executor(filewarp_path)
+        self.executor = Executor(db_manager)
         self._lock = Lock()
         self.storage_path = storage_path
+        self.db_manager = db_manager
 
         if storage_path:
             Path(storage_path).mkdir(parents=True, exist_ok=True)

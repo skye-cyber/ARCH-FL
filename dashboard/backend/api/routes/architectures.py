@@ -182,16 +182,15 @@ def create_architecture(architecture: ArchitectureCreate):
     if not architecture.name or not architecture.config:
         raise HTTPException(status_code=400, detail="Name and config are required")
     
+    # Check if architecture already exists
+    if dbmanager.validate_architecture_exists(architecture.name):
+        raise HTTPException(status_code=400, detail="Architecture name already exists")
+    
     # Step 2: Store in database (transaction)
     conn = dbmanager.connection
     cursor = conn.cursor()
     
     try:
-        # Check if name exists
-        cursor.execute("SELECT COUNT(*) FROM architectures WHERE name = ?", (architecture.name,))
-        if cursor.fetchone()[0] > 0:
-            raise HTTPException(status_code=400, detail="Architecture name already exists")
-        
         # Insert into database
         cursor.execute(
             """

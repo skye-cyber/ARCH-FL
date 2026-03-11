@@ -23,6 +23,19 @@ def get_experiments():
 @router.post("/", response_model=Dict)
 def create_experiment(experiment: ExperimentCreate):
     """Create a new experiment."""
+    # Validate inputs
+    if not dbmanager.validate_architecture_exists(experiment.architecture_name):
+        raise HTTPException(status_code=400, detail=f"Architecture '{experiment.architecture_name}' not found")
+    
+    if not dbmanager.validate_dataset_exists(experiment.dataset_name):
+        raise HTTPException(status_code=400, detail=f"Dataset '{experiment.dataset_name}' not found")
+    
+    if experiment.num_clients < 1:
+        raise HTTPException(status_code=400, detail="Number of clients must be at least 1")
+    
+    if not experiment.parameters:
+        raise HTTPException(status_code=400, detail="Parameters are required")
+    
     conn = dbmanager.connection
     cursor = conn.cursor()
 
@@ -201,6 +214,10 @@ def add_experiment_result(experiment_id: int, result: Dict):
 @router.post("/{experiment_id}/run", response_model=Dict)
 def run_experiment(experiment_id: int):
     """Run an experiment using ARCH-FL core."""
+    # Validate experiment exists
+    if not dbmanager.validate_experiment_exists(experiment_id):
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
     # Get experiment details
     conn = dbmanager.connection
     cursor = conn.cursor()
@@ -216,6 +233,13 @@ def run_experiment(experiment_id: int):
     # Check if experiment is already running
     if experiment_dict["status"] == "running":
         raise HTTPException(status_code=400, detail="Experiment is already running")
+    
+    # Validate architecture and dataset still exist
+    if not dbmanager.validate_architecture_exists(experiment_dict["architecture_name"]):
+        raise HTTPException(status_code=400, detail=f"Architecture '{experiment_dict['architecture_name']}' not found")
+    
+    if not dbmanager.validate_dataset_exists(experiment_dict["dataset_name"]):
+        raise HTTPException(status_code=400, detail=f"Dataset '{experiment_dict['dataset_name']}' not found")
 
     # Update status to running
     conn = dbmanager.connection

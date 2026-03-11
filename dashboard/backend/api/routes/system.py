@@ -27,7 +27,7 @@ async def get_system_status(
     Get system status and statistics
     """
     try:
-        # Get task statistics
+        # Get task statistics from task manager
         task_stats = task_manager.get_statistics()
 
         # Get progress statistics
@@ -233,7 +233,7 @@ async def cleanup_system(
     Clean up old tasks and temporary files
     """
     try:
-        # Clean up old tasks
+        # Clean up old tasks from memory
         task_count = task_manager.cleanup_old_tasks(days=days)
 
         # Clean up temp files (implement based on your temp file strategy)

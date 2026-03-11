@@ -13,9 +13,10 @@ class Executor:
     Executes operations with proper error handling and progress tracking
     """
 
-    def __init__(self, filewarp_path: Optional[str] = None):
+    def __init__(self, db_manager=None):
         self.active_tasks = {}
         self._lock = threading.Lock()
+        self.db_manager = db_manager or dbmanager
 
     def execute(
         self, task: ExperimentModel, progress_callback: Optional[Callable] = None

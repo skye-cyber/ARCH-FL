@@ -17,9 +17,10 @@ def get_experiment_manager() -> ExperimentManager:
     """Get or create ExperimentManager singleton"""
     global _experiment_manager
     if _experiment_manager is None:
+        from backend.core.db import dbmanager
         _experiment_manager = ExperimentManager(
             storage_path=settings.TASK_STORAGE_PATH,
-            filewarp_path=settings.FILEWARP_PATH,
+            db_manager=dbmanager,
         )
         logger.info("ExperimentManager initialized")
     return _experiment_manager
