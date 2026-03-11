@@ -241,109 +241,12 @@ def run_experiment(experiment_id: int):
     if not dbmanager.validate_dataset_exists(experiment_dict["dataset_name"]):
         raise HTTPException(status_code=400, detail=f"Dataset '{experiment_dict['dataset_name']}' not found")
 
-    # Update status to running
-    conn = dbmanager.connection
-    cursor = conn.cursor()
-    cursor.execute(
-        "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
-        ("running", datetime.now().isoformat(), experiment_id),
-    )
-    conn.commit()
-    conn.close()
-
+    # Use the executor to run the experiment
+    from backend.core.executor import Executor
+    executor = Executor(dbmanager)
+    
     # Start experiment execution in background
-    import threading
-
-    def execute_experiment():
-        try:
-            # Import ARCH-FL core components
-            from src.core.dashboard_integration import (
-                DashboardConnector,
-                create_dashboard_callback,
-            )
-            from src.models.architecture_registry import get_architecture_registry
-            from src.data.loader_registry import get_data_loader_registry
-            from src.core.coordinator import Coordinator
-            from src.training.fedavg import federated_average
-
-            # Initialize dashboard connector
-            dashboard_connector = DashboardConnector()
-
-            # Create progress callback
-            progress_callback = create_dashboard_callback(
-                experiment_id, dashboard_connector
-            )
-
-            # Get architecture and dataset
-            try:
-                arch_registry = get_architecture_registry()
-                data_registry = get_data_loader_registry()
-
-                # Get architecture
-                architecture_info = arch_registry.get_architecture_info(
-                    experiment_dict["architecture_name"]
-                )
-
-                # Get dataset
-                dataset_info = data_registry.get_dataset_info(
-                    experiment_dict["dataset_name"]
-                )
-
-                # Create model
-                model = arch_registry.create_model(
-                    experiment_dict["architecture_name"],
-                    input_size=dataset_info.get("input_size", 28),
-                )
-
-                # Create coordinator with callback
-                coordinator = Coordinator(
-                    model,
-                    aggregation_method=experiment_dict["parameters"].get(
-                        "aggregation_method", "fed_avg"
-                    ),
-                    progress_callback=progress_callback,
-                )
-
-                # Get training parameters
-                params = json.loads(experiment_dict["parameters"])
-                num_rounds = params.get("num_rounds", 5)
-                num_clients = experiment_dict["num_clients"]
-
-                # Run federated training
-                federated_average(
-                    coordinator=coordinator,
-                    dataset_name=experiment_dict["dataset_name"],
-                    num_clients=num_clients,
-                    num_rounds=num_rounds,
-                    iid=experiment_dict["iid"],
-                    progress_callback=progress_callback,
-                )
-
-                # Update final status
-                dashboard_connector.update_experiment_status(
-                    experiment_id,
-                    "completed",
-                    {"round": num_rounds, "status": "completed"},
-                )
-
-            except ImportError as e:
-                # Fallback if ARCH-FL core not available
-                print(f"ARCH-FL core not available: {e}")
-                dashboard_connector.update_experiment_status(
-                    experiment_id, "failed", {"error": "ARCH-FL core not available"}
-                )
-            except Exception as e:
-                print(f"Experiment failed: {e}")
-                dashboard_connector.update_experiment_status(
-                    experiment_id, "failed", {"error": str(e)}
-                )
-
-        except Exception as e:
-            print(f"Error in experiment execution: {e}")
-
-    # Start execution thread
-    thread = threading.Thread(target=execute_experiment, daemon=True)
-    thread.start()
+    executor.execute_async(experiment_id, experiment_dict)
 
     return {
         "status": "started",
@@ -464,99 +367,12 @@ def restart_experiment(experiment_id: int):
     conn.commit()
     conn.close()
 
+    # Use the executor to run the experiment
+    from backend.core.executor import Executor
+    executor = Executor(dbmanager)
+    
     # Start experiment execution in background
-    import threading
-
-    def execute_experiment():
-        try:
-            # Import ARCH-FL core components
-            from src.core.dashboard_integration import (
-                DashboardConnector,
-                create_dashboard_callback,
-            )
-            from src.models.architecture_registry import get_architecture_registry
-            from src.data.loader_registry import get_data_loader_registry
-            from src.core.coordinator import Coordinator
-            from src.training.fedavg import federated_average
-
-            # Initialize dashboard connector
-            dashboard_connector = DashboardConnector()
-
-            # Create progress callback
-            progress_callback = create_dashboard_callback(
-                experiment_id, dashboard_connector
-            )
-
-            # Get architecture and dataset
-            try:
-                arch_registry = get_architecture_registry()
-                data_registry = get_data_loader_registry()
-
-                # Get architecture
-                architecture_info = arch_registry.get_architecture_info(
-                    experiment_dict["architecture_name"]
-                )
-
-                # Get dataset
-                dataset_info = data_registry.get_dataset_info(
-                    experiment_dict["dataset_name"]
-                )
-
-                # Create model
-                model = arch_registry.create_model(
-                    experiment_dict["architecture_name"],
-                    input_size=dataset_info.get("input_size", 28),
-                )
-
-                # Create coordinator with callback
-                coordinator = Coordinator(
-                    model,
-                    aggregation_method=experiment_dict["parameters"].get(
-                        "aggregation_method", "fed_avg"
-                    ),
-                    progress_callback=progress_callback,
-                )
-
-                # Get training parameters
-                params = json.loads(experiment_dict["parameters"])
-                num_rounds = params.get("num_rounds", 5)
-                num_clients = experiment_dict["num_clients"]
-
-                # Run federated training
-                federated_average(
-                    coordinator=coordinator,
-                    dataset_name=experiment_dict["dataset_name"],
-                    num_clients=num_clients,
-                    num_rounds=num_rounds,
-                    iid=experiment_dict["iid"],
-                    progress_callback=progress_callback,
-                )
-
-                # Update final status
-                dashboard_connector.update_experiment_status(
-                    experiment_id,
-                    "completed",
-                    {"round": num_rounds, "status": "completed"},
-                )
-
-            except ImportError as e:
-                # Fallback if ARCH-FL core not available
-                print(f"ARCH-FL core not available: {e}")
-                dashboard_connector.update_experiment_status(
-                    experiment_id, "failed", {"error": "ARCH-FL core not available"}
-                )
-            except Exception as e:
-                print(f"Experiment failed: {e}")
-                dashboard_connector.update_experiment_status(
-                    experiment_id, "failed", {"error": str(e)}
-                )
-
-        except Exception as e:
-            print(f"Error in experiment execution: {e}")
-
-    # Start execution thread
-    thread = threading.Thread(target=execute_experiment, daemon=True)
-    thread.start()
+    executor.execute_async(experiment_id, experiment_dict)
 
     return {
         "status": "restarted",

@@ -3,6 +3,7 @@ import threading
 import traceback
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
+from fastapi import HTTPException
 from ..models.experiment import ExperimentModel, ExperimentStatus
 from ..utils.logger import logger
 from ..core.db import dbmanager
@@ -19,73 +20,125 @@ class Executor:
         self.db_manager = db_manager or dbmanager
 
     def execute(
-        self, task: ExperimentModel, progress_callback: Optional[Callable] = None
+        self, 
+        experiment_id: int, 
+        experiment_data: Dict[str, Any],
+        progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
         """
-        Execute a task and return the result
+        Execute an experiment with proper error handling and progress tracking
+        
+        Args:
+            experiment_id: ID of the experiment in database
+            experiment_data: Experiment data from database
+            progress_callback: Optional callback for progress updates
+            
+        Returns:
+            Dictionary with execution results
         """
         try:
-            # Get the appropriate handler
-            # Here we do not need interpreter we just call the experiment executor
-
-            # Create wrapped progress callback
-            def wrapped_progress(progress: int, message: str):
-                task.progress = progress
-                task.message = message
-                task.logs.append(f"[{datetime.now().isoformat()}] {message}")
-                if progress_callback:
-                    progress_callback(progress, message)
-
-            # Execute the handler
-            result = handler(task.params, wrapped_progress)
-            # Get experiment details
-            conn = dbmanager.connection
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
-            experiment = cursor.fetchone()
-            conn.close()
-
-            if not experiment:
+            # Validate experiment exists and is in correct state
+            if not self.db_manager.validate_experiment_exists(experiment_id):
                 raise HTTPException(status_code=404, detail="Experiment not found")
-
-            experiment_dict = dict(experiment)
-
+            
             # Check if experiment is already running
-            if experiment_dict["status"] == "running":
+            if experiment_data.get("status") == "running":
                 raise HTTPException(
                     status_code=400, detail="Experiment is already running"
                 )
-
-            # Update task with result
-            task.result = result
-            task.status = ExperimentStatus.COMPLETED
-            task.progress = 100
-            task.message = "Operation completed successfully"
-
+            
+            # Validate architecture and dataset exist
+            if not self.db_manager.validate_architecture_exists(experiment_data["architecture_name"]):
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Architecture '{experiment_data['architecture_name']}' not found"
+                )
+            
+            if not self.db_manager.validate_dataset_exists(experiment_data["dataset_name"]):
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Dataset '{experiment_data['dataset_name']}' not found"
+                )
+            
+            # Update experiment status to running
+            with self.db_manager.transaction() as cursor:
+                cursor.execute(
+                    "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
+                    ("running", datetime.now().isoformat(), experiment_id),
+                )
+            
+            # Create wrapped progress callback
+            def wrapped_progress(progress: int, message: str, metadata: Optional[Dict] = None):
+                """Wrapper to handle progress updates"""
+                # Update in database
+                with self.db_manager.transaction() as cursor:
+                    cursor.execute(
+                        "UPDATE experiments SET status = ?, message = ? WHERE id = ?",
+                        ("running", message, experiment_id),
+                    )
+                
+                # Call external callback if provided
+                if progress_callback:
+                    progress_callback(progress, message, metadata)
+            
+            # Execute the experiment
+            result = self._execute_experiment(
+                experiment_id, 
+                experiment_data,
+                wrapped_progress
+            )
+            
+            # Update final status
+            with self.db_manager.transaction() as cursor:
+                cursor.execute(
+                    "UPDATE experiments SET status = ?, message = ?, updated_at = ? WHERE id = ?",
+                    ("completed", "Experiment completed successfully", datetime.now().isoformat(), experiment_id),
+                )
+            
             return result
 
+        except HTTPException:
+            # Re-raise HTTP exceptions
+            raise
         except Exception as e:
             # Log the error
-            error_msg = f"Operation failed: {str(e)}"
+            error_msg = f"Experiment failed: {str(e)}"
             logger.error(error_msg)
             logger.debug(traceback.format_exc())
-
-            # Update task with error
-            task.status = ExperimentStatus.FAILED
-            task.error = error_msg
-            task.message = error_msg
-            task.logs.append(f"[{datetime.now().isoformat()}] ERROR: {error_msg}")
-
+            
+            # Update experiment status to failed
+            try:
+                with self.db_manager.transaction() as cursor:
+                    cursor.execute(
+                        "UPDATE experiments SET status = ?, message = ?, error = ?, updated_at = ? WHERE id = ?",
+                        ("failed", error_msg, str(e), datetime.now().isoformat(), experiment_id),
+                    )
+            except Exception as db_error:
+                logger.error(f"Failed to update experiment status: {db_error}")
+            
             # Re-raise for task manager to handle
             raise
 
-    def execute_experiment(experiment: Dict):
+    def _execute_experiment(
+        self, 
+        experiment_id: int, 
+        experiment_data: Dict[str, Any],
+        progress_callback: Callable
+    ) -> Dict[str, Any]:
+        """
+        Internal method to execute experiment using ARCH-FL core
+        
+        Args:
+            experiment_id: ID of the experiment
+            experiment_data: Experiment data from database
+            progress_callback: Callback for progress updates
+            
+        Returns:
+            Dictionary with execution results
+        """
         try:
             # Import ARCH-FL core components
-            from src.core.dashboard_integration import (
-                DashboardConnector,
-                create_dashboard_callback,
-            )
+            from src.core.dashboard_integration import DashboardConnector
             from src.models.architecture_registry import get_architecture_registry
             from src.data.loader_registry import get_data_loader_registry
             from src.core.coordinator import Coordinator
@@ -94,100 +147,139 @@ class Executor:
             # Initialize dashboard connector
             dashboard_connector = DashboardConnector()
 
-            # Create progress callback
-            progress_callback = create_dashboard_callback(
-                experiment_id, dashboard_connector
+            # Get architecture and dataset
+            arch_registry = get_architecture_registry()
+            data_registry = get_data_loader_registry()
+
+            # Get architecture info
+            architecture_info = arch_registry.get_architecture_info(
+                experiment_data["architecture_name"]
+            )
+            if not architecture_info:
+                raise ValueError(f"Architecture '{experiment_data['architecture_name']}' not found in registry")
+
+            # Get dataset info
+            dataset_info = data_registry.get_dataset_info(
+                experiment_data["dataset_name"]
+            )
+            if not dataset_info:
+                raise ValueError(f"Dataset '{experiment_data['dataset_name']}' not found in registry")
+
+            # Create model
+            model = arch_registry.create_model(
+                experiment_data["architecture_name"],
+                input_size=dataset_info.get("input_size", 28),
             )
 
-            # Get architecture and dataset
-            try:
-                arch_registry = get_architecture_registry()
-                data_registry = get_data_loader_registry()
+            # Create coordinator with callback
+            coordinator = Coordinator(
+                model,
+                aggregation_method=experiment_data["parameters"].get(
+                    "aggregation_method", "fed_avg"
+                ),
+                progress_callback=lambda progress, message, metadata=None: progress_callback(
+                    progress, message, metadata
+                ),
+            )
 
-                # Get architecture
-                architecture_info = arch_registry.get_architecture_info(
-                    experiment["architecture_name"]
+            # Get training parameters
+            params = json.loads(experiment_data["parameters"])
+            num_rounds = params.get("num_rounds", 5)
+            num_clients = experiment_data["num_clients"]
+
+            # Report initial progress
+            progress_callback(0, "Starting federated training")
+
+            # Run federated training
+            federated_average(
+                coordinator=coordinator,
+                dataset_name=experiment_data["dataset_name"],
+                num_clients=num_clients,
+                num_rounds=num_rounds,
+                iid=experiment_data["iid"],
+                progress_callback=lambda progress, message, metadata=None: progress_callback(
+                    progress, message, metadata
+                ),
+            )
+
+            # Report completion
+            progress_callback(100, "Training completed successfully")
+
+            # Update final status in database
+            with self.db_manager.transaction() as cursor:
+                cursor.execute(
+                    "UPDATE experiments SET status = ?, message = ?, updated_at = ? WHERE id = ?",
+                    ("completed", "Training completed successfully", datetime.now().isoformat(), experiment_id),
                 )
 
-                # Get dataset
-                dataset_info = data_registry.get_dataset_info(
-                    experiment["dataset_name"]
-                )
+            return {
+                "status": "completed",
+                "message": "Experiment completed successfully",
+                "experiment_id": experiment_id,
+                "rounds_completed": num_rounds,
+            }
 
-                # Create model
-                model = arch_registry.create_model(
-                    experiment["architecture_name"],
-                    input_size=dataset_info.get("input_size", 28),
+        except ImportError as e:
+            # Fallback if ARCH-FL core not available
+            error_msg = f"ARCH-FL core not available: {e}"
+            logger.error(error_msg)
+            
+            # Update status to failed
+            with self.db_manager.transaction() as cursor:
+                cursor.execute(
+                    "UPDATE experiments SET status = ?, message = ?, error = ?, updated_at = ? WHERE id = ?",
+                    ("failed", error_msg, error_msg, datetime.now().isoformat(), experiment_id),
                 )
-
-                # Create coordinator with callback
-                coordinator = Coordinator(
-                    model,
-                    aggregation_method=experiment["parameters"].get(
-                        "aggregation_method", "fed_avg"
-                    ),
-                    progress_callback=progress_callback,
-                )
-
-                # Get training parameters
-                params = json.loads(experiment["parameters"])
-                num_rounds = params.get("num_rounds", 5)
-                num_clients = experiment["num_clients"]
-
-                # Run federated training
-                federated_average(
-                    coordinator=coordinator,
-                    dataset_name=experiment["dataset_name"],
-                    num_clients=num_clients,
-                    num_rounds=num_rounds,
-                    iid=experiment["iid"],
-                    progress_callback=progress_callback,
-                )
-
-                # Update final status
-                dashboard_connector.update_experiment_status(
-                    experiment_id,
-                    "completed",
-                    {"round": num_rounds, "status": "completed"},
-                )
-
-            except ImportError as e:
-                # Fallback if ARCH-FL core not available
-                print(f"ARCH-FL core not available: {e}")
-                dashboard_connector.update_experiment_status(
-                    experiment_id, "failed", {"error": "ARCH-FL core not available"}
-                )
-            except Exception as e:
-                print(f"Experiment failed: {e}")
-                dashboard_connector.update_experiment_status(
-                    experiment_id, "failed", {"error": str(e)}
-                )
-
+            
+            raise RuntimeError(error_msg)
         except Exception as e:
-            print(f"Error in experiment execution: {e}")
+            error_msg = f"Experiment execution failed: {str(e)}"
+            logger.error(error_msg)
+            logger.debug(traceback.format_exc())
+            
+            # Update status to failed
+            with self.db_manager.transaction() as cursor:
+                cursor.execute(
+                    "UPDATE experiments SET status = ?, message = ?, error = ?, updated_at = ? WHERE id = ?",
+                    ("failed", error_msg, str(e), datetime.now().isoformat(), experiment_id),
+                )
+            
+            raise RuntimeError(error_msg)
 
-    def execute_async(self, task: ExperimentModel, callback: Optional[Callable] = None):
+    def execute_async(
+        self, 
+        experiment_id: int, 
+        experiment_data: Dict[str, Any],
+        callback: Optional[Callable] = None
+    ):
         """
-        Execute a task asynchronously in a separate thread
+        Execute an experiment asynchronously in a separate thread
+        
+        Args:
+            experiment_id: ID of the experiment
+            experiment_data: Experiment data from database
+            callback: Optional callback for completion notification
+            
+        Returns:
+            Thread object
         """
-
         def _execute_wrapper():
             try:
                 with self._lock:
-                    self.active_tasks[task.task_id] = task
+                    self.active_tasks[experiment_id] = experiment_data
 
-                result = self.execute(task)
+                result = self.execute(experiment_id, experiment_data)
 
                 if callback:
-                    callback(task.task_id, True, result)
+                    callback(experiment_id, True, result)
 
             except Exception as e:
                 if callback:
-                    callback(task.task_id, False, str(e))
+                    callback(experiment_id, False, str(e))
             finally:
                 with self._lock:
-                    if task.task_id in self.active_tasks:
-                        del self.active_tasks[task.task_id]
+                    if experiment_id in self.active_tasks:
+                        del self.active_tasks[experiment_id]
 
         thread = threading.Thread(target=_execute_wrapper)
         thread.daemon = True
@@ -195,22 +287,37 @@ class Executor:
 
         return thread
 
-    def cancel_task(self, task_id: str) -> bool:
+    def cancel_task(self, experiment_id: int) -> bool:
         """
-        Attempt to cancel a running task
+        Attempt to cancel a running experiment
+        
+        Args:
+            experiment_id: ID of the experiment to cancel
+            
+        Returns:
+            True if cancellation was initiated, False otherwise
         """
         with self._lock:
-            if task_id in self.active_tasks:
-                task = self.active_tasks[task_id]
-                task.cancel_flag = True
-                task.status = ExperimentStatus.CANCELLED
-                task.message = "Task cancelled by user"
+            if experiment_id in self.active_tasks:
+                # Update status in database
+                with self.db_manager.transaction() as cursor:
+                    cursor.execute(
+                        "UPDATE experiments SET status = ?, message = ?, updated_at = ? WHERE id = ?",
+                        ("cancelled", "Experiment cancelled by user", datetime.now().isoformat(), experiment_id),
+                    )
+                
+                # Remove from active tasks
+                del self.active_tasks[experiment_id]
+                
                 return True
         return False
 
-    def get_active_tasks(self) -> Dict[str, ExperimentModel]:
+    def get_active_tasks(self) -> Dict[int, Dict[str, Any]]:
         """
-        Get all currently active tasks
+        Get all currently active experiments
+        
+        Returns:
+            Dictionary of active experiments
         """
         with self._lock:
             return self.active_tasks.copy()
