@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Any, Optional, Dict, List
+from typing import Any, Optional, Dict
 
 
 class ExperimentCreate(BaseModel):
@@ -17,10 +17,3 @@ class ExperimentUpdate(BaseModel):
     description: Optional[str]
     status: Optional[str]
     parameters: Optional[Dict[str, Any]]
-
-
-class ArchitectureCreate(BaseModel):
-    name: str
-    description: str = ""
-    config: Dict[str, Any]
-    compatible_datasets: Optional[List[str]] = []
