@@ -4,7 +4,7 @@ import time
 import math
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends, Query
-from backend.core.task_manager import TaskManager
+from backend.core.experiment_manager import TaskManager
 from backend.services.progress_service import ProgressService
 from backend.api.dependencies import get_task_manager, get_progress_service
 from backend.models.responses import SystemInfoResponse
