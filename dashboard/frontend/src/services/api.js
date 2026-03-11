@@ -1,24 +1,24 @@
-import axios from 'axios'
+import axios from "axios";
 
 // Create axios instance
 const api = axios.create({
-  baseURL: 'http://localhost:8008/api',
-})
+  baseURL: "http://localhost:8008/api",
+});
 
 // Add request interceptor for auth tokens if needed
 api.interceptors.request.use(
   (config) => {
     // Add auth token if available
-    const token = localStorage.getItem('authToken')
+    const token = localStorage.getItem("authToken");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    return config
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
-  }
-)
+    return Promise.reject(error);
+  },
+);
 
 // Add response interceptor for error handling
 api.interceptors.response.use(
@@ -28,43 +28,49 @@ api.interceptors.response.use(
       // Handle specific error statuses
       if (error.response.status === 401) {
         // Handle unauthorized
-        window.location.href = '/login'
+        window.location.href = "/login";
       }
     }
-    return Promise.reject(error)
-  }
-)
+    return Promise.reject(error);
+  },
+);
 
 export const experimentService = {
-  getAll: () => api.get('/experiments'),
+  getAll: () => api.get("/experiments"),
   getById: (id) => api.get(`/experiments/${id}`),
-  create: (experimentData) => api.post('/experiments', experimentData),
+  create: (experimentData) => api.post("/experiments", experimentData),
   update: (id, updateData) => api.put(`/experiments/${id}`, updateData),
   getResults: (id) => api.get(`/experiments/${id}/results`),
-  addResult: (id, resultData) => api.post(`/experiments/${id}/results`, resultData),
+  addResult: (id, resultData) =>
+    api.post(`/experiments/${id}/results`, resultData),
   run: (id) => api.post(`/experiments/${id}/run`),
   cancel: (id) => api.post(`/experiments/${id}/cancel`),
   delete: (id) => api.post(`/experiments/${id}/delete`),
   restart: (id) => api.post(`/experiments/${id}/restart`),
-  batchActions: (actionData) => api.post('/experiments/actions', actionData),
-}
+  batchActions: (actionData) => api.post("/experiments/actions", actionData),
+};
 
 export const architectureService = {
-  getAll: () => api.get('/architectures'),
+  getAll: () => api.get("/architectures"),
   getByName: (name) => api.get(`/architectures/view/${name}`),
-  create: (architectureData) => api.post('/architectures', architectureData),
-  getRegistry: () => api.get('/architectures/registry'),
+  create: (architectureData) => api.post("/architectures", architectureData),
+  getRegistry: () => api.get("/architectures/registry"),
   delete: (name) => api.post(`/architectures/${name}/delete`),
   duplicate: (name) => api.post(`/architectures/${name}/duplicate`),
-  update: (name, updateData) => api.post(`/architectures/${name}/update`, updateData),
-}
+  update: (name, updateData) =>
+    api.post(`/architectures/${name}/update`, updateData),
+};
 
 export const datasetService = {
-  getAll: () => api.get('/datasets'),
-}
+  getAll: () => api.get("/datasets"),
+};
 
 export const healthService = {
-  check: () => api.get('/health'),
-}
+  check: () => api.get("/health"),
+};
 
-export default api
+export const systemStatsService = {
+  get: () => api.get("/system/stats"),
+};
+
+export default api;

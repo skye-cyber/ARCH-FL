@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   healthService,
   experimentService,
   datasetService,
   architectureService,
+  systemStatsService,
 } from "../services/api";
 
 import {
@@ -27,6 +29,7 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     experiments: 0,
     datasets: 0,
@@ -62,11 +65,13 @@ export default function Home() {
           experimentsResponse,
           datasetsResponse,
           architecturesResponse,
+          systemStatResponse,
         ] = await Promise.all([
           healthService.check(),
           experimentService.getAll(),
           datasetService.getAll(),
           architectureService.getRegistry(),
+          systemStatsService.get(),
         ]);
 
         setStats({
@@ -261,10 +266,17 @@ export default function Home() {
               <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                 <BookOpen className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+              <Link
+                target="_blank"
+                to="https://github.com/skye-cyber/ARCH-FL.git"
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
                 <Github className="w-5 h-5" />
-              </button>
-              <button className="ml-2 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow">
+              </Link>
+              <button
+                onClick={() => navigate("experiments/new")}
+                className="ml-2 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 New Project
               </button>
