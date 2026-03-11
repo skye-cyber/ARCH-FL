@@ -2,7 +2,7 @@ import threading
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime, timedelta
 from collections import deque
-from warpapp.utils.logger import logger
+from ..utils.logger import logger
 
 
 class ProgressTracker:
