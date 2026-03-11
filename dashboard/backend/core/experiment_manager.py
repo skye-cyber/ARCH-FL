@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional, List
 from threading import Lock
 from pathlib import Path
 from warpapp.core.executor import OperationExecutor
-from ..models.tasks import (
+from ..models.experiment import (
     ExperimentModel,
     ExperimentStatus,
     ExperimentPriority,
