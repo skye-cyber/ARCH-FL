@@ -52,6 +52,10 @@ class Settings(BaseSettings):
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s", env="LOG_FORMAT"
     )
 
+    # Paths
+    LOG_DIR: Path = Field(DEFAULT_LOG_DIR, env="LOG_DIR")
+    LOG_FILE: str = Field("archfl_server.log", env="LOG_FILE")
+
     # WebSocket
     WS_PING_INTERVAL: int = Field(30, env="WS_PING_INTERVAL")
     WS_MAX_CONNECTIONS: int = Field(1000, env="WS_MAX_CONNECTIONS")

@@ -5,17 +5,17 @@ Main application entry point with API endpoints for the dashboard.
 """
 
 # from fastapi.responses import HTMLResponse
-import os
 import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
-from .db import dbmanager
-from .utils.logger import logger
-from .config.settings import settings
-from .api.routes import (
+sys.path.insert(0, Path(__file__).parent.parent.as_posix())
+from backend.db import dbmanager
+from backend.utils.logger import logger
+from backend.config.settings import settings
+from backend.api.routes import (
     architecture_router,
     experiments_router,
     websockets_router,
