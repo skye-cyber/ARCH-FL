@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 sys.path.insert(0, Path(__file__).parent.parent.as_posix())
-from backend.db import dbmanager
+from backend.core.db import dbmanager
 from backend.utils.logger import logger
 from backend.config.settings import settings
 from backend.api.routes import (

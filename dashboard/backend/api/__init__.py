@@ -1,1 +1,2 @@
-from routes import *
+from .routes import *
+from .dependencies import *

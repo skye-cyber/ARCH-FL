@@ -4,9 +4,9 @@ import time
 import math
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends, Query
-from backend.core.experiment_manager import TaskManager
-from backend.services.progress_service import ProgressService
-from backend.api.dependencies import get_task_manager, get_progress_service
+from backend.core.experiment_manager import ExperimentManager
+from backend.services.progress import ProgressService
+from backend.api.dependencies import get_experiment_manager, get_progress_service
 from backend.models.responses import SystemInfoResponse
 from backend.utils.logger import logger
 from backend.config.settings import settings
@@ -20,7 +20,7 @@ SERVER_START_TIME = time.time()
 
 @router.get("/status")
 async def get_system_status(
-    task_manager: TaskManager = Depends(get_task_manager),
+    task_manager: ExperimentManager = Depends(get_experiment_manager),
     progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
@@ -150,7 +150,7 @@ async def get_version():
 
 @router.get("/metrics")
 async def get_metrics(
-    task_manager: TaskManager = Depends(get_task_manager),
+    task_manager: ExperimentManager = Depends(get_experiment_manager),
     progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
@@ -227,7 +227,7 @@ async def shutdown_server(
 @router.post("/cleanup")
 async def cleanup_system(
     days: int = Query(7, description="Delete tasks older than X days", ge=1, le=30),
-    task_manager: TaskManager = Depends(get_task_manager),
+    task_manager: ExperimentManager = Depends(get_experiment_manager),
 ):
     """
     Clean up old tasks and temporary files

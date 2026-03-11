@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from threading import Lock
 from pathlib import Path
-from warpapp.core.executor import OperationExecutor
+from ..core.executor import Executor
 from ..models.experiment import (
     ExperimentModel,
     ExperimentStatus,
@@ -15,7 +15,7 @@ from ..models.experiment import (
 from ..utils.logger import logger
 
 
-class TaskManager:
+class ExperimentManager:
     """
     Manages task creation, storage, and lifecycle
     """
@@ -24,7 +24,7 @@ class TaskManager:
         self, storage_path: Optional[str] = None, filewarp_path: Optional[str] = None
     ):
         self.tasks: Dict[str, ExperimentModel] = {}
-        self.executor = OperationExecutor(filewarp_path)
+        self.executor = Executor(filewarp_path)
         self._lock = Lock()
         self.storage_path = storage_path
 

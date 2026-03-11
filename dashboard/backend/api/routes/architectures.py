@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Dict
 import sqlite3
 from backend.models.requests import ArchitectureCreate
-from backend.db import dbmanager
+from backend.core.db import dbmanager
 
 
 router = APIRouter(prefix="/architectures", tags=["architectures"])

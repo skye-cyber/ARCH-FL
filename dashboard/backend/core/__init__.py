@@ -1,7 +1,8 @@
-from .task_manager import TaskManager
+from .experiment_manager import ExperimentManager
 from .progress_tracker import ProgressTracker
-
+from .executor import Executor
 __all__ = [
-    "TaskManager",
+    "ExperimentManager",
     "ProgressTracker",
+    "Executor"
 ]

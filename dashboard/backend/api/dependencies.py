@@ -1,28 +1,28 @@
 from typing import Optional
-from ..core.experiment_manager import TaskManager
-from ..services.progress_service import ProgressService
+from ..core.experiment_manager import ExperimentManager
+from ..services.progress import ProgressService
 from ..services.websocket_manager import WebSocketManager
 from ..config.settings import settings
 from ..utils.logger import logger
 from ..services.notification import NotificationService
 
 # Singleton instances
-_task_manager: Optional[TaskManager] = None
+_experiment_manager: Optional[ExperimentManager] = None
 _websocket_manager: Optional[WebSocketManager] = None
 _progress_service: Optional[ProgressService] = None
 _notification_service: Optional[NotificationService] = None
 
 
-def get_task_manager() -> TaskManager:
-    """Get or create TaskManager singleton"""
-    global _task_manager
-    if _task_manager is None:
-        _task_manager = TaskManager(
+def get_experiment_manager() -> ExperimentManager:
+    """Get or create ExperimentManager singleton"""
+    global _experiment_manager
+    if _experiment_manager is None:
+        _experiment_manager = ExperimentManager(
             storage_path=settings.TASK_STORAGE_PATH,
             filewarp_path=settings.FILEWARP_PATH,
         )
-        logger.info("TaskManager initialized")
-    return _task_manager
+        logger.info("ExperimentManager initialized")
+    return _experiment_manager
 
 
 def get_progress_service() -> ProgressService:

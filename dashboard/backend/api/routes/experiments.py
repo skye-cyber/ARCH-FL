@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Dict
 from datetime import datetime
 from backend.models.requests import ExperimentCreate, ExperimentUpdate
-from backend.db import dbmanager
+from backend.core.db import dbmanager
 
 
 router = APIRouter(prefix="/experiments", tags=["experiments"])
