@@ -1,19 +1,60 @@
 import os
 import sqlite3
+from contextlib import contextmanager
 
 
 class DatabaseManager:
     def __init__(self):
-        self = self
+        self.db_path = os.path.join(os.path.dirname(__file__), "..", "data", "dashboard.db")
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
 
-    @property
     def connection(self):
-        """Get SQLite database connection."""
-        db_path = os.path.join(os.path.dirname(__file__), "..", "data", "dashboard.db")
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        conn = sqlite3.connect(db_path)
+        """Get SQLite database connection with foreign key enforcement."""
+        conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
         return conn
+
+    @contextmanager
+    def transaction(self):
+        """Context manager for database transactions."""
+        conn = self.connection()
+        cursor = conn.cursor()
+        try:
+            yield cursor
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def validate_architecture_exists(self, architecture_name: str) -> bool:
+        """Check if architecture exists in database."""
+        with self.transaction() as cursor:
+            cursor.execute(
+                "SELECT COUNT(*) FROM architectures WHERE name = ?",
+                (architecture_name,)
+            )
+            return cursor.fetchone()[0] > 0
+
+    def validate_dataset_exists(self, dataset_name: str) -> bool:
+        """Check if dataset exists in database."""
+        with self.transaction() as cursor:
+            cursor.execute(
+                "SELECT COUNT(*) FROM datasets WHERE name = ?",
+                (dataset_name,)
+            )
+            return cursor.fetchone()[0] > 0
+
+    def get_architecture_in_use_count(self, architecture_name: str) -> int:
+        """Get count of experiments using this architecture."""
+        with self.transaction() as cursor:
+            cursor.execute(
+                "SELECT COUNT(*) FROM experiments WHERE architecture_name = ?",
+                (architecture_name,)
+            )
+            return cursor.fetchone()[0]
 
     def init(self):
         """Initialize database tables."""
