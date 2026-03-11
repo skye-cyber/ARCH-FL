@@ -18,7 +18,7 @@ LOGGING_CONFIG = {
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "default",
-            "filename": settings.LOG_DIR / ,
+            "filename": settings.LOG_DIR / settings.LOG_FILE,
             "maxBytes": 10485760,  # 10MB
             "backupCount": 5,
             "level": settings.LOG_LEVEL,
