@@ -90,7 +90,9 @@ def duplicate_architecture(architecture_name: str):
     """Duplicate an architecture with a new name."""
     # Get the original architecture
     with dbmanager.transaction() as cursor:
-        cursor.execute("SELECT * FROM architectures WHERE name = ?", (architecture_name,))
+        cursor.execute(
+            "SELECT * FROM architectures WHERE name = ?", (architecture_name,)
+        )
         architecture = cursor.fetchone()
 
     if not architecture:
@@ -107,7 +109,8 @@ def duplicate_architecture(architecture_name: str):
     with dbmanager.transaction() as cursor:
         while True:
             cursor.execute(
-                "SELECT COUNT(*) as count FROM architectures WHERE name = ?", (new_name,)
+                "SELECT COUNT(*) as count FROM architectures WHERE name = ?",
+                (new_name,),
             )
             result = cursor.fetchone()
             if result["count"] == 0:
@@ -147,7 +150,9 @@ def update_architecture(architecture_name: str, update_data: ArchitectureCreate)
         raise HTTPException(status_code=404, detail="Architecture not found")
 
     # Check if new name already exists (if changed)
-    if update_data.name != architecture_name and dbmanager.validate_architecture_exists(update_data.name):
+    if update_data.name != architecture_name and dbmanager.validate_architecture_exists(
+        update_data.name
+    ):
         raise HTTPException(status_code=400, detail="Architecture name already exists")
 
     # Update the architecture
@@ -177,19 +182,19 @@ def update_architecture(architecture_name: str, update_data: ArchitectureCreate)
 @router.post("/", response_model=Dict)
 def create_architecture(architecture: ArchitectureCreate):
     """Create architecture in database and optionally register in ARCH-FL registry"""
-    
+
     # Step 1: Validate input
     if not architecture.name or not architecture.config:
         raise HTTPException(status_code=400, detail="Name and config are required")
-    
+
     # Check if architecture already exists
     if dbmanager.validate_architecture_exists(architecture.name):
         raise HTTPException(status_code=400, detail="Architecture name already exists")
-    
+
     # Step 2: Store in database (transaction)
     conn = dbmanager.connection
     cursor = conn.cursor()
-    
+
     try:
         # Insert into database
         cursor.execute(
@@ -205,14 +210,15 @@ def create_architecture(architecture: ArchitectureCreate):
                 json.dumps(architecture.compatible_datasets or []),
             ),
         )
-        
+
         architecture_id = cursor.lastrowid
         conn.commit()
-        
+
         # Step 3: Optionally register in ARCH-FL registry
         registry_success = False
         try:
             from src.models.architecture_registry import get_architecture_registry
+
             registry = get_architecture_registry()
             registry.register_custom_architecture(
                 architecture.name,
@@ -224,24 +230,26 @@ def create_architecture(architecture: ArchitectureCreate):
         except ImportError:
             # Registry not available, continue without it
             pass
-        
+
         # Step 4: Return result
         cursor.execute("SELECT * FROM architectures WHERE id = ?", (architecture_id,))
         created = dict(cursor.fetchone())
-        
+
         return {
             "status": "created",
             "database": "success",
             "registry": "success" if registry_success else "unavailable",
-            "data": created
+            "data": created,
         }
-        
+
     except sqlite3.IntegrityError as e:
         conn.rollback()
         raise HTTPException(status_code=400, detail=f"Database error: {str(e)}")
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to create architecture: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to create architecture: {str(e)}"
+        )
     finally:
         conn.close()
 

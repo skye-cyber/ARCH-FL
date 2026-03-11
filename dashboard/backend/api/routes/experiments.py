@@ -25,17 +25,24 @@ def create_experiment(experiment: ExperimentCreate):
     """Create a new experiment."""
     # Validate inputs
     if not dbmanager.validate_architecture_exists(experiment.architecture_name):
-        raise HTTPException(status_code=400, detail=f"Architecture '{experiment.architecture_name}' not found")
-    
+        raise HTTPException(
+            status_code=400,
+            detail=f"Architecture '{experiment.architecture_name}' not found",
+        )
+
     if not dbmanager.validate_dataset_exists(experiment.dataset_name):
-        raise HTTPException(status_code=400, detail=f"Dataset '{experiment.dataset_name}' not found")
-    
+        raise HTTPException(
+            status_code=400, detail=f"Dataset '{experiment.dataset_name}' not found"
+        )
+
     if experiment.num_clients < 1:
-        raise HTTPException(status_code=400, detail="Number of clients must be at least 1")
-    
+        raise HTTPException(
+            status_code=400, detail="Number of clients must be at least 1"
+        )
+
     if not experiment.parameters:
         raise HTTPException(status_code=400, detail="Parameters are required")
-    
+
     conn = dbmanager.connection
     cursor = conn.cursor()
 
@@ -217,7 +224,7 @@ def run_experiment(experiment_id: int):
     # Validate experiment exists
     if not dbmanager.validate_experiment_exists(experiment_id):
         raise HTTPException(status_code=404, detail="Experiment not found")
-    
+
     # Get experiment details
     conn = dbmanager.connection
     cursor = conn.cursor()
@@ -233,18 +240,25 @@ def run_experiment(experiment_id: int):
     # Check if experiment is already running
     if experiment_dict["status"] == "running":
         raise HTTPException(status_code=400, detail="Experiment is already running")
-    
+
     # Validate architecture and dataset still exist
     if not dbmanager.validate_architecture_exists(experiment_dict["architecture_name"]):
-        raise HTTPException(status_code=400, detail=f"Architecture '{experiment_dict['architecture_name']}' not found")
-    
+        raise HTTPException(
+            status_code=400,
+            detail=f"Architecture '{experiment_dict['architecture_name']}' not found",
+        )
+
     if not dbmanager.validate_dataset_exists(experiment_dict["dataset_name"]):
-        raise HTTPException(status_code=400, detail=f"Dataset '{experiment_dict['dataset_name']}' not found")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Dataset '{experiment_dict['dataset_name']}' not found",
+        )
 
     # Use the executor to run the experiment
     from backend.core.executor import Executor
+
     executor = Executor(dbmanager)
-    
+
     # Start experiment execution in background
     executor.execute_async(experiment_id, experiment_dict)
 
@@ -369,8 +383,9 @@ def restart_experiment(experiment_id: int):
 
     # Use the executor to run the experiment
     from backend.core.executor import Executor
+
     executor = Executor(dbmanager)
-    
+
     # Start experiment execution in background
     executor.execute_async(experiment_id, experiment_dict)
 
