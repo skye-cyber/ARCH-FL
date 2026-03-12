@@ -1,0 +1,164 @@
+dataset_info:
+  features:
+    - name: Path
+      dtype: string
+    - name: Sex
+      dtype:
+        class_label:
+          names:
+            "0": Male
+            "1": Female
+    - name: Age
+      dtype: int64
+    - name: Frontal/Lateral
+      dtype:
+        class_label:
+          names:
+            "0": Frontal
+            "1": Lateral
+    - name: AP/PA
+      dtype:
+        class_label:
+          names:
+            "0": AP
+            "1": PA
+            "2": ""
+    - name: No Finding
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Enlarged Cardiomediastinum
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Cardiomegaly
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Lung Opacity
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Lung Lesion
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Edema
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Consolidation
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Pneumonia
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Atelectasis
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Pneumothorax
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Pleural Effusion
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Pleural Other
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Fracture
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: Support Devices
+      dtype:
+        class_label:
+          names:
+            "0": unlabeled
+            "1": uncertain
+            "2": absent
+            "3": present
+    - name: image
+      dtype: image
+  splits:
+    - name: train
+      num_bytes: 11163990852.674
+      num_examples: 223414
+    - name: validation
+      num_bytes: 12063657
+      num_examples: 234
+  download_size: 11466560036
+  dataset_size: 11176054509.674
+
+configs:
+  - config_name: default
+    data_files:
+      - split: train
+        path: data/train-*
+      - split: validation
+        path: data/validation-*
+
+task_categories:
+  - image-classification
+
+pretty_name: chexpert
+
+size_categories:
+  - 100K<n<1M

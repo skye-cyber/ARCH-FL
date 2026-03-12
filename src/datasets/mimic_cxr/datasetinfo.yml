@@ -1,0 +1,22 @@
+---
+dataset_info:
+  features:
+    - name: image
+      dtype: image
+    - name: findings
+      dtype: string
+    - name: impression
+      dtype: string
+  splits:
+    - name: train
+      num_bytes: 800678886
+      num_examples: 30633
+  download_size: 792886513
+  dataset_size: 800678886
+
+configs:
+  - config_name: default
+    data_files:
+      - split: train
+        path: data/train-*
+---
