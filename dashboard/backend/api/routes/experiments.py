@@ -12,7 +12,7 @@ router = APIRouter(prefix="/experiments", tags=["experiments"])
 @router.get("/", response_model=List[Dict])
 def get_experiments():
     """Get all experiments."""
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM experiments ORDER BY created_at DESC")
     experiments = [dict(row) for row in cursor.fetchall()]
@@ -25,25 +25,31 @@ def create_experiment(experiment: ExperimentCreate):
     """Create a new experiment."""
     # Validate inputs
     if not dbmanager.validate_architecture_exists(experiment.architecture_name):
+        print(f"Architecture '{experiment.architecture_name}' not found")
         raise HTTPException(
             status_code=400,
             detail=f"Architecture '{experiment.architecture_name}' not found",
         )
 
     if not dbmanager.validate_dataset_exists(experiment.dataset_name):
+        print(
+            f"Dataset '{experiment.dataset_name}-{dbmanager.validate_dataset_exists(experiment.dataset_name.lower())}' not found"
+        )
         raise HTTPException(
             status_code=400, detail=f"Dataset '{experiment.dataset_name}' not found"
         )
 
     if experiment.num_clients < 1:
+        print("Number of clients must be at least 1")
         raise HTTPException(
             status_code=400, detail="Number of clients must be at least 1"
         )
 
     if not experiment.parameters:
+        print("Parameters are required")
         raise HTTPException(status_code=400, detail="Parameters are required")
 
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
 
     try:
@@ -75,6 +81,7 @@ def create_experiment(experiment: ExperimentCreate):
         return created_experiment
 
     except Exception as e:
+        print(e)
         conn.rollback()
         raise HTTPException(status_code=400, detail=str(e))
     finally:
@@ -84,7 +91,7 @@ def create_experiment(experiment: ExperimentCreate):
 @router.get("/{experiment_id}", response_model=Dict)
 def get_experiment(experiment_id: int):
     """Get a specific experiment."""
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
     experiment = cursor.fetchone()
@@ -99,7 +106,7 @@ def get_experiment(experiment_id: int):
 @router.put("/{experiment_id}", response_model=Dict)
 def update_experiment(experiment_id: int, update_data: ExperimentUpdate):
     """Update an experiment."""
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
 
     # Get current experiment
@@ -156,7 +163,7 @@ def update_experiment(experiment_id: int, update_data: ExperimentUpdate):
 @router.get("/{experiment_id}/results", response_model=List[Dict])
 def get_experiment_results(experiment_id: int):
     """Get results for a specific experiment."""
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute(
         """
@@ -176,7 +183,7 @@ def get_experiment_results(experiment_id: int):
 @router.post("/{experiment_id}/results", response_model=Dict)
 def add_experiment_result(experiment_id: int, result: Dict):
     """Add a result for an experiment."""
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
 
     # Verify experiment exists
@@ -226,7 +233,7 @@ def run_experiment(experiment_id: int):
         raise HTTPException(status_code=404, detail="Experiment not found")
 
     # Get experiment details
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
     experiment = cursor.fetchone()
@@ -273,7 +280,7 @@ def run_experiment(experiment_id: int):
 def cancel_experiment(experiment_id: int):
     """Cancel a running experiment."""
     # Get experiment details
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
     experiment = cursor.fetchone()
@@ -292,7 +299,7 @@ def cancel_experiment(experiment_id: int):
         )
 
     # Update status to cancelled
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute(
         "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
@@ -312,7 +319,7 @@ def cancel_experiment(experiment_id: int):
 def delete_experiment(experiment_id: int):
     """Delete an experiment."""
     # Get experiment details
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
     experiment = cursor.fetchone()
@@ -331,7 +338,7 @@ def delete_experiment(experiment_id: int):
         )
 
     # Delete experiment results first
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute(
         "DELETE FROM experiment_results WHERE experiment_id = ?", (experiment_id,)
@@ -353,7 +360,7 @@ def delete_experiment(experiment_id: int):
 def restart_experiment(experiment_id: int):
     """Restart a completed or cancelled experiment."""
     # Get experiment details
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,))
     experiment = cursor.fetchone()
@@ -372,7 +379,7 @@ def restart_experiment(experiment_id: int):
         )
 
     # Update status to pending (will be set to running when execution starts)
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute(
         "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",

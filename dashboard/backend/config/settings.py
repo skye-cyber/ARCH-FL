@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     # Paths
     LOG_DIR: Path = Field(DEFAULT_LOG_DIR, env="LOG_DIR")
     LOG_FILE: str = Field("archfl_server.log", env="LOG_FILE")
+    DATASET_BASE_PATH: str = Field("./src/datasets", env="DATASET_BASE_PATH")
 
     # WebSocket
     WS_PING_INTERVAL: int = Field(30, env="WS_PING_INTERVAL")

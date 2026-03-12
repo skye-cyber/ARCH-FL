@@ -1,51 +1,28 @@
 from fastapi import APIRouter
+from backend.core.db import dbmanager
 
 router = APIRouter(prefix="/datasets", tags=["datasets"])
 
 
 @router.get("/")
 def get_datasets():
-    """Get available datasets from ARCH-FL registry."""
-    try:
-        from src.data.loader_registry import get_data_loader_registry
+    """Get available datasets from database (discovered from filesystem)."""
+    conn = dbmanager.connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM datasets ORDER BY name")
+    datasets = [dict(row) for row in cursor.fetchall()]
+    conn.close()
 
-        registry = get_data_loader_registry()
-        datasets = registry.list_loaders()  # This should be list_datasets()
-
-        # Get detailed info for each dataset
-        dataset_list = []
-        for dataset_name in datasets:
-            try:
-                info = registry.get_dataset_info(dataset_name)
-                if info:
-                    dataset_list.append(
-                        {
-                            "name": dataset_name,
-                            "description": info.get("description", ""),
-                            "supported": info.get("supported", True),
-                        }
-                    )
-            except Exception:
-                pass
-
-        return dataset_list
-
-    except ImportError:
-        # Fallback if ARCH-FL core not available
-        return [
+    # Format the response
+    result = []
+    for dataset in datasets:
+        result.append(
             {
-                "name": "PneumoniaMNIST",
-                "description": "Pneumonia MNIST Dataset",
-                "supported": True,
-            },
-            {
-                "name": "MIMIC-CXR",
-                "description": "MIMIC Chest X-ray Dataset",
-                "supported": True,
-            },
-            {
-                "name": "CheXpert",
-                "description": "CheXpert Chest X-ray Dataset",
-                "supported": True,
-            },
-        ]
+                "name": dataset["name"],
+                "description": dataset["description"],
+                "metadata": dataset.get("metadata", {}),
+                "created_at": dataset.get("created_at"),
+            }
+        )
+
+    return result

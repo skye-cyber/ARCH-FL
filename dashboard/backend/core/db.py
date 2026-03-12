@@ -3,6 +3,7 @@ import sqlite3
 import json
 from contextlib import contextmanager
 from typing import Optional, Dict, Any
+from ..utils.logger import logger
 
 
 class DatabaseManager:
@@ -59,7 +60,9 @@ class DatabaseManager:
             )
             return cursor.fetchone()[0] > 0
 
-    def validate_experiment_status(self, experiment_id: int, expected_status: str) -> bool:
+    def validate_experiment_status(
+        self, experiment_id: int, expected_status: str
+    ) -> bool:
         """Check if experiment has the expected status."""
         with self.transaction() as cursor:
             cursor.execute(
@@ -68,20 +71,23 @@ class DatabaseManager:
             result = cursor.fetchone()
             return result and result[0] == expected_status
 
-    def validate_architecture_compatibility(self, architecture_name: str, dataset_name: str) -> bool:
+    def validate_architecture_compatibility(
+        self, architecture_name: str, dataset_name: str
+    ) -> bool:
         """Check if architecture is compatible with dataset."""
         with self.transaction() as cursor:
             cursor.execute(
-                "SELECT compatible_datasets FROM architectures WHERE name = ?", (architecture_name,)
+                "SELECT compatible_datasets FROM architectures WHERE name = ?",
+                (architecture_name,),
             )
             result = cursor.fetchone()
             if not result:
                 return False
-            
+
             compatible_datasets = json.loads(result[0] or "[]")
             if not compatible_datasets:
                 return True  # No restrictions
-            
+
             return dataset_name in compatible_datasets
 
     def get_architecture_in_use_count(self, architecture_name: str) -> int:
@@ -97,18 +103,18 @@ class DatabaseManager:
         """Register built-in architectures from registry if not already in database."""
         try:
             from src.models.architecture_registry import get_architecture_registry
-            
+
             registry = get_architecture_registry()
             architectures = registry.list_architectures()
-            
+
             for arch_name in architectures:
                 if not self.validate_architecture_exists(arch_name):
                     arch_info = registry.get_architecture_info(arch_name)
                     if arch_info:
-                        config = arch_info.get('config', {})
-                        description = arch_info.get('description', '')
-                        compatible_datasets = arch_info.get('compatible_datasets', [])
-                        
+                        config = arch_info.get("config", {})
+                        description = arch_info.get("description", "")
+                        compatible_datasets = arch_info.get("compatible_datasets", [])
+
                         with self.transaction() as cursor:
                             cursor.execute(
                                 """
@@ -135,16 +141,23 @@ class DatabaseManager:
                         "input_shape": [1, 28, 28],
                         "architecture": {
                             "conv_layers": [
-                                {"out_channels": 32, "kernel_size": 3, "stride": 1, "padding": 1},
-                                {"out_channels": 64, "kernel_size": 3, "stride": 1, "padding": 1}
+                                {
+                                    "out_channels": 32,
+                                    "kernel_size": 3,
+                                    "stride": 1,
+                                    "padding": 1,
+                                },
+                                {
+                                    "out_channels": 64,
+                                    "kernel_size": 3,
+                                    "stride": 1,
+                                    "padding": 1,
+                                },
                             ],
-                            "fc_layers": [
-                                {"out_features": 128},
-                                {"out_features": 2}
-                            ]
-                        }
+                            "fc_layers": [{"out_features": 128}, {"out_features": 2}],
+                        },
                     },
-                    "compatible_datasets": ["pneumoniamnist"]
+                    "compatible_datasets": ["pneumoniamnist"],
                 },
                 {
                     "name": "medium_cnn",
@@ -155,17 +168,29 @@ class DatabaseManager:
                         "input_shape": [1, 224, 224],
                         "architecture": {
                             "conv_layers": [
-                                {"out_channels": 32, "kernel_size": 3, "stride": 2, "padding": 1},
-                                {"out_channels": 64, "kernel_size": 3, "stride": 2, "padding": 1},
-                                {"out_channels": 128, "kernel_size": 3, "stride": 2, "padding": 1}
+                                {
+                                    "out_channels": 32,
+                                    "kernel_size": 3,
+                                    "stride": 2,
+                                    "padding": 1,
+                                },
+                                {
+                                    "out_channels": 64,
+                                    "kernel_size": 3,
+                                    "stride": 2,
+                                    "padding": 1,
+                                },
+                                {
+                                    "out_channels": 128,
+                                    "kernel_size": 3,
+                                    "stride": 2,
+                                    "padding": 1,
+                                },
                             ],
-                            "fc_layers": [
-                                {"out_features": 256},
-                                {"out_features": 2}
-                            ]
-                        }
+                            "fc_layers": [{"out_features": 256}, {"out_features": 2}],
+                        },
                     },
-                    "compatible_datasets": ["mimic_cxr"]
+                    "compatible_datasets": ["mimic_cxr"],
                 },
                 {
                     "name": "resnet18",
@@ -174,12 +199,12 @@ class DatabaseManager:
                         "name": "ResNet18",
                         "num_classes": 2,
                         "input_shape": [1, 224, 224],
-                        "pretrained": False
+                        "pretrained": False,
                     },
-                    "compatible_datasets": ["chexpert", "mimic_cxr"]
-                }
+                    "compatible_datasets": ["chexpert", "mimic_cxr"],
+                },
             ]
-            
+
             for arch in fallback_architectures:
                 if not self.validate_architecture_exists(arch["name"]):
                     with self.transaction() as cursor:
@@ -198,49 +223,79 @@ class DatabaseManager:
                         )
 
     def _register_builtin_datasets(self):
-        """Register built-in datasets from registry if not already in database."""
+        """Register built-in datasets from filesystem by discovering dataset folders."""
+        import os
+        import yaml
+        from pathlib import Path
+        from backend.config.settings import settings
+
+        # Get dataset location from settings (can be configured via environment variable)
+        dataset_base_path = settings.DATASET_BASE_PATH
+
         try:
-            from src.data.loader_registry import get_data_loader_registry
-            
-            registry = get_data_loader_registry()
-            # Note: The registry doesn't have a direct list_datasets method,
-            # but we can infer from the loaders or use common dataset names
-            
-            # For now, register common datasets that are known to work
-            datasets = [
-                {
-                    "name": "pneumoniamnist",
-                    "description": "Pneumonia MNIST Dataset - Binary classification of pneumonia",
-                    "metadata": {
-                        "num_classes": 2,
-                        "input_size": [1, 28, 28],
-                        "channels": 1,
-                        "task": "binary_classification"
+            base_path = Path(dataset_base_path)
+
+            if not base_path.exists():
+                logger.warning(f"Dataset base path {dataset_base_path} does not exist")
+                return
+
+            # Discover datasets by checking subdirectories
+            discovered_datasets = []
+
+            for dataset_dir in base_path.iterdir():
+                if not dataset_dir.is_dir():
+                    continue
+
+                dataset_name = dataset_dir.name
+
+                # Check if this is a valid dataset directory
+                # Valid dataset structure: dataset_name/dataset_name/datasetinfo.yml and data folder
+                dataset_config_dir = dataset_dir / dataset_name
+
+                if not dataset_config_dir.exists():
+                    continue
+
+                config_file = dataset_config_dir / "datasetinfo.yml"
+                data_dir = dataset_config_dir / "data"
+
+                # Validate dataset structure
+                if not config_file.exists():
+                    logger.debug(f"Dataset {dataset_name}: missing datasetinfo.yml")
+                    continue
+
+                if not data_dir.exists() or not any(data_dir.iterdir()):
+                    logger.debug(f"Dataset {dataset_name}: data folder is empty")
+                    continue
+
+                # Load dataset configuration
+                try:
+                    with open(config_file, "r") as f:
+                        dataset_config = yaml.safe_load(f)
+
+                    # Extract relevant information
+                    dataset_info = {
+                        "name": dataset_name,
+                        "description": dataset_config.get("description", ""),
+                        "metadata": {
+                            "num_classes": dataset_config.get("num_classes"),
+                            "input_size": dataset_config.get("input_size"),
+                            "channels": dataset_config.get("channels"),
+                            "task": dataset_config.get("task"),
+                            "split": dataset_config.get("split"),
+                            "location": str(data_dir.absolute()),
+                        },
                     }
-                },
-                {
-                    "name": "mimic_cxr",
-                    "description": "MIMIC Chest X-ray Dataset - Multiple findings detection",
-                    "metadata": {
-                        "num_classes": 14,
-                        "input_size": [1, 224, 224],
-                        "channels": 1,
-                        "task": "multi_label_classification"
-                    }
-                },
-                {
-                    "name": "chexpert",
-                    "description": "CheXpert Chest X-ray Dataset - Comprehensive chest X-ray analysis",
-                    "metadata": {
-                        "num_classes": 14,
-                        "input_size": [1, 224, 224],
-                        "channels": 1,
-                        "task": "multi_label_classification"
-                    }
-                }
-            ]
-            
-            for dataset in datasets:
+
+                    discovered_datasets.append(dataset_info)
+
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to load dataset config for {dataset_name}: {e}"
+                    )
+                    continue
+
+            # Register discovered datasets in database
+            for dataset in discovered_datasets:
                 if not self.validate_dataset_exists(dataset["name"]):
                     with self.transaction() as cursor:
                         cursor.execute(
@@ -255,63 +310,19 @@ class DatabaseManager:
                                 json.dumps(dataset["metadata"]),
                             ),
                         )
-                        
-        except ImportError:
-            # If ARCH-FL core not available, register fallback datasets
-            fallback_datasets = [
-                {
-                    "name": "pneumoniamnist",
-                    "description": "Pneumonia MNIST Dataset - Binary classification of pneumonia",
-                    "metadata": {
-                        "num_classes": 2,
-                        "input_size": [1, 28, 28],
-                        "channels": 1,
-                        "task": "binary_classification"
-                    }
-                },
-                {
-                    "name": "mimic_cxr",
-                    "description": "MIMIC Chest X-ray Dataset - Multiple findings detection",
-                    "metadata": {
-                        "num_classes": 14,
-                        "input_size": [1, 224, 224],
-                        "channels": 1,
-                        "task": "multi_label_classification"
-                    }
-                },
-                {
-                    "name": "chexpert",
-                    "description": "CheXpert Chest X-ray Dataset - Comprehensive chest X-ray analysis",
-                    "metadata": {
-                        "num_classes": 14,
-                        "input_size": [1, 224, 224],
-                        "channels": 1,
-                        "task": "multi_label_classification"
-                    }
-                }
-            ]
-            
-            for dataset in fallback_datasets:
-                if not self.validate_dataset_exists(dataset["name"]):
-                    with self.transaction() as cursor:
-                        cursor.execute(
-                            """
-                            INSERT INTO datasets 
-                            (name, description, metadata)
-                            VALUES (?, ?, ?)
-                            """,
-                            (
-                                dataset["name"],
-                                dataset["description"],
-                                json.dumps(dataset["metadata"]),
-                            ),
-                        )
+                        logger.info(f"Registered dataset: {dataset['name']}")
+
+            if not discovered_datasets:
+                logger.warning(f"No datasets discovered in {dataset_base_path}")
+
+        except Exception as e:
+            logger.error(f"Error discovering datasets: {e}")
 
     def init(self):
         """Initialize database tables and register pre-existing architectures/datasets."""
         if self._initialized:
             return
-        
+
         conn = self.connection()
         cursor = conn.cursor()
 
@@ -376,7 +387,7 @@ class DatabaseManager:
         # Register pre-existing architectures and datasets from registries
         self._register_builtin_architectures()
         self._register_builtin_datasets()
-        
+
         self._initialized = True
 
 

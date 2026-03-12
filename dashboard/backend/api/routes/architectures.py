@@ -12,7 +12,7 @@ router = APIRouter(prefix="/architectures", tags=["architectures"])
 @router.get("/", response_model=List[Dict])
 def get_architectures():
     """Get all registered architectures."""
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM architectures ORDER BY name")
     architectures = [dict(row) for row in cursor.fetchall()]
@@ -192,7 +192,7 @@ def create_architecture(architecture: ArchitectureCreate):
         raise HTTPException(status_code=400, detail="Architecture name already exists")
 
     # Step 2: Store in database (transaction)
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
 
     try:
@@ -257,7 +257,7 @@ def create_architecture(architecture: ArchitectureCreate):
 @router.get("/view/{architecture_name}", response_model=Dict)
 def get_architecture(architecture_name: str):
     """Get a specific architecture by name."""
-    conn = dbmanager.connection
+    conn = dbmanager.connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM architectures WHERE name = ?", (architecture_name,))
     architecture = cursor.fetchone()
