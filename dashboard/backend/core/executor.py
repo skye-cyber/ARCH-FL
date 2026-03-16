@@ -144,9 +144,10 @@ class Executor:
         Internal method to execute experiment using ARCH-FL core
 
         This method implements the complete experiment lifecycle:
-        1. Local training (if enabled)
-        2. Federated training with aggregation
-        3. Metrics collection and reporting
+        1. Register architecture and dataset if not already registered
+        2. Local training (if enabled)
+        3. Federated training with aggregation
+        4. Metrics collection and reporting
 
         Args:
             experiment_id: ID of the experiment
@@ -161,6 +162,7 @@ class Executor:
             from src.core.dashboard_integration import DashboardConnector
             from src.models.architecture_registry import get_architecture_registry
             from src.data.loader_registry import get_data_loader_registry
+            from src.data.registry import get_dataset_registry
             from src.core.coordinator import Coordinator
             from src.training.fedavg import FederatedTrainer
             from src.training.local_trainer import LocalTrainer
@@ -170,27 +172,100 @@ class Executor:
             # Initialize dashboard connector
             dashboard_connector = DashboardConnector()
 
-            # Get architecture and dataset
+            # Get registries
             arch_registry = get_architecture_registry()
-            data_registry = get_data_loader_registry()
+            data_loader_registry = get_data_loader_registry()
+            dataset_registry = get_dataset_registry()
 
-            # Get architecture info
+            # Register architecture if not already in registry
+            if not arch_registry.is_supported(experiment_data["architecture_name"]):
+                # Get architecture from database
+                with self.db_manager.transaction() as cursor:
+                    cursor.execute(
+                        "SELECT * FROM architectures WHERE name = ?",
+                        (experiment_data["architecture_name"],),
+                    )
+                    arch_data = cursor.fetchone()
+
+                if arch_data:
+                    arch_config = json.loads(arch_data["config"])
+                    compatible_datasets = json.loads(
+                        arch_data["compatible_datasets"] or "[]"
+                    )
+
+                    # Register in architecture registry
+                    arch_registry.register_architecture(
+                        experiment_data["architecture_name"],
+                        arch_config,
+                        description=arch_data["description"],
+                        compatible_datasets=compatible_datasets,
+                    )
+                    logger.info(
+                        f"Registered architecture '{experiment_data['architecture_name']}' in registry"
+                    )
+                else:
+                    raise ValueError(
+                        f"Architecture '{experiment_data['architecture_name']}' not found in database"
+                    )
+
+            # Register dataset if not already in registry
+            if not data_loader_registry.is_supported(experiment_data["dataset_name"]):
+                # Get dataset from database
+                with self.db_manager.transaction() as cursor:
+                    cursor.execute(
+                        "SELECT * FROM datasets WHERE name = ?",
+                        (experiment_data["dataset_name"],),
+                    )
+                    dataset_data = cursor.fetchone()
+
+                if dataset_data:
+                    dataset_metadata = json.loads(dataset_data["metadata"])
+
+                    # Register in data loader registry
+                    # Note: The registry doesn't have a direct register method,
+                    # but we can add it to the internal datasets dict
+                    data_loader_registry.datasets[experiment_data["dataset_name"]] = {
+                        "name": dataset_data["name"],
+                        "description": dataset_data["description"],
+                        "data_type": dataset_metadata.get("data_type", "chest_xray"),
+                        "image_format": dataset_metadata.get(
+                            "image_format", "grayscale"
+                        ),
+                        "default_size": dataset_metadata.get("input_size", [224, 224]),
+                        "channels": dataset_metadata.get("channels", 1),
+                        "task_types": dataset_metadata.get(
+                            "task", ["binary_classification"]
+                        ),
+                        "path": dataset_metadata.get("location"),
+                        "supported": True,
+                        "metadata_file": dataset_metadata.get("location"),
+                    }
+                    logger.info(
+                        f"Registered dataset '{experiment_data['dataset_name']}' in registry"
+                    )
+                else:
+                    raise ValueError(
+                        f"Dataset '{experiment_data['dataset_name']}' not found in database"
+                    )
+
+            # Verify architecture and dataset are now in registries
+            if not arch_registry.is_supported(experiment_data["architecture_name"]):
+                raise ValueError(
+                    f"Failed to register architecture '{experiment_data['architecture_name']}'"
+                )
+
+            if not data_loader_registry.is_supported(experiment_data["dataset_name"]):
+                raise ValueError(
+                    f"Failed to register dataset '{experiment_data['dataset_name']}'"
+                )
+
+            # Get architecture and dataset info
             architecture_info = arch_registry.get_architecture_info(
                 experiment_data["architecture_name"]
             )
-            if not architecture_info:
-                raise ValueError(
-                    f"Architecture '{experiment_data['architecture_name']}' not found in registry"
-                )
-
-            # Get dataset info
-            dataset_info = data_registry.get_dataset_info(
+            dataset_info = data_loader_registry.get_dataset_info(
                 experiment_data["dataset_name"]
             )
-            if not dataset_info:
-                raise ValueError(
-                    f"Dataset '{experiment_data['dataset_name']}' not found in registry"
-                )
 
             # Get training parameters
             params = json.loads(experiment_data["parameters"])
@@ -215,7 +290,7 @@ class Executor:
             )
 
             # Create data loaders
-            client_loaders, test_loader = data_registry.create_data_loaders(
+            client_loaders, test_loader = data_loader_registry.create_data_loaders(
                 experiment_data["dataset_name"],
                 num_clients,
                 iid=iid,
