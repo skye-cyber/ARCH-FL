@@ -11,7 +11,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-sys.path.insert(0, Path(__file__).parent.parent.as_posix())
+sys.path.insert(
+    0,
+    Path(__file__).parent.parent.as_posix(),
+)
+sys.path.insert(
+    1,
+    Path(__file__).parent.parent.parent.as_posix(),
+)
 from backend.core.db import dbmanager
 from backend.utils.logger import logger
 from backend.config.settings import settings

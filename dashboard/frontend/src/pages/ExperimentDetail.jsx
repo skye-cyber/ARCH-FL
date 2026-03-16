@@ -306,6 +306,48 @@ export default function ExperimentDetail() {
         };
     };
 
+    const performAction = async (actionType) => {
+        setActionLoading(true);
+        try {
+            let response;
+            console.log(actionType)
+            switch (actionType) {
+                case "run":
+                    response = await experimentService.run(id);
+                    experiment.status ='running'
+                    break;
+                case "cancel":
+                    response = await experimentService.cancel(id);
+                    break;
+                case "delete":
+                    response = await experimentService.delete(id);
+                    break;
+                case "restart":
+                    response = await experimentService.restart(id);
+                    experiment.status ='running'
+                    break;
+                default:
+                    return;
+            }
+            console.log(response)
+            setActionResult({
+                type: "success",
+                message: `Experiment ${actionType} completed successfully`,
+            });
+            experiment.status ='completed'
+
+
+        } catch (error) {
+            console.error(`Error performing ${actionType} action:`, error);
+            setActionResult({
+                type: "error",
+                message: `Failed to ${actionType} experiment`,
+            });
+            experiment.status ='failed'
+        } finally {
+            setActionLoading(false);
+        }
+    };
     const stats = calculateStats();
     const status = experiment ? getStatusConfig(experiment.status) : null;
     const StatusIcon = status?.icon;

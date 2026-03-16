@@ -384,7 +384,7 @@ export default function Architectures() {
               </div>
 
               {/* Architectures List */}
-              <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+              <div className="divide-y divide-gray-100 max-h-[90vh] h-full overflow-y-auto">
                 <AnimatePresence>
                   {filteredArchitectures.map((arch, index) => (
                     <motion.div

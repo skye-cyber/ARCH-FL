@@ -5,6 +5,7 @@ from pathlib import Path
 from backend.config.settings import settings
 from backend.utils.logger import logger
 import json
+from backend.utils.file_utils import get_folder_size, format_size
 
 router = APIRouter(prefix="/datasets", tags=["datasets"])
 
@@ -82,7 +83,6 @@ def get_datasets():
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM datasets")
     count = cursor.fetchone()[0]
-    conn.close()
 
     # If database is empty, discover datasets from filesystem and register them
     if count == 0:
@@ -121,7 +121,6 @@ def get_datasets():
 
     cursor.execute("SELECT * FROM datasets ORDER BY name")
     datasets = [dict(row) for row in cursor.fetchall()]
-    conn.close()
 
     # Format the response
     result = []
@@ -143,30 +142,27 @@ def get_dataset(name: str):
     """Get available datasets from database (discovered from filesystem if empty)."""
     conn = dbmanager.connection()
     cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM datasets WHERE name=? ORDER BY name", (name))
-    datasets = [dict(row) for row in cursor.fetchone()]
-    conn.close()
+    cursor.execute("SELECT * FROM datasets WHERE name=? ORDER BY name", (name,))
+    dataset = dict(cursor.fetchone())
 
     # Format the response
-    result = []
-    for dataset in datasets:
-        metadata = json.loads(dataset.get("metadata", {}))
-        print(metadata)
-        path = metadata.loaction
-        # Calculate dataset size
-        if path:
-            abs_path = Path(path).absolute()
-            # Calculate size here
+    metadata = json.loads(dataset.get("metadata", {}))
+    path = metadata.get("location", None)
+    size = 0
+    size_human = 0
+    print(path)
+    # Calculate dataset size
+    if path:
+        abs_path = Path(path).absolute().as_posix()
+        size = get_folder_size(abs_path)
+        size_human = format_size(size)
 
-        result.append(
-            {
-                "name": dataset["name"],
-                "description": dataset["description"],
-                "metadata": dataset.get("metadata", {}),
-                "size": {"human": "300MB", "raw": 300},
-                "created_at": dataset.get("created_at"),
-            }
-        )
+    result = {
+        "name": dataset["name"],
+        "description": dataset["description"],
+        "metadata": dataset.get("metadata", {}),
+        "size": {"human": size_human, "raw": size},
+        "created_at": dataset.get("created_at"),
+    }
 
     return result

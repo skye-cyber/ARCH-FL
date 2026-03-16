@@ -425,7 +425,7 @@ export default function Home() {
                                     },
                                     {
                                         label: "Memory",
-                                        value: systemInfo.system_info.memory.available_human,
+                                        value: systemInfo.system_info.memory.used_human,
                                         total: systemInfo.system_info.memory.total_human,
                                         color: "bg-blue-400",
                                     },

@@ -82,7 +82,7 @@ export default function Layout() {
 
             {/* Main content */}
             <div className="max-w-full mx-auto px-2 sm:px-6 py-6">
-                <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex flex-cols lg:flex-row gap-4">
                     {/* Sidebar */}
                     <aside onMouseLeave={mobileMenuHide} ref={mobileMenu} className="hidden absolute z-[31] top-12 left-0 bg-white shadow-md block lg:w-62">
                         <nav className="bg-white rounded-lg shadow p-4">

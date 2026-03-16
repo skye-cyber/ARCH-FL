@@ -157,10 +157,17 @@ class Executor:
             from src.models.architecture_registry import get_architecture_registry
             from src.data.loader_registry import get_data_loader_registry
             from src.core.coordinator import Coordinator
-            from src.training.fedavg import federated_average
+
+            # from src.training.fedavg import federated_average Not found
+            from src.training.fedavg import FederatedTrainer
+            from src.training.local_trainer import LocalTrainer
 
             # Initialize dashboard connector
             dashboard_connector = DashboardConnector()
+            # Below hooks should be used appropriately- Note dashboard may handle some of fubctionlaities so check db record
+            # dashboard_connector.create_experiment_record() do nothing is exists
+            # dashboard_connector.add_experiment_result()
+            # dashboard_connector.update_experiment_status()
 
             # Get architecture and dataset
             arch_registry = get_architecture_registry()
@@ -209,7 +216,7 @@ class Executor:
             # Report initial progress
             progress_callback(0, "Starting federated training")
 
-            # Run federated training
+            # Run federated training Needs fixing
             federated_average(
                 coordinator=coordinator,
                 dataset_name=experiment_data["dataset_name"],

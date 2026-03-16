@@ -101,7 +101,7 @@ class ArchitectureRegistry:
             "validator": validator,
         }
 
-        print(f"Registered architecture: {arch_name}")
+        # print(f"Registered architecture: {arch_name}")
 
     def register_architecture_from_file(
         self,

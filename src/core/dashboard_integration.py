@@ -4,12 +4,14 @@ Dashboard Integration Utilities
 This module provides utilities for integrating the ARCH-FL core system with the dashboard.
 """
 
+from pathlib import Path
 import json
 from typing import Dict, Any, Optional
 import sqlite3
 import os
 from datetime import datetime
 from .coordinator import ProgressCallback
+from dashboard.backend.core.db import dbmanager
 
 
 class DashboardConnector:
@@ -19,14 +21,10 @@ class DashboardConnector:
         """Initialize the dashboard connector."""
         if db_path is None:
             # Default path relative to dashboard/data/dashboard.db
-            db_path = os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "..",
-                "dashboard",
-                "data",
-                "dashboard.db",
+            db_path = (
+                Path(__file__).parent.parent.parent / "dashboard/data/dashboard.db"
             )
+
         self.db_path = db_path
 
         # Ensure directory exists
@@ -34,6 +32,8 @@ class DashboardConnector:
 
     def get_db_connection(self):
         """Get SQLite database connection."""
+        if dbmanager:
+            return dbmanager.connection()
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         return conn
@@ -101,7 +101,13 @@ class DashboardConnector:
                         metrics.get("round", 0),
                         metrics.get("accuracy", None),
                         metrics.get("loss", None),
-                        json.dumps({k: v for k, v in metrics.items() if k not in ["client_id", "round", "accuracy", "loss"]}),
+                        json.dumps(
+                            {
+                                k: v
+                                for k, v in metrics.items()
+                                if k not in ["client_id", "round", "accuracy", "loss"]
+                            }
+                        ),
                     ),
                 )
 
@@ -181,10 +187,12 @@ def create_dashboard_callback(
 
             # Add round information to metrics and flatten the structure
             metrics_with_round = metrics.copy()
-            metrics_with_round.update({
-                "round": round_num,
-                "status": status,
-            })
+            metrics_with_round.update(
+                {
+                    "round": round_num,
+                    "status": status,
+                }
+            )
 
             dashboard_connector.update_experiment_status(
                 experiment_id, status, metrics_with_round

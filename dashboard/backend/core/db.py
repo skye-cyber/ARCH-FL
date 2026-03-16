@@ -1,24 +1,22 @@
-import os
+from pathlib import Path
 import sqlite3
 import json
 from contextlib import contextmanager
-from typing import Optional, Dict, Any
 from ..utils.logger import logger
 
 
 class DatabaseManager:
     def __init__(self):
-        self.db_path = os.path.join(
-            os.path.dirname(__file__), "..", "data", "dashboard.db"
-        )
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        self.db_path = Path(__file__).parent.parent / "data/dashboard.db"
+        self.db_path.parent.mkdir(exist_ok=True, parents=True)
         self._initialized = False
 
     def connection(self):
         """Get SQLite database connection with foreign key enforcement."""
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path.as_posix())
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON")
+
         return conn
 
     @contextmanager
@@ -104,8 +102,10 @@ class DatabaseManager:
         try:
             from src.models.architecture_registry import get_architecture_registry
 
+            print("...")
             registry = get_architecture_registry()
             architectures = registry.list_architectures()
+            print(architectures)
 
             for arch_name in architectures:
                 if not self.validate_architecture_exists(arch_name):
