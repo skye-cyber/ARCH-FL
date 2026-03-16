@@ -102,10 +102,8 @@ class DatabaseManager:
         try:
             from src.models.architecture_registry import get_architecture_registry
 
-            print("...")
             registry = get_architecture_registry()
             architectures = registry.list_architectures()
-            print(architectures)
 
             for arch_name in architectures:
                 if not self.validate_architecture_exists(arch_name):
@@ -268,6 +266,8 @@ class DatabaseManager:
                 architecture_name TEXT NOT NULL,
                 num_clients INTEGER NOT NULL,
                 iid BOOLEAN NOT NULL,
+                error TEXT,
+                message TEXT,
                 status TEXT DEFAULT 'pending',
                 parameters JSON NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
