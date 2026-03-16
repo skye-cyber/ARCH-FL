@@ -12,7 +12,7 @@ from backend.utils.logger import logger
 from backend.config.settings import settings
 from backend import __version__
 
-router = APIRouter(prefix="/api/v1/system", tags=["system"])
+router = APIRouter(prefix="/system", tags=["system"])
 
 # Track server start time
 SERVER_START_TIME = time.time()
@@ -115,6 +115,7 @@ async def get_system_info():
                 "cpu": cpu_info,
                 "memory": memory_info,
                 "disk": disk_info,
+                "network": "-",
             },
         )
 

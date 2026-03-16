@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 print("🐛 Debugging shape issue...")
 
 try:
-    from src.models.large_cnn import MediumCNN
+    from src.models.architectures import MediumCNN
     from src.data.mimic_cxr_loader import create_mimic_cxr_data_loaders
 
     # Create a small data loader

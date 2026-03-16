@@ -1,4 +1,3 @@
----
 dataset_info:
   features:
     - name: image
@@ -19,4 +18,3 @@ configs:
     data_files:
       - split: train
         path: data/train-*
----

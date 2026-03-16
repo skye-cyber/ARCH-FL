@@ -1,19 +1,16 @@
 from fastapi import APIRouter
 from backend.core.db import dbmanager
-import os
 import yaml
 from pathlib import Path
 from backend.config.settings import settings
+from backend.utils.logger import logger
+import json
 
 router = APIRouter(prefix="/datasets", tags=["datasets"])
 
 
 def _discover_datasets_from_filesystem():
     """Discover datasets from filesystem and register them in database."""
-    import logging
-
-    logger = logging.getLogger("archfl")
-
     dataset_base_path = settings.DATASET_BASE_PATH
     base_path = Path(dataset_base_path)
 
@@ -30,13 +27,13 @@ def _discover_datasets_from_filesystem():
         dataset_name = dataset_dir.name
 
         # Check if this is a valid dataset directory
-        dataset_config_dir = dataset_dir / dataset_name
+        # dataset_config_dir = dataset_dir / "data"
+        # logger.info(f"DIR: {dataset_config_dir.exists()}")
+        # if not dataset_config_dir.exists():
+        #     continue
 
-        if not dataset_config_dir.exists():
-            continue
-
-        config_file = dataset_config_dir / "datasetinfo.yml"
-        data_dir = dataset_config_dir / "data"
+        config_file = dataset_dir / "datasetinfo.yml"
+        data_dir = dataset_dir / "data"
 
         # Validate dataset structure
         if not config_file.exists():
@@ -71,6 +68,9 @@ def _discover_datasets_from_filesystem():
         except Exception as e:
             logger.warning(f"Failed to load dataset config for {dataset_name}: {e}")
             continue
+
+    if not discovered_datasets:
+        logger.warning(f"No datasets discovered in {dataset_base_path}")
 
     return discovered_datasets
 
@@ -119,9 +119,6 @@ def get_datasets():
 
             return result
 
-    # Database has datasets, return them
-    conn = dbmanager.connection()
-    cursor = conn.cursor()
     cursor.execute("SELECT * FROM datasets ORDER BY name")
     datasets = [dict(row) for row in cursor.fetchall()]
     conn.close()
@@ -134,6 +131,40 @@ def get_datasets():
                 "name": dataset["name"],
                 "description": dataset["description"],
                 "metadata": dataset.get("metadata", {}),
+                "created_at": dataset.get("created_at"),
+            }
+        )
+
+    return result
+
+
+@router.get("/info/{name}")
+def get_dataset(name: str):
+    """Get available datasets from database (discovered from filesystem if empty)."""
+    conn = dbmanager.connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM datasets WHERE name=? ORDER BY name", (name))
+    datasets = [dict(row) for row in cursor.fetchone()]
+    conn.close()
+
+    # Format the response
+    result = []
+    for dataset in datasets:
+        metadata = json.loads(dataset.get("metadata", {}))
+        print(metadata)
+        path = metadata.loaction
+        # Calculate dataset size
+        if path:
+            abs_path = Path(path).absolute()
+            # Calculate size here
+
+        result.append(
+            {
+                "name": dataset["name"],
+                "description": dataset["description"],
+                "metadata": dataset.get("metadata", {}),
+                "size": {"human": "300MB", "raw": 300},
                 "created_at": dataset.get("created_at"),
             }
         )

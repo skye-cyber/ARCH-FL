@@ -63,14 +63,16 @@ export const architectureService = {
 
 export const datasetService = {
   getAll: () => api.get("/datasets"),
+  getByName: (name) => api.get(`/architectures/${name}`),
+  info: (name) => api.get(`/architectures/info/${name}`),
 };
 
 export const healthService = {
-  check: () => api.get("/health"),
+  check: () => api.get("/system/health"),
 };
 
-export const systemStatsService = {
-  get: () => api.get("/system/stats"),
+export const systemInfoService = {
+  get: () => api.get("/system/info"),
 };
 
 export default api;

@@ -6,7 +6,7 @@ import ExperimentCreate from "./pages/ExperimentCreate";
 import Architectures from "./pages/Architectures";
 import ArchitectureCreate from "./pages/ArchitectureCreate";
 import ExperimentDetail from "./pages/ExperimentDetail";
-import ExperimentVisualization from "./components/ExperimentVisualization";
+import ExperimentVisualization from "./pages/ExperimentVisualization";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import "./styles/styles.css";

@@ -7,7 +7,7 @@ export default function NotFound() {
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
         <FaExclamationTriangle className="text-yellow-500 text-4xl mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Page Not Found
+          Page Not Found - Not Implemented
         </h2>
         <p className="text-gray-600 mb-6">
           The page you're looking for doesn't exist or has been moved.
