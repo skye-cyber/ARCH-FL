@@ -56,6 +56,22 @@ class DataLoaderRegistry:
             description="MedMNIST data loader for medical imaging datasets",
         )
 
+        # Register CheXpert loader
+        self.register_loader(
+            "chexpert",
+            self._create_chexpert_loader,
+            description="CheXpert chest X-ray dataset loader",
+            supported_datasets=["chexpert"],
+        )
+
+        # Register MIMIC-CXR loader
+        self.register_loader(
+            "mimic_cxr",
+            self._create_mimic_cxr_loader,
+            description="MIMIC-CXR chest X-ray dataset loader",
+            supported_datasets=["mimic_cxr"],
+        )
+
     def register_loader(
         self,
         loader_name: str,
@@ -182,8 +198,13 @@ class DataLoaderRegistry:
         """
         dataset_name = dataset_name.lower()
 
-        # For now, use synthetic loader as default
-        # In future, this can be enhanced with more sophisticated selection logic
+        # Use specific loaders for known datasets
+        if dataset_name == "chexpert":
+            return "chexpert"
+        elif dataset_name == "mimic_cxr":
+            return "mimic_cxr"
+        
+        # For other datasets, use synthetic loader as default
         return "synthetic"
 
     def _create_synthetic_loader(
@@ -270,6 +291,104 @@ class DataLoaderRegistry:
             )
         except Exception as e:
             print(f"Error creating MedMNIST loader: {e}")
+            return self._create_synthetic_loader(
+                dataset_name, num_clients, iid, batch_size, alpha
+            )
+
+    def _create_chexpert_loader(
+        self,
+        dataset_name: str,
+        num_clients: int,
+        iid: bool = True,
+        batch_size: int = 32,
+        alpha: float = 0.5,
+    ) -> Tuple[List[DataLoader], DataLoader]:
+        """
+        Create CheXpert data loader.
+
+        This loads the real CheXpert dataset for federated learning.
+        """
+        try:
+            # Get dataset path from registry
+            dataset_info = self.dataset_registry.get_dataset_info(dataset_name)
+            if not dataset_info:
+                raise ValueError(f"Dataset '{dataset_name}' not found in registry")
+            
+            data_dir = dataset_info.get("path")
+            if not data_dir or not os.path.exists(data_dir):
+                raise ValueError(f"Dataset path '{data_dir}' does not exist")
+            
+            # Import custom loader from dashboard backend
+            from dashboard.backend.core.loaders import create_chexpert_loaders
+            
+            # Create loaders
+            client_loaders, test_loader = create_chexpert_loaders(
+                data_dir=data_dir,
+                num_clients=num_clients,
+                iid=iid,
+                batch_size=batch_size,
+                alpha=alpha,
+            )
+            
+            return client_loaders, test_loader
+            
+        except ImportError as e:
+            print(f"Custom CheXpert loader not available: {e}")
+            print("Falling back to synthetic data")
+            return self._create_synthetic_loader(
+                dataset_name, num_clients, iid, batch_size, alpha
+            )
+        except Exception as e:
+            print(f"Error creating CheXpert loader: {e}")
+            return self._create_synthetic_loader(
+                dataset_name, num_clients, iid, batch_size, alpha
+            )
+
+    def _create_mimic_cxr_loader(
+        self,
+        dataset_name: str,
+        num_clients: int,
+        iid: bool = True,
+        batch_size: int = 32,
+        alpha: float = 0.5,
+    ) -> Tuple[List[DataLoader], DataLoader]:
+        """
+        Create MIMIC-CXR data loader.
+
+        This loads the real MIMIC-CXR dataset for federated learning.
+        """
+        try:
+            # Get dataset path from registry
+            dataset_info = self.dataset_registry.get_dataset_info(dataset_name)
+            if not dataset_info:
+                raise ValueError(f"Dataset '{dataset_name}' not found in registry")
+            
+            data_dir = dataset_info.get("path")
+            if not data_dir or not os.path.exists(data_dir):
+                raise ValueError(f"Dataset path '{data_dir}' does not exist")
+            
+            # Import custom loader from dashboard backend
+            from dashboard.backend.core.loaders import create_mimic_cxr_loaders
+            
+            # Create loaders
+            client_loaders, test_loader = create_mimic_cxr_loaders(
+                data_dir=data_dir,
+                num_clients=num_clients,
+                iid=iid,
+                batch_size=batch_size,
+                alpha=alpha,
+            )
+            
+            return client_loaders, test_loader
+            
+        except ImportError as e:
+            print(f"Custom MIMIC-CXR loader not available: {e}")
+            print("Falling back to synthetic data")
+            return self._create_synthetic_loader(
+                dataset_name, num_clients, iid, batch_size, alpha
+            )
+        except Exception as e:
+            print(f"Error creating MIMIC-CXR loader: {e}")
             return self._create_synthetic_loader(
                 dataset_name, num_clients, iid, batch_size, alpha
             )
