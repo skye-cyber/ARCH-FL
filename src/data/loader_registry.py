@@ -57,12 +57,12 @@ class DataLoaderRegistry:
         )
 
         # Register CheXpert loader
-        self.register_loader(
-            "chexpert",
-            self._create_chexpert_loader,
-            description="CheXpert chest X-ray dataset loader",
-            supported_datasets=["chexpert"],
-        )
+        # self.register_loader(
+        #     "chexpert",
+        #     self._create_chexpert_loader,
+        #     description="CheXpert chest X-ray dataset loader",
+        #     supported_datasets=["chexpert"],
+        # )
 
         # Register MIMIC-CXR loader
         self.register_loader(
@@ -203,7 +203,7 @@ class DataLoaderRegistry:
             return "chexpert"
         elif dataset_name == "mimic_cxr":
             return "mimic_cxr"
-        
+
         # For other datasets, use synthetic loader as default
         return "synthetic"
 
@@ -313,14 +313,14 @@ class DataLoaderRegistry:
             dataset_info = self.dataset_registry.get_dataset_info(dataset_name)
             if not dataset_info:
                 raise ValueError(f"Dataset '{dataset_name}' not found in registry")
-            
+
             data_dir = dataset_info.get("path")
             if not data_dir or not os.path.exists(data_dir):
                 raise ValueError(f"Dataset path '{data_dir}' does not exist")
-            
+
             # Import custom loader from dashboard backend
-            from dashboard.backend.core.loaders import create_chexpert_loaders
-            
+            from src.data.mimi import create_chexpert_loaders
+
             # Create loaders
             client_loaders, test_loader = create_chexpert_loaders(
                 data_dir=data_dir,
@@ -329,9 +329,9 @@ class DataLoaderRegistry:
                 batch_size=batch_size,
                 alpha=alpha,
             )
-            
+
             return client_loaders, test_loader
-            
+
         except ImportError as e:
             print(f"Custom CheXpert loader not available: {e}")
             print("Falling back to synthetic data")
@@ -362,25 +362,25 @@ class DataLoaderRegistry:
             dataset_info = self.dataset_registry.get_dataset_info(dataset_name)
             if not dataset_info:
                 raise ValueError(f"Dataset '{dataset_name}' not found in registry")
-            
+
             data_dir = dataset_info.get("path")
             if not data_dir or not os.path.exists(data_dir):
                 raise ValueError(f"Dataset path '{data_dir}' does not exist")
-            
+
             # Import custom loader from dashboard backend
-            from dashboard.backend.core.loaders import create_mimic_cxr_loaders
-            
+            from src.data.mimic_cxr_loader import create_mimic_cxr_data_loaders
+
             # Create loaders
-            client_loaders, test_loader = create_mimic_cxr_loaders(
+            client_loaders, test_loader = create_mimic_cxr_data_loaders(
                 data_dir=data_dir,
                 num_clients=num_clients,
                 iid=iid,
                 batch_size=batch_size,
                 alpha=alpha,
             )
-            
+
             return client_loaders, test_loader
-            
+
         except ImportError as e:
             print(f"Custom MIMIC-CXR loader not available: {e}")
             print("Falling back to synthetic data")
