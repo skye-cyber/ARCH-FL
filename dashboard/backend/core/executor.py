@@ -166,6 +166,7 @@ class Executor:
             from src.core.coordinator import Coordinator
             from src.training.fedavg import FederatedTrainer
             from src.training.local_trainer import LocalTrainer
+
             from src.core.client import Client
             import torch
 
@@ -209,7 +210,7 @@ class Executor:
                     )
 
             # Register dataset if not already in registry
-            if not data_loader_registry.is_supported(experiment_data["dataset_name"]):
+            if not dataset_registry.is_supported(experiment_data["dataset_name"]):
                 # Get dataset from database
                 with self.db_manager.transaction() as cursor:
                     cursor.execute(
@@ -256,16 +257,8 @@ class Executor:
 
             if not data_loader_registry.is_supported(experiment_data["dataset_name"]):
                 raise ValueError(
-                    f"Failed to register dataset '{experiment_data['dataset_name']}'"
+                    f"The dataset has not registered loader '{experiment_data['dataset_name']}'"
                 )
-
-            # Get architecture and dataset info
-            architecture_info = arch_registry.get_architecture_info(
-                experiment_data["architecture_name"]
-            )
-            dataset_info = data_loader_registry.get_dataset_info(
-                experiment_data["dataset_name"]
-            )
 
             # Get training parameters
             params = json.loads(experiment_data["parameters"])
@@ -284,9 +277,9 @@ class Executor:
             progress_callback(0, "Initializing experiment")
 
             # Create model
-            model = arch_registry.create_model(
+            model = arch_registry.create_model_from_architecture(
                 experiment_data["architecture_name"],
-                input_size=dataset_info.get("input_size", 28),
+                # input_size=dataset_info.get("input_size", 28),
             )
 
             # Create data loaders
@@ -301,9 +294,9 @@ class Executor:
             # Create clients
             clients = []
             for client_id in range(num_clients):
-                client_model = arch_registry.create_model(
+                client_model = arch_registry.create_model_from_architecture(
                     experiment_data["architecture_name"],
-                    input_size=dataset_info.get("input_size", 28),
+                    # input_size=dataset_info.get("input_size", 28),
                 )
                 client = Client(
                     client_id, client_model, client_loaders[client_id], "cpu"
