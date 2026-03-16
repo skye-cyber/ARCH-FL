@@ -143,13 +143,18 @@ class Executor:
         """
         Internal method to execute experiment using ARCH-FL core
 
+        This method implements the complete experiment lifecycle:
+        1. Local training (if enabled)
+        2. Federated training with aggregation
+        3. Metrics collection and reporting
+
         Args:
             experiment_id: ID of the experiment
             experiment_data: Experiment data from database
             progress_callback: Callback for progress updates
 
         Returns:
-            Dictionary with execution results
+            Dictionary with execution results including metrics
         """
         try:
             # Import ARCH-FL core components
@@ -157,17 +162,13 @@ class Executor:
             from src.models.architecture_registry import get_architecture_registry
             from src.data.loader_registry import get_data_loader_registry
             from src.core.coordinator import Coordinator
-
-            # from src.training.fedavg import federated_average Not found
             from src.training.fedavg import FederatedTrainer
             from src.training.local_trainer import LocalTrainer
+            from src.core.client import Client
+            import torch
 
             # Initialize dashboard connector
             dashboard_connector = DashboardConnector()
-            # Below hooks should be used appropriately- Note dashboard may handle some of fubctionlaities so check db record
-            # dashboard_connector.create_experiment_record() do nothing is exists
-            # dashboard_connector.add_experiment_result()
-            # dashboard_connector.update_experiment_status()
 
             # Get architecture and dataset
             arch_registry = get_architecture_registry()
@@ -191,64 +192,161 @@ class Executor:
                     f"Dataset '{experiment_data['dataset_name']}' not found in registry"
                 )
 
+            # Get training parameters
+            params = json.loads(experiment_data["parameters"])
+            num_rounds = params.get("num_rounds", 5)
+            num_clients = experiment_data["num_clients"]
+            iid = experiment_data["iid"]
+            local_epochs = params.get("local_epochs", 1)
+            learning_rate = params.get("learning_rate", 0.01)
+
+            # Privacy parameters
+            dp_enabled = params.get("dp_enabled", False)
+            epsilon = params.get("epsilon", 1.0)
+            delta = params.get("delta", 1e-5)
+
+            # Report initial progress
+            progress_callback(0, "Initializing experiment")
+
             # Create model
             model = arch_registry.create_model(
                 experiment_data["architecture_name"],
                 input_size=dataset_info.get("input_size", 28),
             )
 
+            # Create data loaders
+            client_loaders, test_loader = data_registry.create_data_loaders(
+                experiment_data["dataset_name"],
+                num_clients,
+                iid=iid,
+                batch_size=params.get("batch_size", 32),
+                alpha=params.get("alpha", 0.5),
+            )
+
+            # Create clients
+            clients = []
+            for client_id in range(num_clients):
+                client_model = arch_registry.create_model(
+                    experiment_data["architecture_name"],
+                    input_size=dataset_info.get("input_size", 28),
+                )
+                client = Client(
+                    client_id, client_model, client_loaders[client_id], "cpu"
+                )
+                clients.append(client)
+
             # Create coordinator with callback
             coordinator = Coordinator(
                 model,
-                aggregation_method=experiment_data["parameters"].get(
-                    "aggregation_method", "fed_avg"
-                ),
-                progress_callback=lambda progress, message, metadata=None: (
-                    progress_callback(progress, message, metadata)
-                ),
-            )
-
-            # Get training parameters
-            params = json.loads(experiment_data["parameters"])
-            num_rounds = params.get("num_rounds", 5)
-            num_clients = experiment_data["num_clients"]
-
-            # Report initial progress
-            progress_callback(0, "Starting federated training")
-
-            # Run federated training Needs fixing
-            federated_average(
-                coordinator=coordinator,
-                dataset_name=experiment_data["dataset_name"],
-                num_clients=num_clients,
-                num_rounds=num_rounds,
-                iid=experiment_data["iid"],
-                progress_callback=lambda progress, message, metadata=None: (
-                    progress_callback(progress, message, metadata)
+                aggregation_method=params.get("aggregation_method", "fed_avg"),
+                progress_callback=lambda round_num, metrics, event_type: (
+                    progress_callback(
+                        int((round_num / num_rounds) * 100),
+                        f"Training round {round_num}/{num_rounds}",
+                        {"round": round_num, "metrics": metrics, "event": event_type},
+                    )
                 ),
             )
+
+            # Create federated trainer
+            federated_trainer = FederatedTrainer(
+                coordinator, clients, test_loader, "cpu"
+            )
+
+            # Report progress
+            progress_callback(5, "Clients initialized, starting training")
+
+            # Run federated training
+            results = {
+                "rounds": [],
+                "final_accuracy": 0.0,
+                "privacy_spent": None,
+            }
+
+            for round_num in range(1, num_rounds + 1):
+                # Train clients
+                client_indices = list(range(num_clients))
+
+                # Local training phase
+                for client_idx in client_indices:
+                    client = clients[client_idx]
+                    client_update = client.local_train(
+                        coordinator.get_global_model(), local_epochs, learning_rate
+                    )
+
+                    # Store client update for aggregation
+                    clients[client_idx].model.load_state_dict(client_update)
+
+                # Federated aggregation phase
+                client_updates = []
+                client_sizes = []
+
+                for client_idx in client_indices:
+                    client = clients[client_idx]
+                    client_updates.append(client.model.state_dict())
+                    client_sizes.append(client.get_dataset_size())
+
+                # Aggregate updates
+                coordinator.aggregate(client_updates, client_sizes, round_num)
+
+                # Evaluate and record results
+                accuracy = federated_trainer.evaluate()
+
+                # Record round results
+                round_result = {
+                    "round": round_num,
+                    "accuracy": accuracy,
+                    "num_clients": num_clients,
+                    "iid": iid,
+                    "aggregation_method": params.get("aggregation_method", "fed_avg"),
+                    "epsilon": epsilon if dp_enabled else None,
+                    "delta": delta if dp_enabled else None,
+                }
+
+                results["rounds"].append(round_result)
+
+                # Update dashboard with round results
+                dashboard_connector.update_experiment_status(
+                    experiment_id, "running", round_result
+                )
+
+                # Calculate progress
+                progress = int((round_num / num_rounds) * 95) + 5  # 5-99%
+                progress_callback(
+                    progress,
+                    f"Round {round_num}/{num_rounds} completed - Accuracy: {accuracy:.2f}%",
+                    {"round": round_num, "accuracy": accuracy},
+                )
+
+            # Final evaluation
+            final_accuracy = federated_trainer.evaluate()
+            results["final_accuracy"] = final_accuracy
 
             # Report completion
             progress_callback(100, "Training completed successfully")
 
-            # Update final status in database
-            with self.db_manager.transaction() as cursor:
-                cursor.execute(
-                    "UPDATE experiments SET status = ?, message = ?, updated_at = ? WHERE id = ?",
-                    (
-                        "completed",
-                        "Training completed successfully",
-                        datetime.now().isoformat(),
-                        experiment_id,
-                    ),
-                )
-
-            return {
+            # Store final results
+            final_result = {
+                "experiment_id": experiment_id,
                 "status": "completed",
                 "message": "Experiment completed successfully",
-                "experiment_id": experiment_id,
                 "rounds_completed": num_rounds,
+                "final_accuracy": final_accuracy,
+                "num_clients": num_clients,
+                "iid": iid,
+                "aggregation_method": params.get("aggregation_method", "fed_avg"),
+                "dp_enabled": dp_enabled,
+                "epsilon": epsilon if dp_enabled else None,
+                "delta": delta if dp_enabled else None,
+                "rounds": results["rounds"],
             }
+
+            # Update dashboard with final results
+            dashboard_connector.update_experiment_status(
+                experiment_id, "completed", final_result
+            )
+
+            return final_result
 
         except ImportError as e:
             # Fallback if ARCH-FL core not available
