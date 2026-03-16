@@ -10,7 +10,6 @@ import json
 import os
 from pathlib import Path
 from dashboard.backend.config.settings import settings
-from pathlib import Path
 
 
 class DatasetRegistry:
@@ -25,58 +24,122 @@ class DatasetRegistry:
     def __init__(self):
         """Initialize dataset registry."""
         self.datasets = {}
-        self._load_builtin_datasets()
         self._registry_file = (
             Path(__file__).resolve().parent.parent.parent
             / "config/dataset_registry.json"
         ).as_posix()
-        self._ensure_registry_file()
         self.datasets_dir = Path(settings.DATASET_BASE_PATH)
+        self._ensure_registry_file()
+        self._load_builtin_datasets()
+        print(self.datasets_dir)
 
     def _load_builtin_datasets(self) -> None:
-        """Load information about built-in datasets."""
-        self.datasets = {
-            "mimic_cxr": {
-                "name": "MIMIC-CXR",
-                "description": "MIMIC-CXR Chest X-ray Dataset",
-                "data_type": "chest_xray",
-                "image_format": "grayscale",
-                "default_size": (224, 224),
-                "channels": 1,
-                "task_types": ["binary_classification", "multi_label_classification"],
-                "path": (self.datasets_dir / "mimic_cxr").as_posix(),
-                "supported": True,
-                "metadata_file": (
-                    self.datasets_dir / "mimic_cxr/datasetinfo.yml"
-                ).as_posix(),
-            },
-            "chexpert": {
-                "name": "CheXpert",
-                "description": "Stanford CheXpert Chest X-ray Dataset",
-                "data_type": "chest_xray",
-                "image_format": "grayscale",
-                "default_size": (320, 320),
-                "channels": 1,
-                "task_types": ["multi_label_classification"],
-                "path": (self.datasets_dir / "chexpert").as_posix(),
-                "supported": True,
-                "metadata_file": (
-                    self.datasets_dir / "chexpert/datasetinfo.yml"
-                ).as_posix(),
-            },
-            # "pneumoniamnist": {
-            #     "name": "PneumoniaMNIST",
-            #     "description": "Pneumonia MNIST Dataset",
-            #     "data_type": "chest_xray",
-            #     "image_format": "grayscale",
-            #     "default_size": (28, 28),
-            #     "channels": 1,
-            #     "task_types": ["binary_classification"],
-            #     "path": None,  # Loaded via torchvision/medmnist
-            #     "supported": True,
-            #     "metadata_file": None,
-            # },
-        }
+        """Load information about built-in datasets by discovering from filesystem."""
+        import yaml
+
+        self.datasets = {}
+
+        # Discover datasets by checking subdirectories
+        for dataset_dir in self.datasets_dir.iterdir():
+            if not dataset_dir.is_dir():
+                continue
+
+            dataset_name = dataset_dir.name
+
+            # Check if this is a valid dataset directory
+            # Valid dataset structure: dataset_name/dataset_name/datasetinfo.yml and data folder
+            dataset_config_dir = dataset_dir / dataset_name
+
+            if not dataset_config_dir.exists():
+                continue
+
+            # Try both .yml and .md extensions
+            config_file_yml = dataset_config_dir / "datasetinfo.yml"
+            config_file_md = dataset_config_dir / "datasetinfo.md"
+            config_file = (
+                config_file_yml if config_file_yml.exists() else config_file_md
+            )
+
+            data_dir = dataset_config_dir / "data"
+
+            # Validate dataset structure
+            if not config_file.exists():
+                print(
+                    f"⚠️ Dataset {dataset_name}: missing datasetinfo.yml or datasetinfo.md"
+                )
+                continue
+
+            if not data_dir.exists() or not any(data_dir.iterdir()):
+                print(f"⚠️ Dataset {dataset_name}: data folder is empty")
+                continue
+
+            # Load dataset configuration
+            try:
+                with open(config_file, "r") as f:
+                    if config_file.suffix == ".yml":
+                        dataset_config = yaml.safe_load(f)
+                    else:
+                        # Parse markdown file for YAML frontmatter
+                        dataset_config = self._parse_markdown_frontmatter(f.read())
+
+                # Extract relevant information
+                self.datasets[dataset_name] = {
+                    "name": dataset_config.get("name", dataset_name),
+                    "description": dataset_config.get("description", ""),
+                    "data_type": dataset_config.get("data_type", "chest_xray"),
+                    "image_format": dataset_config.get("image_format", "grayscale"),
+                    "default_size": dataset_config.get("input_size", [224, 224]),
+                    "channels": dataset_config.get("channels", 1),
+                    "task_types": dataset_config.get("task", ["binary_classification"]),
+                    "path": str(data_dir.absolute()),
+                    "supported": True,
+                    "metadata_file": str(config_file.absolute()),
+                }
+
+                print(f"✅ Registered dataset: {dataset_name}")
+
+            except Exception as e:
+                print(f"⚠️ Failed to load dataset config for {dataset_name}: {e}")
+                continue
+
+        # If no datasets found, add fallback datasets
+        if not self.datasets:
+            print(
+                f"⚠️ No datasets discovered in {self.datasets_dir}, using fallback datasets"
+            )
+            self.datasets = {
+                "mimic_cxr": {
+                    "name": "MIMIC-CXR",
+                    "description": "MIMIC-CXR Chest X-ray Dataset",
+                    "data_type": "chest_xray",
+                    "image_format": "grayscale",
+                    "default_size": (224, 224),
+                    "channels": 1,
+                    "task_types": [
+                        "binary_classification",
+                        "multi_label_classification",
+                    ],
+                    "path": (self.datasets_dir / "mimic_cxr").as_posix(),
+                    "supported": True,
+                    "metadata_file": (
+                        self.datasets_dir / "mimic_cxr/datasetinfo.yml"
+                    ).as_posix(),
+                },
+                "chexpert": {
+                    "name": "CheXpert",
+                    "description": "Stanford CheXpert Chest X-ray Dataset",
+                    "data_type": "chest_xray",
+                    "image_format": "grayscale",
+                    "default_size": (320, 320),
+                    "channels": 1,
+                    "task_types": ["multi_label_classification"],
+                    "path": (self.datasets_dir / "chexpert").as_posix(),
+                    "supported": True,
+                    "metadata_file": (
+                        self.datasets_dir / "chexpert/datasetinfo.yml"
+                    ).as_posix(),
+                },
+            }
 
     def _ensure_registry_file(self) -> None:
         """Ensure registry file exists."""
@@ -157,6 +220,29 @@ class DatasetRegistry:
             },
         }
 
+    def _parse_markdown_frontmatter(self, content: str) -> Dict[str, Any]:
+        """Parse YAML frontmatter from markdown file."""
+        import re
+        import yaml
+
+        # Match YAML frontmatter between --- markers
+        match = re.search(r"^---\s*\n(.*?)\n---\s*", content, re.DOTALL)
+
+        if match:
+            try:
+                return yaml.safe_load(match.group(1))
+            except Exception as e:
+                print(f"⚠️ Error parsing YAML frontmatter: {e}")
+
+        # If no frontmatter, try to parse as YAML directly
+        try:
+            return yaml.safe_load(content)
+        except Exception:
+            pass
+
+        # Return empty dict if parsing fails
+        return {}
+
     def _parse_datasetinfo_md(self, metadata_file: str) -> Dict[str, Any]:
         """Parse datasetinfo.md file to extract metadata."""
         import re
@@ -170,6 +256,23 @@ class DatasetRegistry:
             with open(metadata_file, "r") as f:
                 content = f.read()
 
+                # First try to parse YAML frontmatter
+                yaml_data = self._parse_markdown_frontmatter(content)
+                if yaml_data:
+                    # Extract from parsed YAML
+                    metadata["properties"]["image_size"] = yaml_data.get(
+                        "input_size", [224, 224]
+                    )
+                    metadata["properties"]["channels"] = yaml_data.get("channels", 1)
+                    metadata["properties"]["data_type"] = yaml_data.get(
+                        "data_type", "chest_xray"
+                    )
+                    metadata["properties"]["image_format"] = yaml_data.get(
+                        "image_format", "grayscale"
+                    )
+                    return metadata
+
+                # Fallback to regex parsing if no YAML frontmatter
                 # Extract image size if available
                 size_match = re.search(r"image_size:\s*\((\d+),\s*(\d+)\)", content)
                 if size_match:
