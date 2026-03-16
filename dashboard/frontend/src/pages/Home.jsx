@@ -409,10 +409,10 @@ export default function Home() {
                         </div>
 
                         {/* System Health Card */}
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white">
+                        <div className="bg-white dark:bg-gray-900 dark:to-gray-800 border shadow-lg  rounded-2xl p-6 text-white">
                             <div className="flex items-center space-x-2 mb-4">
                                 <Activity className="w-5 h-5 text-emerald-400" />
-                                <span className="text-sm font-medium text-gray-300">
+                                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                                     System Health
                                 </span>
                             </div>
@@ -438,16 +438,16 @@ export default function Home() {
                                 ].map((metric) => (
                                     <div key={metric.label}>
                                         <div className="flex justify-between text-sm mb-1">
-                                            <span className="text-gray-400">{metric.label}</span>
-                                            <span className="text-gray-200">
+                                            <span className="text-gray-800 dark:text-gray-300">{metric.label}</span>
+                                            <span className="text-gray-800 dark:text-gray-200">
                                                 {metric.label === "CPU"
                                                     ? `${metric.value}%`
                                                     : metric.label === "Memory"
-                                                        ? `${metric.value}/${metric.total}`
-                                                        : `${metric.value}/${metric.total}`}
+                                                        ? `${metric.value?.replace("GB", "")}/${metric.total}`
+                                                        : `${metric.value?.replace("GB", "")}/${metric.total}`}
                                             </span>
                                         </div>
-                                        <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                                        <div className="h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: "0%" }}
                                                 animate={{
