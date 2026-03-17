@@ -150,7 +150,6 @@ def get_dataset(name: str):
     path = metadata.get("location", None)
     size = 0
     size_human = 0
-    print(path)
     # Calculate dataset size
     if path:
         abs_path = Path(path).absolute().as_posix()

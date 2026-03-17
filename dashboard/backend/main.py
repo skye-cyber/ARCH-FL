@@ -74,11 +74,11 @@ app.add_middleware(
 )
 
 
-@app.middleware("http")
-async def authenticate(request, call_next):
-    # Skip authentication for WebSocket upgrade requests
-    if request.url.path.startswith("/ws/"):
-        return await call_next(request)
+# @app.middleware("http")
+# async def authenticate(request, call_next):
+#     # Skip authentication for WebSocket upgrade requests
+#     if request.url.path.startswith("/ws/"):
+#         return await call_next(request)
 
 
 # Include routers

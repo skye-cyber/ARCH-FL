@@ -166,6 +166,7 @@ export default function ExperimentVisualization() {
           currentRound: data.progress.current_round,
         });
       }
+      console.log("Polling", data);
 
       // Update client activity
       if (data.clients?.details) {
@@ -190,7 +191,7 @@ export default function ExperimentVisualization() {
       }));
     },
   });
-
+  console.log(progressData);
   // Fetch initial experiment data
   useEffect(() => {
     const fetchExperiment = async () => {
@@ -285,12 +286,12 @@ export default function ExperimentVisualization() {
   );
   // Update animation based on connection status and experiment state
   useEffect(() => {
-    if (experiment?.status === "running" && isConnected) {
+    if (experiment?.status === "running") {
       setIsAnimating(true);
     } else {
       setIsAnimating(false);
     }
-  }, [experiment?.status, isConnected]);
+  }, [experiment?.status]);
 
   if (!experiment) {
     return (
@@ -468,7 +469,7 @@ export default function ExperimentVisualization() {
               <div className="text-center">
                 <motion.div
                   animate={
-                    experiment.status === "running" && isConnected
+                    experiment.status === "running"
                       ? {
                           boxShadow: [
                             "0 0 0 0 rgba(59, 130, 246, 0.4)",
@@ -484,7 +485,7 @@ export default function ExperimentVisualization() {
                 </motion.div>
                 <p className="font-semibold text-gray-900">Global Model</p>
                 <p className="text-xs text-gray-500 mt-1">Aggregator</p>
-                {experiment.status === "running" && isConnected && (
+                {experiment.status === "running" && (
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{
@@ -504,9 +505,7 @@ export default function ExperimentVisualization() {
             <div className="flex-1 flex items-center justify-center space-x-8">
               <motion.div
                 animate={
-                  experiment.status === "running" && isConnected
-                    ? { x: [0, 10, 0] }
-                    : {}
+                  experiment.status === "running" ? { x: [0, 10, 0] } : {}
                 }
                 transition={{ duration: 2, repeat: Infinity }}
               >
@@ -526,8 +525,7 @@ export default function ExperimentVisualization() {
                             Date.now() - new Date(update.timestamp).getTime() <
                               3000,
                         )) &&
-                      experiment.status === "running" &&
-                      isConnected;
+                      experiment.status === "running";
 
                     return (
                       <motion.div
@@ -601,9 +599,7 @@ export default function ExperimentVisualization() {
 
               <motion.div
                 animate={
-                  experiment.status === "running" && isConnected
-                    ? { x: [0, -10, 0] }
-                    : {}
+                  experiment.status === "running" ? { x: [0, -10, 0] } : {}
                 }
                 transition={{ duration: 2, repeat: Infinity }}
               >
@@ -616,7 +612,7 @@ export default function ExperimentVisualization() {
               <div className="text-center">
                 <motion.div
                   animate={
-                    experiment.status === "running" && isConnected
+                    experiment.status === "running"
                       ? {
                           scale: [1, 1.05, 1],
                         }
@@ -716,7 +712,7 @@ export default function ExperimentVisualization() {
                 <Zap className="w-3 h-3 mr-1" />
                 <span>{experiment.iid ? "IID" : "Non-IID"}</span>
               </div>
-              {experiment.status === "running" && isConnected && (
+              {experiment.status === "running" && (
                 <motion.span
                   animate={{ opacity: [1, 0.5, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -830,7 +826,7 @@ export default function ExperimentVisualization() {
           <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-4">
             <Activity className="w-5 h-5 mr-2 text-emerald-600" />
             Training Progress
-            {experiment.status === "running" && isConnected && (
+            {experiment.status === "running" && (
               <motion.span
                 animate={{ opacity: [1, 0.5, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}

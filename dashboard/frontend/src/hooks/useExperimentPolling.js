@@ -9,7 +9,6 @@ export const useExperimentPolling = (experimentId, options = {}) => {
     onComplete,
     onError,
   } = options;
-
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,6 +18,7 @@ export const useExperimentPolling = (experimentId, options = {}) => {
   const lastStatusRef = useRef(null);
 
   const fetchProgress = useCallback(async () => {
+    console.log("poll", experimentId);
     if (!experimentId) return;
 
     try {
@@ -39,7 +39,7 @@ export const useExperimentPolling = (experimentId, options = {}) => {
 
       // Call progress update callback
       onProgressUpdate?.(newData);
-
+      console.log(newData);
       setError(null);
     } catch (err) {
       console.error("Error polling experiment progress:", err);
