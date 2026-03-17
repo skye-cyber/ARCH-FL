@@ -73,6 +73,14 @@ app.add_middleware(
     max_age=settings.CACHE_TTL,
 )
 
+
+@app.middleware("http")
+async def authenticate(request, call_next):
+    # Skip authentication for WebSocket upgrade requests
+    if request.url.path.startswith("/ws/"):
+        return await call_next(request)
+
+
 # Include routers
 app.include_router(experiments_router, prefix=settings.API_V1_PREFIX)
 app.include_router(architecture_router, prefix=settings.API_V1_PREFIX)

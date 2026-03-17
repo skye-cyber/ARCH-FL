@@ -5,10 +5,12 @@ from tqdm.auto import tqdm
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
 from fastapi import HTTPException
-from ..models.experiment import ExperimentModel, ExperimentStatus
+
+# from ..models.experiment import ExperimentStatus
 from ..utils.logger import logger
 from ..core.db import dbmanager
-from backend.services.websocket_manager import websocketmanager
+
+# from backend.services.websocket_manager import websocketmanager
 
 
 class Executor:
@@ -39,6 +41,10 @@ class Executor:
             Dictionary with execution results
         """
         try:
+            if not experiment_id:
+                raise HTTPException(
+                    status_code=404, detail="Experiment id was not provided"
+                )
             # Validate experiment exists and is in correct state
             if not self.db_manager.validate_experiment_exists(experiment_id):
                 raise HTTPException(status_code=404, detail="Experiment not found")
@@ -136,7 +142,7 @@ class Executor:
             # Re-raise for task manager to handle
             raise
 
-    async def _execute_experiment(
+    def _execute_experiment(
         self,
         experiment_id: int,
         experiment_data: Dict[str, Any],
@@ -349,8 +355,9 @@ class Executor:
             # Update dashboard with round results
             dashboard_connector.update_experiment_status(experiment_id, "running")
             # After starting the experiment
-            await websocketmanager.broadcast_to_task(
-                f"experiment_{experiment_id}",
+            progress_callback(
+                0,
+                "Experiment started",
                 {
                     "type": "experiment_started",
                     "experiment_id": experiment_id,
@@ -396,8 +403,9 @@ class Executor:
                             }
                         )
                         # Send client update
-                        await websocketmanager.broadcast_to_task(
-                            f"experiment_{experiment_id}",
+                        progress_callback(
+                            f"{(round_num / num_rounds) * 100:.2f}",
+                            f"Client {client_idx}: Rounds: {round_num} of {num_rounds}",
                             {
                                 "type": "client_update",
                                 "client_id": client_idx,
@@ -430,8 +438,8 @@ class Executor:
                 best_loss = min(best_loss, global_loss)
 
                 # After aggregation, send round completed with metrics
-                await websocketmanager.broadcast_to_task(
-                    f"experiment_{experiment_id}",
+                progress_callback(
+                    f"{(round_num / num_rounds) * 100:.2f}",
                     {
                         "type": "round_completed",
                         "round": round_num,
@@ -440,10 +448,9 @@ class Executor:
                         "timestamp": datetime.now().isoformat(),
                     },
                 )
-                progress = round_num / num_rounds
+                progress = f"{(round_num / num_rounds) * 100:.2f}"
                 # Send progress update
-                await websocketmanager.send_progress_update(
-                    f"experiment_{experiment_id}",
+                progress_callback(
                     progress,
                     f"Round {round_num}/{num_rounds} completed",
                     {"round": round_num, "accuracy": global_accuracy},

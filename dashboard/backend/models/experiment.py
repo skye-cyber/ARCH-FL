@@ -13,17 +13,18 @@ class ExperimentPriority(str, Enum):
 
 
 class ExperimentType(str, Enum):
-    CONVERSION = "conversion"
-    EXTRACTION = "extraction"
-    ANALYSIS = "analysis"
-    JOIN = "join"
-    OCR = "ocr"
-    RECORDING = "recording"
-    SLICE = "slice"
+    RUN_EXPERIMENT = "run_experiment"
+    TRAIN_MODEL = "train_model"
+    EVALUATE_MODEL = "evaluate_model"
+    EXPORT_MODEL = "export_model"
+    IMPORT_MODEL = "import_model"
+    VALIDATE_DATA = "validate_data"
+    PROCESS_DATA = "preprocess_data"
 
 
 class ExperimentStatus(str, Enum):
     COMPLETED = "completed"
+    RUNNING = "running"
     FAILED = "failed"
     PENDING = "pending"
     CANCELLED = "cancelled"

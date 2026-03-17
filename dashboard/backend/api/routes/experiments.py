@@ -1,10 +1,18 @@
 import json
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from typing import List, Dict
 from datetime import datetime
 from backend.models.requests import ExperimentCreate, ExperimentUpdate
 from backend.core.db import dbmanager
 
+# from backend.core.experiment_manager import experimentmanager
+from backend.utils.experiment_utils import (
+    get_client_results,
+    get_experiment_metrics,
+    get_client_summary,
+    get_experiment_by_id,
+    get_round_summary,
+)
 
 router = APIRouter(prefix="/experiments", tags=["experiments"])
 
@@ -288,6 +296,7 @@ def run_experiment(experiment_id: int):
 
     # Start experiment execution in background
     executor.execute_async(experiment_id, experiment_dict)
+    # await experimentmanager.create_task_async(experiment_dict)
 
     return {
         "status": "started",
@@ -415,6 +424,7 @@ def restart_experiment(experiment_id: int):
 
     # Start experiment execution in background
     executor.execute_async(experiment_id, experiment_dict)
+    # await experimentmanager.create_task_async(experiment_dict)
 
     return {
         "status": "restarted",
@@ -477,3 +487,189 @@ def batch_experiment_actions(action_data: Dict):
         "results": results,
         "errors": errors,
     }
+
+
+@router.get("/{experiment_id}/progress")
+async def get_experiment_progress(experiment_id: int):
+    """
+    Get real-time progress of an experiment by polling the database
+    """
+    try:
+        # Fetch experiment details
+        experiment = await get_experiment_by_id(experiment_id)
+        if not experiment:
+            raise HTTPException(status_code=404, detail="Experiment not found")
+
+        # Fetch latest results
+        experiment_results = await get_experiment_results(experiment_id)
+        client_results = await get_client_results(experiment_id, limit=100)
+
+        # Get summaries
+        client_summary = await get_client_summary(experiment_id)
+        round_summary = await get_round_summary(experiment_id)
+
+        # Calculate progress
+        params = experiment.get("parameters", {})
+        total_rounds = params.get("num_rounds", 10)
+        completed_rounds = (
+            len(set(r["round"] for r in client_results)) if client_results else 0
+        )
+        current_round = (
+            completed_rounds + 1 if completed_rounds < total_rounds else total_rounds
+        )
+
+        # Get latest metrics
+        latest_accuracy = None
+        latest_loss = None
+        if experiment_results:
+            latest = experiment_results[-1]
+            latest_accuracy = latest.get("accuracy")
+            latest_loss = latest.get("loss")
+
+        # Calculate best metrics
+        best_accuracy = None
+        best_loss = None
+        if experiment_results:
+            accuracies = [
+                r.get("accuracy")
+                for r in experiment_results
+                if r.get("accuracy") is not None
+            ]
+            losses = [
+                r.get("loss") for r in experiment_results if r.get("loss") is not None
+            ]
+            best_accuracy = max(accuracies) if accuracies else None
+            best_loss = min(losses) if losses else None
+
+        # Get active clients
+        active_clients = []
+        if client_summary:
+            active_clients = [
+                {"client_id": cid, "last_round": data["last_round"]}
+                for cid, data in client_summary.items()
+                if data.get("last_round") == completed_rounds
+            ]
+
+        return {
+            "experiment_id": experiment_id,
+            "name": experiment.get("name"),
+            "status": experiment.get("status"),
+            "progress": {
+                "percentage": int((completed_rounds / total_rounds * 100))
+                if total_rounds > 0
+                else 0,
+                "completed_rounds": completed_rounds,
+                "total_rounds": total_rounds,
+                "current_round": current_round,
+            },
+            "metrics": {
+                "latest_accuracy": latest_accuracy * 100
+                if latest_accuracy
+                else None,  # Convert to percentage
+                "latest_loss": latest_loss,
+                "best_accuracy": best_accuracy * 100 if best_accuracy else None,
+                "best_loss": best_loss,
+                "accuracy_trend": [
+                    {"round": r["round"], "value": r["avg_accuracy"] * 100}
+                    for r in round_summary
+                ]
+                if round_summary
+                else [],
+                "loss_trend": [
+                    {"round": r["round"], "value": r["avg_loss"]} for r in round_summary
+                ]
+                if round_summary
+                else [],
+            },
+            "clients": {
+                "total": experiment.get("num_clients", 0),
+                "active_count": len(active_clients),
+                "active_clients": active_clients,
+                "updates_received": len(client_results),
+                "summary": client_summary,
+            },
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        # logger.error(f"Error fetching experiment progress: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{experiment_id}/results/latest")
+async def get_latest_results(experiment_id: int, limit: int = Query(10, ge=1, le=100)):
+    """
+    Get the latest results for an experiment
+    """
+    try:
+        # Fetch latest client results
+        client_results = await get_client_results(experiment_id, limit=limit)
+
+        # Fetch experiment results summary
+        experiment_results = await get_experiment_results(experiment_id)
+
+        # Get the most recent round
+        latest_round = (
+            max(set(r["round"] for r in client_results)) if client_results else None
+        )
+
+        # Group by round
+        rounds = {}
+        for result in client_results:
+            round_num = result["round"]
+            if round_num not in rounds:
+                rounds[round_num] = {
+                    "round": round_num,
+                    "clients": [],
+                    "avg_accuracy": 0,
+                    "avg_loss": 0,
+                }
+            rounds[round_num]["clients"].append(
+                {
+                    "client_id": result["client_id"],
+                    "accuracy": result["accuracy"] * 100
+                    if result["accuracy"]
+                    else None,
+                    "loss": result["loss"],
+                    "timestamp": result["timestamp"],
+                }
+            )
+
+        # Calculate averages for each round
+        for round_data in rounds.values():
+            accuracies = [c["accuracy"] for c in round_data["clients"] if c["accuracy"]]
+            losses = [c["loss"] for c in round_data["clients"] if c["loss"]]
+            round_data["avg_accuracy"] = (
+                sum(accuracies) / len(accuracies) if accuracies else None
+            )
+            round_data["avg_loss"] = sum(losses) / len(losses) if losses else None
+
+        return {
+            "experiment_id": experiment_id,
+            "latest_round": latest_round,
+            "rounds": list(rounds.values()),
+            "summary": experiment_results[-1] if experiment_results else None,
+            "total_results": len(client_results),
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    except Exception as e:
+        # logger.error(f"Error fetching latest results: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{experiment_id}/metrics")
+async def get_experiment_metrics_endpoint(experiment_id: int):
+    """
+    Get comprehensive metrics for an experiment
+    """
+    try:
+        metrics = await get_experiment_metrics(experiment_id)
+        if not metrics:
+            raise HTTPException(status_code=404, detail="Experiment not found")
+        return metrics
+    except Exception as e:
+        # logger.error(f"Error fetching experiment metrics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -36,8 +36,9 @@ import {
   architectureService,
   datasetService,
 } from "../services/api";
-import { useWebSocket } from "../services/useWebSocket";
-import { WebSocketMessageType } from "../types/websocket";
+// import { useWebSocket } from "../hooks/useWebSocket";
+// import { WebSocketMessageType } from "../types/websocket";
+import { useExperimentPolling } from "../hooks/useExperimentPolling";
 
 export default function ExperimentVisualization() {
   const { experimentId } = useParams();
@@ -57,27 +58,28 @@ export default function ExperimentVisualization() {
     roundMetrics: {},
   });
 
+  /*
   // WebSocket integration
-  const {
-    isConnected,
-    lastMessage,
-    error: wsError,
-    sendMessage,
-    connectionStats,
-  } = useWebSocket(experimentId, {
-    onConnect: () => {
-      console.log("Connected to real-time updates");
-    },
-    onDisconnect: () => {
-      console.log("Disconnected from real-time updates");
-    },
-    onMessage: (message) => {
-      handleWebSocketMessage(message);
-    },
-  });
+  //   const {
+  //     isConnected,
+  //     lastMessage,
+  //     error: wsError,
+  //     sendMessage,
+  //     connectionStats,
+  //   } = useWebSocket(experimentId, {
+  //     onConnect: () => {
+  //       console.log("Connected to real-time updates");
+  //     },
+  //     onDisconnect: () => {
+  //       console.log("Disconnected from real-time updates");
+  //     },
+  //     onMessage: (message) => {
+  //       handleWebSocketMessage(message);
+  //     },
+  //   });
 
   // Handle incoming WebSocket messages
-  const handleWebSocketMessage = (message) => {
+    const handleWebSocketMessage = (message) => {
     switch (message.type) {
       case WebSocketMessageType.ROUND_COMPLETED:
         setLiveMetrics((prev) => ({
@@ -145,6 +147,49 @@ export default function ExperimentVisualization() {
         console.log("Unhandled message type:", message.type);
     }
   };
+*/
+  // Use polling for real-time updates
+  const {
+    data: progressData,
+    loading: pollingLoading,
+    error: pollingError,
+    isPolling,
+  } = useExperimentPolling(experimentId, {
+    interval: 2000, // Poll every 2 seconds
+    enabled: experiment?.status === "running",
+    onProgressUpdate: (data) => {
+      // Update live metrics
+      if (data.metrics) {
+        setLiveMetrics({
+          accuracy: data.metrics.latest_accuracy,
+          loss: data.metrics.latest_loss,
+          currentRound: data.progress.current_round,
+        });
+      }
+
+      // Update client activity
+      if (data.clients?.details) {
+        // Find recently active clients
+        const activeClients = Object.entries(data.clients.details)
+          .filter(
+            ([_, stats]) => stats.last_round === data.progress.completed_rounds,
+          )
+          .map(([id]) => parseInt(id));
+
+        if (activeClients.length > 0) {
+          setActiveClient(activeClients[0]);
+          setTimeout(() => setActiveClient(null), 1500);
+        }
+      }
+    },
+    onComplete: (data) => {
+      // Handle experiment completion
+      setExperiment((prev) => ({
+        ...prev,
+        status: "completed",
+      }));
+    },
+  });
 
   // Fetch initial experiment data
   useEffect(() => {
@@ -217,6 +262,27 @@ export default function ExperimentVisualization() {
     }
   }, [experimentId]);
 
+  // Connection status indicator (using polling instead of WebSocket)
+  const ConnectionStatus = () => (
+    <div
+      className={`flex items-center px-3 py-1.5 rounded-lg ${
+        isPolling ? "bg-green-50" : "bg-yellow-50"
+      }`}
+    >
+      <div
+        className={`w-2 h-2 rounded-full mr-2 ${
+          isPolling ? "bg-green-500 animate-pulse" : "bg-yellow-500"
+        }`}
+      />
+      <span
+        className={`text-xs font-medium ${
+          isPolling ? "text-green-700" : "text-yellow-700"
+        }`}
+      >
+        {isPolling ? "Live Updates" : "Polling Stopped"}
+      </span>
+    </div>
+  );
   // Update animation based on connection status and experiment state
   useEffect(() => {
     if (experiment?.status === "running" && isConnected) {
@@ -323,7 +389,7 @@ export default function ExperimentVisualization() {
   return (
     <div className="space-y-6">
       {/* Connection Status Bar (new) */}
-      {experiment.status === "running" && (
+      {/*experiment.status === "running" && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -350,23 +416,19 @@ export default function ExperimentVisualization() {
               </>
             )}
           </div>
-          {connectionStats.reconnectAttempts > 0 && (
+          {5 > connectionStats.reconnectAttempts > 0 && (
             <span className="text-xs text-gray-500">
               Reconnect attempt {connectionStats.reconnectAttempts}/5
             </span>
           )}
         </motion.div>
-      )}
+      )*/}
 
       {/* Header with status */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
-      >
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="p-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg shadow-blue-600/20">
+            <div className="p-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl">
               <Network className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -374,41 +436,19 @@ export default function ExperimentVisualization() {
                 Experiment Visualization
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                {isConnected ? "Real-time" : "Live"} federated learning process
+                {experiment?.status === "running"
+                  ? `Round ${progressData?.progress?.current_round || 1} of ${progressData?.progress?.total_rounds || 10}`
+                  : "Federated learning process"}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Live indicator */}
-            {experiment.status === "running" && isConnected && (
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-                className="flex items-center px-3 py-1.5 bg-green-100 rounded-lg"
-              >
-                <CircleDot className="w-3 h-3 text-green-600 mr-2" />
-                <span className="text-xs font-medium text-green-700">LIVE</span>
-              </motion.div>
-            )}
-
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              className={`flex items-center px-4 py-2 ${status.bg} border ${status.border} rounded-xl`}
-            >
-              <StatusIcon className={`w-5 h-5 ${status.text} mr-2`} />
-              <div>
-                <p className={`text-sm font-medium ${status.text}`}>
-                  {experiment.status.charAt(0).toUpperCase() +
-                    experiment.status.slice(1)}
-                </p>
-                <p className="text-xs text-gray-500">{status.message}</p>
-              </div>
-            </motion.div>
+            <ConnectionStatus />
+            {/* Rest of your status component */}
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Main Visualization */}
       <motion.div

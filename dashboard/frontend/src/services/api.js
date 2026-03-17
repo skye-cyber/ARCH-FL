@@ -49,6 +49,27 @@ export const experimentService = {
   delete: (id) => api.post(`/experiments/${id}/delete`),
   restart: (id) => api.post(`/experiments/${id}/restart`),
   batchActions: (actionData) => api.post("/experiments/actions", actionData),
+  getProgress: (experimentId) => {
+    return api.get(`/experiments/${experimentId}/progress`);
+  },
+
+  getLatestResults: (experimentId, limit = 10) => {
+    return api.get(`/experiments/${experimentId}/results/latest`, {
+      params: { limit },
+    });
+  },
+
+  getMetrics: (experimentId) => {
+    return api.get(`/experiments/${experimentId}/metrics`);
+  },
+
+  getClientSummary: (experimentId) => {
+    return api.get(`/experiments/${experimentId}/clients/summary`);
+  },
+
+  getRoundSummary: (experimentId) => {
+    return api.get(`/experiments/${experimentId}/rounds/summary`);
+  },
 };
 
 export const architectureService = {

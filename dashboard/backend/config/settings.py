@@ -59,7 +59,14 @@ class Settings(BaseSettings):
         (Path(__file__).parent.parent.parent.parent / "src/datasets").as_posix(),
         env="DATASET_BASE_PATH",
     )
-
+    TASK_PATH: str = Field(
+        (Path(__file__).parent.parent / "tasks/tasks.json").as_posix(),
+        env="TASKS_PATH",
+    )
+    TASK_DIR: str = Field(
+        (Path(__file__).parent.parent / "tasks/").as_posix(),
+        env="TASKS_DIR",
+    )
     # WebSocket
     WS_PING_INTERVAL: int = Field(30, env="WS_PING_INTERVAL")
     WS_MAX_CONNECTIONS: int = Field(1000, env="WS_MAX_CONNECTIONS")
