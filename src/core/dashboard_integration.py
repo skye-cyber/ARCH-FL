@@ -7,7 +7,8 @@ This module provides utilities for integrating the ARCH-FL core system with the 
 from pathlib import Path
 import json
 from typing import Dict, Any, Optional
-import sqlite3
+
+# import sqlite3
 import os
 from datetime import datetime
 from .coordinator import ProgressCallback
@@ -32,11 +33,11 @@ class DashboardConnector:
 
     def get_db_connection(self):
         """Get SQLite database connection."""
-        if dbmanager:
-            return dbmanager.connection()
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+        # if dbmanager:
+        return dbmanager.connection()
+        # conn = sqlite3.connect(self.db_path)
+        # conn.row_factory = sqlite3.Row
+        # return conn
 
     def create_experiment_record(self, experiment_data: Dict[str, Any]) -> int:
         """Create a new experiment record in the dashboard database."""
@@ -82,10 +83,9 @@ class DashboardConnector:
         try:
             # Update experiment status
             cursor.execute(
-                "UPDATE experiments SET status = ?, message = ?, updated_at = ? WHERE id = ?",
+                "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
                 (
                     status,
-                    metrics.get("message", "success"),
                     datetime.now().isoformat(),
                     experiment_id,
                 ),
@@ -93,17 +93,26 @@ class DashboardConnector:
 
             # Add metrics if provided
             if metrics:
+                cursor.execute(
+                    "UPDATE experiments SET message = ?, updated_at = ? WHERE id = ?",
+                    (
+                        metrics.get("message", "success"),
+                        datetime.now().isoformat(),
+                        experiment_id,
+                    ),
+                )
+
                 # Extract specific fields and store the rest as JSON
                 cursor.execute(
                     """
                     INSERT INTO experiment_results
                     (experiment_id, client_count, total_rounds, rounds_completed, accuracy, loss, metrics)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
                         experiment_id,
                         metrics.get("num_clients", None),
-                        metrics.get("rounds", 0),
+                        metrics.get("total_rounds", 0),
                         metrics.get("rounds_completed", 0),
                         metrics.get("final_accuracy", None),
                         metrics.get("loss", None),
@@ -113,8 +122,8 @@ class DashboardConnector:
                                 for k, v in metrics.items()
                                 if k
                                 not in [
-                                    "client_id",
-                                    "round",
+                                    "num_clients",
+                                    "total_rounds",
                                     "rounds_completed",
                                     "final_accuracy",
                                     "loss",
@@ -204,7 +213,7 @@ class DashboardConnector:
         try:
             cursor.execute(
                 """
-                INSERT INTO experiment_results
+                INSERT INTO client_results
                 (experiment_id, client_id, round, accuracy, loss, metrics)
                 VALUES (?, ?, ?, ?, ?, ?)
             """,

@@ -7,7 +7,7 @@ from ..utils.logger import logger
 
 class DatabaseManager:
     def __init__(self):
-        self.db_path = Path(__file__).parent.parent / "data/dashboard.db"
+        self.db_path = Path(__file__).parent.parent.parent / "data/dashboard.db"
         self.db_path.parent.mkdir(exist_ok=True, parents=True)
         self._initialized = False
 

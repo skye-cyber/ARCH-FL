@@ -67,7 +67,8 @@ export default function ExperimentDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [experiment, setExperiment] = useState(null);
-    const [results, setResults] = useState([]);
+    const [experimentResult, setExperimentResult] = useState(null); // For experiment_results table
+    const [clientResults, setClientResults] = useState([]); // For client_results table
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
@@ -84,21 +85,30 @@ export default function ExperimentDetail() {
 
                 // Fetch experiment details
                 const experimentResponse = await experimentService.getById(id);
-
-                const parameters = experimentResponse?.data?.parameters
+                const parameters = experimentResponse?.data?.parameters;
                 if (parameters && typeof parameters === 'string') {
                     try {
-                        const paramObj = JSON.parse(parameters)
+                        const paramObj = JSON.parse(parameters);
                         if (paramObj) {
-                            experimentResponse.data.parameters = paramObj
+                            experimentResponse.data.parameters = paramObj;
                         }
                     } catch (err) { }
                 }
                 setExperiment(experimentResponse.data);
 
-                // Fetch experiment results
+                // Fetch experiment results (from experiment_results table)
                 const resultsResponse = await experimentService.getResults(id);
-                setResults(resultsResponse.data);
+                if (resultsResponse.data && resultsResponse.data.length > 0) {
+                    // Assuming the first result is the main experiment result
+                    setExperimentResult(resultsResponse.data[0]);
+                }
+
+                // Fetch client results (from client_results table)
+                const clientsResponse = await experimentService.getClientsResults(id);
+                setClientResults(clientsResponse.data || []);
+
+                console.log("Experiment Result:", resultsResponse.data);
+                console.log("Client Results:", clientsResponse.data);
 
                 setLoading(false);
             } catch (err) {
@@ -166,18 +176,18 @@ export default function ExperimentDetail() {
         }
     };
 
-    // Prepare chart data
+    // Prepare chart data from client_results
     const prepareChartData = () => {
-        if (results.length === 0) return null;
+        if (!clientResults || clientResults.length === 0) return null;
 
         // Group results by round
         const rounds = {};
-        results.forEach((result) => {
+        clientResults.forEach((result) => {
             if (!rounds[result.round]) {
                 rounds[result.round] = { accuracy: [], loss: [] };
             }
             if (result.accuracy !== null && result.accuracy !== undefined) {
-                rounds[result.round].accuracy.push(result.accuracy);
+                rounds[result.round].accuracy.push(result.accuracy); // Convert to percentage if stored as decimal
             }
             if (result.loss !== null && result.loss !== undefined) {
                 rounds[result.round].loss.push(result.loss);
@@ -202,7 +212,7 @@ export default function ExperimentDetail() {
                     data: filteredRounds.map((r) => {
                         const accValues = rounds[r].accuracy;
                         return accValues.length > 0
-                            ? (accValues.reduce((a, b) => a + b, 0) / accValues.length) * 100
+                            ? (accValues.reduce((a, b) => a + b, 0) / accValues.length)
                             : 0;
                     }),
                     borderColor: "rgb(59, 130, 246)",
@@ -250,6 +260,22 @@ export default function ExperimentDetail() {
                 bodyColor: "rgb(209, 213, 219)",
                 borderColor: "rgb(75, 85, 99)",
                 borderWidth: 1,
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            if (context.dataset.label.includes('Accuracy')) {
+                                label += context.parsed.y.toFixed(2) + '%';
+                            } else {
+                                label += context.parsed.y.toFixed(4);
+                            }
+                        }
+                        return label;
+                    }
+                }
             },
         },
         scales: {
@@ -265,6 +291,8 @@ export default function ExperimentDetail() {
                 grid: {
                     color: "rgba(0, 0, 0, 0.05)",
                 },
+                min: 0,
+                max: 100,
             },
             y1: {
                 type: "linear",
@@ -284,25 +312,28 @@ export default function ExperimentDetail() {
 
     const chartData = prepareChartData();
 
-    // Calculate summary statistics
+    // Calculate summary statistics from client_results
     const calculateStats = () => {
-        if (results.length === 0) return null;
+        if (!clientResults || clientResults.length === 0) return null;
 
-        const accuracies = results
+        const accuracies = clientResults
             .filter((r) => r.accuracy !== null)
-            .map((r) => r.accuracy);
-        const losses = results.filter((r) => r.loss !== null).map((r) => r.loss);
+            .map((r) => r.accuracy); // Convert to percentage
+        const losses = clientResults.filter((r) => r.loss !== null).map((r) => r.loss);
+
+        const rounds = [...new Set(clientResults.map(r => r.round))];
 
         return {
-            bestAccuracy:
-                accuracies.length > 0 ? Math.max(...accuracies) * 100 : null,
-            avgAccuracy:
-                accuracies.length > 0
-                    ? (accuracies.reduce((a, b) => a + b, 0) / accuracies.length) * 100
-                    : null,
+            bestAccuracy: accuracies.length > 0 ? Math.max(...accuracies) : null,
+            avgAccuracy: accuracies.length > 0
+                ? (accuracies.reduce((a, b) => a + b, 0) / accuracies.length)
+                : null,
             bestLoss: losses.length > 0 ? Math.min(...losses) : null,
-            totalRounds: Math.max(...results.map((r) => r.round)),
-            totalRecords: results.length,
+            totalRounds: rounds.length,
+            totalRecords: clientResults.length,
+            finalAccuracy: experimentResult?.accuracy ? experimentResult.accuracy : null,
+            roundsCompleted: experimentResult?.rounds_completed || 0,
+            totalRoundsConfig: experimentResult?.total_rounds || experiment?.parameters?.epochs || 0,
         };
     };
 
@@ -310,11 +341,11 @@ export default function ExperimentDetail() {
         setActionLoading(true);
         try {
             let response;
-            console.log(actionType)
+            console.log(actionType);
             switch (actionType) {
                 case "run":
                     response = await experimentService.run(id);
-                    experiment.status ='running'
+                    experiment.status = 'running';
                     break;
                 case "cancel":
                     response = await experimentService.cancel(id);
@@ -324,18 +355,16 @@ export default function ExperimentDetail() {
                     break;
                 case "restart":
                     response = await experimentService.restart(id);
-                    experiment.status ='running'
+                    experiment.status = 'running';
                     break;
                 default:
                     return;
             }
-            console.log(response)
+            console.log(response);
             setActionResult({
                 type: "success",
                 message: `Experiment ${actionType} completed successfully`,
             });
-            experiment.status ='completed'
-
 
         } catch (error) {
             console.error(`Error performing ${actionType} action:`, error);
@@ -343,11 +372,11 @@ export default function ExperimentDetail() {
                 type: "error",
                 message: `Failed to ${actionType} experiment`,
             });
-            experiment.status ='failed'
         } finally {
             setActionLoading(false);
         }
     };
+
     const stats = calculateStats();
     const status = experiment ? getStatusConfig(experiment.status) : null;
     const StatusIcon = status?.icon;
@@ -450,7 +479,8 @@ export default function ExperimentDetail() {
                         initial={{ opacity: 0, x: 300 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 300 }}
-                        className={`fixed top-4 right-4 z-50 bg-${actionResult.type === "success" ? "green" : "red"}-50 border border-${actionResult.type === "success" ? "green" : "red"}-200 rounded-xl shadow-lg p-4 max-w-md`}
+                        className={`fixed top-4 right-4 z-50 ${actionResult.type === "success" ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                            } border rounded-xl shadow-lg p-4 max-w-md`}
                     >
                         <div className="flex items-start">
                             {actionResult.type === "success" ? (
@@ -460,19 +490,22 @@ export default function ExperimentDetail() {
                             )}
                             <div className="flex-1">
                                 <p
-                                    className={`text-sm font-medium text-${actionResult.type === "success" ? "green" : "red"}-800`}
+                                    className={`text-sm font-medium ${actionResult.type === "success" ? "text-green-800" : "text-red-800"
+                                        }`}
                                 >
                                     {actionResult.type === "success" ? "Success" : "Error"}
                                 </p>
                                 <p
-                                    className={`text-xs text-${actionResult.type === "success" ? "green" : "red"}-600 mt-1`}
+                                    className={`text-xs ${actionResult.type === "success" ? "text-green-600" : "text-red-600"
+                                        } mt-1`}
                                 >
                                     {actionResult.message}
                                 </p>
                             </div>
                             <button
                                 onClick={() => setActionResult(null)}
-                                className={`ml-4 text-${actionResult.type === "success" ? "green" : "red"}-500 hover:text-${actionResult.type === "success" ? "green" : "red"}-700`}
+                                className={`ml-4 ${actionResult.type === "success" ? "text-green-500 hover:text-green-700" : "text-red-500 hover:text-red-700"
+                                    }`}
                             >
                                 <XCircle className="w-4 h-4" />
                             </button>
@@ -636,7 +669,7 @@ export default function ExperimentDetail() {
                                 <span className="text-xs text-gray-400">Clients</span>
                             </div>
                             <p className="text-2xl font-bold text-gray-900 mb-1">
-                                {experiment.num_clients}
+                                {experiment.num_clients || experimentResult?.client_count || 0}
                             </p>
                             <p className="text-xs text-gray-500">Active Participants</p>
                         </motion.div>
@@ -675,12 +708,12 @@ export default function ExperimentDetail() {
                             </div>
                             <p className="text-2xl font-bold mb-1">
                                 {stats
-                                    ? `${Math.round((stats.totalRounds / (experiment.parameters?.epochs || 1)) * 100)}%`
+                                    ? `${Math.round((stats.roundsCompleted / stats.totalRoundsConfig))}%`
                                     : "0%"}
                             </p>
                             <p className="text-xs text-blue-200">
-                                Round {stats?.totalRounds || 0} of{" "}
-                                {experiment.parameters?.epochs || 10}
+                                Round {stats?.roundsCompleted || 0} of{" "}
+                                {stats?.totalRoundsConfig || experiment?.parameters?.epochs || 10}
                             </p>
                         </motion.div>
                     </div>
@@ -794,6 +827,15 @@ export default function ExperimentDetail() {
                                             </div>
                                         </div>
 
+                                        {experimentResult && (
+                                            <div className="p-3 bg-blue-50 rounded-xl">
+                                                <p className="text-xs text-blue-600 mb-1">Final Accuracy</p>
+                                                <p className="text-lg font-semibold text-blue-700">
+                                                    {experimentResult.accuracy ? (experimentResult.accuracy).toFixed(2) : "N/A"}%
+                                                </p>
+                                            </div>
+                                        )}
+
                                         <div className="pt-4 border-t border-gray-100">
                                             <div className="flex items-center justify-between text-sm">
                                                 <span className="text-gray-600">Total Rounds</span>
@@ -872,9 +914,9 @@ export default function ExperimentDetail() {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
+                                    <div className="overflow-x-auto max-h-80 overflow-y-auto">
                                         <table className="w-full">
-                                            <thead>
+                                            <thead className="sticky top-0 bg-white">
                                                 <tr className="border-b border-gray-200">
                                                     <th className="pb-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                         Round
@@ -888,44 +930,58 @@ export default function ExperimentDetail() {
                                                     <th className="pb-3 text-right text-xs font-medium text-gray-500 uppercase">
                                                         Loss
                                                     </th>
+                                                    <th className="pb-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                                        Time
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                                {results.slice(0, 10).map((result) => (
-                                                    <tr key={result.id} className="hover:bg-gray-50">
-                                                        <td className="py-3 text-sm font-medium text-gray-900">
-                                                            #{result.round}
-                                                        </td>
-                                                        <td className="py-3 text-sm text-gray-600">
-                                                            Client {result.client_id || "Global"}
-                                                        </td>
-                                                        <td className="py-3 text-right">
-                                                            {result.accuracy !== null ? (
-                                                                <span className="text-sm font-medium text-green-600">
-                                                                    {(result.accuracy * 100).toFixed(2)}%
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-sm text-gray-400">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="py-3 text-right">
-                                                            {result.loss !== null ? (
-                                                                <span className="text-sm font-medium text-red-600">
-                                                                    {result.loss.toFixed(4)}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-sm text-gray-400">-</span>
-                                                            )}
+                                                {clientResults && clientResults.length > 0 ? (
+                                                    clientResults.map((result, index) => (
+                                                        <tr key={index} className="hover:bg-gray-50">
+                                                            <td className="py-3 text-sm font-medium text-gray-900">
+                                                                #{result.round}
+                                                            </td>
+                                                            <td className="py-3 text-sm text-gray-600">
+                                                                Client {result.client_id}
+                                                            </td>
+                                                            <td className="py-3 text-right">
+                                                                {result.accuracy !== null ? (
+                                                                    <span className="text-sm font-medium text-green-600">
+                                                                        {(result.accuracy).toFixed(2)}%
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-sm text-gray-400">-</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="py-3 text-right">
+                                                                {result.loss !== null ? (
+                                                                    <span className="text-sm font-medium text-red-600">
+                                                                        {result.loss.toFixed(4)}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-sm text-gray-400">-</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="py-3 text-right text-sm text-gray-500">
+                                                                {result.timestamp ? new Date(result.timestamp).toLocaleTimeString() : '-'}
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan="5" className="py-8 text-center text-gray-500">
+                                                            No client results available
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
                                 )}
                             </motion.div>
 
-                            {/* Detailed Results Table */}
+                            {/* Detailed Results Table - Using client_results */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -936,15 +992,15 @@ export default function ExperimentDetail() {
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                                             <Database className="w-5 h-5 mr-2 text-purple-600" />
-                                            Detailed Results
+                                            Detailed Client Results
                                         </h3>
                                         <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full">
-                                            {results.length} records
+                                            {clientResults?.length || 0} records
                                         </span>
                                     </div>
                                 </div>
 
-                                {results.length > 0 ? (
+                                {clientResults && clientResults.length > 0 ? (
                                     <div className="overflow-x-auto">
                                         <table className="w-full">
                                             <thead className="bg-gray-50">
@@ -967,9 +1023,9 @@ export default function ExperimentDetail() {
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {results.slice(0, 20).map((result) => (
+                                                {clientResults.slice(0, 20).map((result, index) => (
                                                     <tr
-                                                        key={result.id}
+                                                        key={index}
                                                         className="hover:bg-gray-50 transition-colors"
                                                     >
                                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -979,13 +1035,13 @@ export default function ExperimentDetail() {
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
                                                             <span className="text-sm text-gray-600">
-                                                                Client {result.client_id || "Global"}
+                                                                Client {result.client_id}
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                                             {result.accuracy !== null ? (
                                                                 <span className="inline-flex items-center px-2 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-lg">
-                                                                    {(result.accuracy * 100).toFixed(2)}%
+                                                                    {(result.accuracy).toFixed(2)}%
                                                                 </span>
                                                             ) : (
                                                                 <span className="text-sm text-gray-400">-</span>
@@ -1002,21 +1058,19 @@ export default function ExperimentDetail() {
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                                             <span className="text-sm text-gray-500">
-                                                                {new Date(
-                                                                    result.timestamp,
-                                                                ).toLocaleTimeString()}
+                                                                {result.timestamp ? new Date(result.timestamp).toLocaleString() : '-'}
                                                             </span>
                                                         </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
-                                        {results.length > 20 && (
+                                        {clientResults.length > 20 && (
                                             <div className="p-4 text-center border-t border-gray-100">
                                                 <p className="text-sm text-gray-500">
                                                     Showing first 20 results.{" "}
                                                     <button className="text-blue-600 hover:text-blue-700 font-medium">
-                                                        View all {results.length} records
+                                                        View all {clientResults.length} records
                                                     </button>
                                                 </p>
                                             </div>
