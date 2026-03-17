@@ -377,9 +377,204 @@ export default function ExperimentDetail() {
         }
     };
 
+    // Helper function to group results by client
+    const groupClientResults = (results) => {
+        if (!results) return {};
+
+        return results.reduce((acc, result) => {
+            const clientId = result.client_id;
+            if (!acc[clientId]) {
+                acc[clientId] = {
+                    rounds: [],
+                    bestAccuracy: -Infinity,
+                    bestLoss: Infinity,
+                    totalAccuracy: 0,
+                    totalLoss: 0,
+                    lastUpdate: result.timestamp
+                };
+            }
+
+            // Add round data
+            acc[clientId].rounds.push({
+                round: result.round,
+                accuracy: result.accuracy,
+                loss: result.loss,
+                timestamp: result.timestamp
+            });
+
+            // Update stats
+            if (result.accuracy > acc[clientId].bestAccuracy) {
+                acc[clientId].bestAccuracy = result.accuracy;
+            }
+            if (result.loss < acc[clientId].bestLoss) {
+                acc[clientId].bestLoss = result.loss;
+            }
+            acc[clientId].totalAccuracy += result.accuracy;
+            acc[clientId].totalLoss += result.loss;
+
+            // Update last update time if newer
+            if (new Date(result.timestamp) > new Date(acc[clientId].lastUpdate)) {
+                acc[clientId].lastUpdate = result.timestamp;
+            }
+
+            return acc;
+        }, {});
+    };
+
+    // Calculate client stats
+    const clientStats = (() => {
+        if (!clientResults) return null;
+        const grouped = groupClientResults(clientResults);
+        return {
+            uniqueClients: Object.keys(grouped).length,
+            totalRounds: clientResults.length,
+            ...grouped
+        };
+    })();
+
+
+    // Helper function to calculate standard deviation
+    const calculateStdDev = (values) => {
+        if (values.length === 0) return 0;
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        const squareDiffs = values.map(value => Math.pow(value - mean, 2));
+        const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / squareDiffs.length;
+        return Math.sqrt(avgSquareDiff);
+    };
+
     const stats = calculateStats();
     const status = experiment ? getStatusConfig(experiment.status) : null;
     const StatusIcon = status?.icon;
+
+    // Client Result Row Component with Expandable Details
+    const ClientResultRow = ({ clientId, clientData, allResults }) => {
+        const [isExpanded, setIsExpanded] = useState(false);
+
+        const avgAccuracy = clientData.totalAccuracy / clientData.rounds.length;
+        const avgLoss = clientData.totalLoss / clientData.rounds.length;
+        const roundsCount = clientData.rounds.length;
+
+        // Sort rounds by round number
+        const sortedRounds = [...clientData.rounds].sort((a, b) => a.round - b.round);
+
+        return (
+            <>
+                <tr className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                        <button className="text-gray-400 hover:text-gray-600">
+                            {isExpanded ? (
+                                <Minimize2 className="w-4 h-4" />
+                            ) : (
+                                <Maximize2 className="w-4 h-4" />
+                            )}
+                        </button>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                            <div className="p-1.5 bg-indigo-100 rounded-lg mr-3">
+                                <Users className="w-4 h-4 text-indigo-600" />
+                            </div>
+                            <span className="font-medium text-gray-900">
+                                Client {clientId}
+                            </span>
+                        </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <span className="text-sm font-medium text-gray-900">
+                            {roundsCount}
+                        </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <span className="inline-flex items-center px-2 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-lg">
+                            {(clientData.bestAccuracy).toFixed(2)}%
+                        </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <span className="inline-flex items-center px-2 py-1 bg-red-50 text-red-700 text-sm font-medium rounded-lg">
+                            {clientData.bestLoss?.toFixed(4)}
+                        </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <span className="text-sm text-gray-900">
+                            {(avgAccuracy).toFixed(2)}%
+                        </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <span className="text-sm text-gray-900">
+                            {avgLoss.toFixed(4)}
+                        </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <span className="text-sm text-gray-500">
+                            {clientData.lastUpdate ? new Date(clientData.lastUpdate).toLocaleDateString() : '-'}
+                        </span>
+                    </td>
+                </tr>
+
+                {/* Expanded Details - Per Round Results */}
+                {isExpanded && (
+                    <tr>
+                        <td colSpan="8" className="px-6 py-4 bg-gray-50">
+                            <div className="rounded-lg border border-gray-200 overflow-hidden">
+                                <table className="w-full">
+                                    <thead className="bg-gray-100">
+                                        <tr>
+                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase">
+                                                Round
+                                            </th>
+                                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase">
+                                                Accuracy
+                                            </th>
+                                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase">
+                                                Loss
+                                            </th>
+                                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase">
+                                                Timestamp
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-100">
+                                        {sortedRounds.map((roundData, idx) => (
+                                            <tr key={idx} className="hover:bg-gray-50">
+                                                <td className="px-4 py-2 text-sm font-medium text-gray-900">
+                                                    #{roundData.round}
+                                                </td>
+                                                <td className="px-4 py-2 text-right">
+                                                    <span className="text-sm text-green-600 font-medium">
+                                                        {(roundData.accuracy)?.toFixed(2)}%
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-2 text-right">
+                                                    <span className="text-sm text-red-600 font-medium">
+                                                        {roundData.loss?.toFixed(4)}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-2 text-right text-sm text-gray-500">
+                                                    {roundData.timestamp ? new Date(roundData.timestamp).toLocaleString() : '-'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    {/* Mini stats for this client */}
+                                    <tfoot className="bg-gray-50 border-t border-gray-200">
+                                        <tr>
+                                            <td colSpan="4" className="px-4 py-2">
+                                                <div className="flex items-center justify-between text-xs text-gray-500">
+                                                    <span>Min Accuracy: {(Math.min(...sortedRounds.map(r => r.accuracy))).toFixed(2)}%</span>
+                                                    <span>Max Accuracy: {(Math.max(...sortedRounds.map(r => r.accuracy))).toFixed(2)}%</span>
+                                                    <span>Std Dev: {calculateStdDev(sortedRounds.map(r => r.accuracy)).toFixed(4)}</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                )}
+            </>
+        );
+    };
 
     if (loading) {
         return (
@@ -616,7 +811,7 @@ export default function ExperimentDetail() {
             </div>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="space-y-6">
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
@@ -708,7 +903,7 @@ export default function ExperimentDetail() {
                             </div>
                             <p className="text-2xl font-bold mb-1">
                                 {stats
-                                    ? `${Math.round((stats.roundsCompleted / stats.totalRoundsConfig))}%`
+                                    ? `${Math.round((stats.roundsCompleted / stats.totalRoundsConfig)*100)}%`
                                     : "0%"}
                             </p>
                             <p className="text-xs text-blue-200">
@@ -981,7 +1176,7 @@ export default function ExperimentDetail() {
                                 )}
                             </motion.div>
 
-                            {/* Detailed Results Table - Using client_results */}
+                            {/* Detailed Client Results - Grouped by Client with Expandable Rows */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -994,9 +1189,14 @@ export default function ExperimentDetail() {
                                             <Database className="w-5 h-5 mr-2 text-purple-600" />
                                             Detailed Client Results
                                         </h3>
-                                        <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full">
-                                            {clientResults?.length || 0} records
-                                        </span>
+                                        <div className="flex items-center gap-3">
+                                            <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full">
+                                                {clientResults?.length || 0} total records
+                                            </span>
+                                            <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
+                                                {clientStats?.uniqueClients || 0} clients
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1005,76 +1205,43 @@ export default function ExperimentDetail() {
                                         <table className="w-full">
                                             <thead className="bg-gray-50">
                                                 <tr>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                        Round
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-8">
+                                                        {/* Empty for expand icon */}
                                                     </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                         Client
                                                     </th>
                                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                                                        Accuracy
+                                                        Rounds
                                                     </th>
                                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                                                        Loss
+                                                        Best Accuracy
                                                     </th>
                                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                                                        Timestamp
+                                                        Best Loss
+                                                    </th>
+                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                                        Avg Accuracy
+                                                    </th>
+                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                                        Avg Loss
+                                                    </th>
+                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                                        Last Updated
                                                     </th>
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {clientResults.slice(0, 20).map((result, index) => (
-                                                    <tr
-                                                        key={index}
-                                                        className="hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <span className="font-medium text-gray-900">
-                                                                #{result.round}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <span className="text-sm text-gray-600">
-                                                                Client {result.client_id}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                            {result.accuracy !== null ? (
-                                                                <span className="inline-flex items-center px-2 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-lg">
-                                                                    {(result.accuracy).toFixed(2)}%
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-sm text-gray-400">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                            {result.loss !== null ? (
-                                                                <span className="inline-flex items-center px-2 py-1 bg-red-50 text-red-700 text-sm font-medium rounded-lg">
-                                                                    {result.loss.toFixed(4)}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-sm text-gray-400">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                            <span className="text-sm text-gray-500">
-                                                                {result.timestamp ? new Date(result.timestamp).toLocaleString() : '-'}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
+                                                {Object.entries(groupClientResults(clientResults)).map(([clientId, clientData]) => (
+                                                    <ClientResultRow
+                                                        key={clientId}
+                                                        clientId={clientId}
+                                                        clientData={clientData}
+                                                        allResults={clientResults}
+                                                    />
                                                 ))}
                                             </tbody>
                                         </table>
-                                        {clientResults.length > 20 && (
-                                            <div className="p-4 text-center border-t border-gray-100">
-                                                <p className="text-sm text-gray-500">
-                                                    Showing first 20 results.{" "}
-                                                    <button className="text-blue-600 hover:text-blue-700 font-medium">
-                                                        View all {clientResults.length} records
-                                                    </button>
-                                                </p>
-                                            </div>
-                                        )}
                                     </div>
                                 ) : (
                                     <div className="p-12 text-center">

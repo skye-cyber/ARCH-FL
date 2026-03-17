@@ -1,13 +1,14 @@
 import json
 import threading
 import traceback
+from tqdm.auto import tqdm
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
 from fastapi import HTTPException
 from ..models.experiment import ExperimentModel, ExperimentStatus
 from ..utils.logger import logger
 from ..core.db import dbmanager
-from tqdm.auto import tqdm
+from backend.services.websocket_manager import websocketmanager
 
 
 class Executor:
@@ -135,7 +136,7 @@ class Executor:
             # Re-raise for task manager to handle
             raise
 
-    def _execute_experiment(
+    async def _execute_experiment(
         self,
         experiment_id: int,
         experiment_data: Dict[str, Any],
@@ -347,7 +348,15 @@ class Executor:
 
             # Update dashboard with round results
             dashboard_connector.update_experiment_status(experiment_id, "running")
-
+            # After starting the experiment
+            await websocketmanager.broadcast_to_task(
+                f"experiment_{experiment_id}",
+                {
+                    "type": "experiment_started",
+                    "experiment_id": experiment_id,
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
             for round_num in tqdm(range(1, num_rounds + 1)):
                 # Train clients
                 client_indices = list(range(num_clients))
@@ -375,13 +384,28 @@ class Executor:
                         )
                         round_client_losses.append(client_metrics.get("loss", 0))
 
+                        client_accuracy = client_metrics.get("accuracy", 0)
+                        client_loss = client_metrics.get("loss", 0)
+
                         # Store in history
                         client_metrics_history[client_idx].append(
                             {
                                 "round": round_num,
-                                "accuracy": client_metrics.get("accuracy", 0),
-                                "loss": client_metrics.get("loss", 0),
+                                "accuracy": client_accuracy,
+                                "loss": client_loss,
                             }
+                        )
+                        # Send client update
+                        await websocketmanager.broadcast_to_task(
+                            f"experiment_{experiment_id}",
+                            {
+                                "type": "client_update",
+                                "client_id": client_idx,
+                                "round": round_num,
+                                "accuracy": client_accuracy,
+                                "loss": client_loss,
+                                "timestamp": datetime.now().isoformat(),
+                            },
                         )
 
                 # Federated aggregation phase
@@ -405,6 +429,25 @@ class Executor:
                 best_accuracy = max(best_accuracy, global_accuracy)
                 best_loss = min(best_loss, global_loss)
 
+                # After aggregation, send round completed with metrics
+                await websocketmanager.broadcast_to_task(
+                    f"experiment_{experiment_id}",
+                    {
+                        "type": "round_completed",
+                        "round": round_num,
+                        "accuracy": global_accuracy,
+                        "loss": global_loss,
+                        "timestamp": datetime.now().isoformat(),
+                    },
+                )
+                progress = round_num / num_rounds
+                # Send progress update
+                await websocketmanager.send_progress_update(
+                    f"experiment_{experiment_id}",
+                    progress,
+                    f"Round {round_num}/{num_rounds} completed",
+                    {"round": round_num, "accuracy": global_accuracy},
+                )
                 # Record global round results
                 round_result = {
                     "round": round_num,
