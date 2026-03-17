@@ -372,7 +372,7 @@ class DataLoaderRegistry:
 
             # Create loaders
             client_loaders, test_loader = create_mimic_cxr_data_loaders(
-                data_dir=data_dir,
+                # data_dir=data_dir,
                 num_clients=num_clients,
                 iid=iid,
                 batch_size=batch_size,

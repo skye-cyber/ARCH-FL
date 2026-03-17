@@ -31,7 +31,6 @@ class DatasetRegistry:
         self.datasets_dir = Path(settings.DATASET_BASE_PATH)
         self._ensure_registry_file()
         self._load_builtin_datasets()
-        print(self.datasets_dir)
 
     def _load_builtin_datasets(self) -> None:
         """Load information about built-in datasets by discovering from filesystem."""
