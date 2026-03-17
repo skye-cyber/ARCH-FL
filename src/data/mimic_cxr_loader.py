@@ -4,6 +4,7 @@ MIMIC-CXR Dataset Loader for ARCH-FL
 This module provides functionality to load and preprocess the MIMIC-CXR dataset
 for federated learning experiments.
 """
+
 import sys
 import os
 import numpy as np
@@ -15,12 +16,12 @@ from PIL import Image
 import io
 import warnings
 from pathlib import Path
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Optional, Tuple, List
 
 
-sys.path.insert(0, Path(__file__).resolve().parent.parent.parent.as_posix())
+dataset_dir = Path(__file__).resolve().parent.parent / "datasets/mimic_cxr/data"
 
-dataset_dir = Path(__file__).resolve().parent.parent / 'datasets'
+MIMICCXR_CLASSES = []
 
 
 class MIMICCXRDataset(Dataset):
@@ -34,21 +35,26 @@ class MIMICCXRDataset(Dataset):
         max_samples: Maximum number of samples to load (for memory management)
         binary_classification: Whether to convert to binary classification task
         target_pathology: Which pathology to use for binary classification
+        uncertainty_handling: Method to handle uncertain labels ('zeros', 'ones', 'ignore')
     """
 
-    def __init__(self,
-                 data_frame: pd.DataFrame,
-                 root_dir: str = "src/datasets/mimic_cxr",
-                 transform: Optional[transforms.Compose] = None,
-                 max_samples: Optional[int] = None,
-                 binary_classification: bool = True,
-                 target_pathology: str = "Pneumonia"):
+    def __init__(
+        self,
+        data_frame: pd.DataFrame,
+        root_dir: str = Path(__file__).parent.parent / "datasets/mimic_cxr",
+        transform: Optional[transforms.Compose] = None,
+        max_samples: Optional[int] = None,
+        binary_classification: bool = True,
+        target_pathology: str = "Pneumonia",
+        uncertainty_handling: str = "zeros",
+    ):
         """Initialize MIMIC-CXR dataset."""
         self.data_frame = data_frame
         self.root_dir = root_dir
         self.transform = transform
         self.binary_classification = binary_classification
         self.target_pathology = target_pathology
+        self.uncertainty_handling = uncertainty_handling
 
         # Limit samples if specified (for memory management)
         if max_samples is not None and max_samples < len(data_frame):
@@ -65,11 +71,32 @@ class MIMICCXRDataset(Dataset):
     def _preprocess_binary_labels(self):
         """Convert findings text to binary labels for target pathology."""
         # Simple text-based classification (can be enhanced with NLP later)
-        self.data_frame['binary_label'] = self.data_frame['findings'].apply(
+        self.data_frame["binary_label"] = self.data_frame["findings"].apply(
             lambda x: 1 if self.target_pathology.lower() in str(x).lower() else 0
         )
-        print(f"🏥 Binary labels created for {self.target_pathology}: "
-              f"{self.data_frame['binary_label'].sum()} positive cases")
+        print(
+            f"🏥 Binary labels created for {self.target_pathology}: "
+            f"{self.data_frame['binary_label'].sum()} positive cases"
+        )
+
+    def _handle_uncertain_labels(self):
+        """Handle uncertain labels (-1 values) according to specified strategy."""
+        # Get pathology columns (all columns after 'Path' column or known pathology columns)
+        pathology_cols = [
+            col for col in MIMICCXR_CLASSES if col in self.data_frame.columns
+        ]
+
+        for col in pathology_cols:
+            if col in self.data_frame.columns:
+                if self.uncertainty_handling == "zeros":
+                    # Treat uncertain as negative
+                    self.data_frame[col] = self.data_frame[col].replace(-1, 0)
+                elif self.uncertainty_handling == "ones":
+                    # Treat uncertain as positive
+                    self.data_frame[col] = self.data_frame[col].replace(-1, 1)
+                elif self.uncertainty_handling == "ignore":
+                    # Remove uncertain samples
+                    self.data_frame = self.data_frame[self.data_frame[col] != -1]
 
     def __len__(self) -> int:
         """Return the number of samples in the dataset."""
@@ -79,19 +106,21 @@ class MIMICCXRDataset(Dataset):
         """Get a sample from the dataset."""
         try:
             # Get image data (assuming it's stored as bytes in the parquet)
-            img_data = self.data_frame.iloc[idx]['image']
+            img_data = self.data_frame.iloc[idx]["image"]
 
             # Handle different image data formats
             if isinstance(img_data, bytes):
                 # Image stored as bytes
-                image = Image.open(io.BytesIO(img_data)).convert('L')  # Convert to grayscale
+                image = Image.open(io.BytesIO(img_data)).convert(
+                    "L"
+                )  # Convert to grayscale
             elif isinstance(img_data, str):
                 # Image path stored as string
                 img_path = os.path.join(self.root_dir, img_data)
-                image = Image.open(img_path).convert('L')
+                image = Image.open(img_path).convert("L")
             else:
                 # Try to convert other formats
-                image = Image.fromarray(img_data).convert('L')
+                image = Image.fromarray(img_data).convert("L")
 
             # Apply transformations
             if self.transform:
@@ -99,7 +128,7 @@ class MIMICCXRDataset(Dataset):
 
             # Get label
             if self.binary_classification:
-                label = self.data_frame.iloc[idx]['binary_label']
+                label = self.data_frame.iloc[idx]["binary_label"]
             else:
                 # For multi-label, we'd need more sophisticated processing
                 label = 0  # Placeholder
@@ -124,19 +153,25 @@ def get_mimic_cxr_transforms(train: bool = True) -> transforms.Compose:
         Composed transforms
     """
     if train:
-        return transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485], std=[0.229])  # Grayscale normalization
-        ])
+        return transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomRotation(10),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485], std=[0.229]
+                ),  # Grayscale normalization
+            ]
+        )
     else:
-        return transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485], std=[0.229])
-        ])
+        return transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485], std=[0.229]),
+            ]
+        )
 
 
 def load_mimic_cxr_dataset(
@@ -144,7 +179,9 @@ def load_mimic_cxr_dataset(
     binary_classification: bool = True,
     target_pathology: str = "Pneumonia",
     test_split: float = 0.2,
-    random_state: int = 42
+    random_state: int = 42,
+    uncertainty_handling: str = "zeros",
+    val_split: float = 0.1,
 ) -> Tuple[List[Dataset], Dataset]:
     """
     Load MIMIC-CXR dataset and partition it for federated learning.
@@ -155,6 +192,8 @@ def load_mimic_cxr_dataset(
         target_pathology: Target pathology for binary classification
         test_split: Fraction of data to use for testing
         random_state: Random seed for reproducibility
+        uncertainty_handling: How to handle uncertain labels
+        val_split: Fraction of training data to use for validation
 
     Returns:
         Tuple of (client_datasets, test_dataset)
@@ -166,8 +205,7 @@ def load_mimic_cxr_dataset(
     try:
         # Load parquet files
         parquet_files = [
-            dataset_dir / "mimic_cxr/data/train-00000-of-00002.parquet",
-            dataset_dir / "mimic_cxr/data/train-00001-of-00002.parquet"
+            dataset_dir / file for file in os.listdir(dataset_dir.as_posix())
         ]
 
         # Read parquet files in chunks to manage memory
@@ -196,6 +234,7 @@ def load_mimic_cxr_dataset(
 
         # Split into train and test
         from sklearn.model_selection import train_test_split
+
         train_df, test_df = train_test_split(
             full_df, test_size=test_split, random_state=random_state
         )
@@ -211,14 +250,14 @@ def load_mimic_cxr_dataset(
             data_frame=train_df,
             transform=train_transform,
             binary_classification=binary_classification,
-            target_pathology=target_pathology
+            target_pathology=target_pathology,
         )
 
         test_dataset = MIMICCXRDataset(
             data_frame=test_df,
             transform=test_transform,
             binary_classification=binary_classification,
-            target_pathology=target_pathology
+            target_pathology=target_pathology,
         )
 
         print("🎉 MIMIC-CXR dataset loaded successfully!")
@@ -226,26 +265,27 @@ def load_mimic_cxr_dataset(
 
     except Exception as e:
         print(f"❌ Error loading MIMIC-CXR dataset: {e}")
+        raise
         # Fallback to synthetic data
-        print("🔄 Falling back to synthetic data...")
-        from datasets import MedicalDataset
-        from loaders import get_data_loaders
-
-        # Create synthetic dataset as fallback
-        num_samples = max_samples or 1000
-        data = np.random.randn(num_samples, 1, 224, 224).astype(np.float32)
-        targets = np.random.randint(0, 2, num_samples)
-        synthetic_dataset = MedicalDataset(data, targets)
-
-        # Split into train and test
-        train_size = int((1 - test_split) * num_samples)
-        test_size = num_samples - train_size
-        train_dataset, test_dataset = torch.utils.data.random_split(
-            synthetic_dataset, [train_size, test_size]
-        )
-
-        print(f"✅ Created synthetic dataset: {num_samples} samples")
-        return train_dataset, test_dataset
+        # print("🔄 Falling back to synthetic data...")
+        # from datasets import MedicalDataset
+        # # from loaders import get_data_loaders
+        #
+        # # Create synthetic dataset as fallback
+        # num_samples = max_samples or 1000
+        # data = np.random.randn(num_samples, 1, 224, 224).astype(np.float32)
+        # targets = np.random.randint(0, 2, num_samples)
+        # synthetic_dataset = MedicalDataset(data, targets)
+        #
+        # # Split into train and test
+        # train_size = int((1 - test_split) * num_samples)
+        # test_size = num_samples - train_size
+        # train_dataset, test_dataset = torch.utils.data.random_split(
+        #     synthetic_dataset, [train_size, test_size]
+        # )
+        #
+        # print(f"✅ Created synthetic dataset: {num_samples} samples")
+        # return train_dataset, test_dataset
 
 
 def create_mimic_cxr_data_loaders(
@@ -253,7 +293,7 @@ def create_mimic_cxr_data_loaders(
     max_samples: int = 1000,
     batch_size: int = 32,
     iid: bool = False,
-    alpha: float = 0.5
+    alpha: float = 0.5,
 ) -> Tuple[List[DataLoader], DataLoader]:
     """
     Create data loaders for MIMIC-CXR dataset partitioned for federated learning.
@@ -275,9 +315,11 @@ def create_mimic_cxr_data_loaders(
         # Partition training data
         if iid:
             from src.data.partitioning import partition_iid
+
             client_datasets = partition_iid(train_dataset, num_clients)
         else:
             from src.data.partitioning import partition_non_iid
+
             client_datasets = partition_non_iid(train_dataset, num_clients, alpha)
 
         # Create data loaders
@@ -296,11 +338,13 @@ def create_mimic_cxr_data_loaders(
         # Fallback to existing synthetic data loader
         print("🔄 Falling back to synthetic data loaders...")
         from .loaders import get_data_loaders
+
         return get_data_loaders("PneumoniaMNIST", num_clients, iid, batch_size, alpha)
 
 
 # Simple test function
 if __name__ == "__main__":
+    sys.path.insert(0, Path(__file__).resolve().parent.parent.parent.as_posix())
     print("🧪 Testing MIMIC-CXR dataset loader...")
 
     # Test with small subset first
@@ -309,7 +353,7 @@ if __name__ == "__main__":
             num_clients=3,
             max_samples=100,  # Very small subset for testing
             batch_size=16,
-            iid=True
+            iid=True,
         )
 
         print(f"✅ Successfully created {len(client_loaders)} client loaders")

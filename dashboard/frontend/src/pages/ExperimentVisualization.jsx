@@ -1006,7 +1006,6 @@ export default function ExperimentVisualization() {
 
       {/* Live Client Activity Feed */}
       {experiment.status === "running" &&
-        isConnected &&
         liveMetrics.clientUpdates.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

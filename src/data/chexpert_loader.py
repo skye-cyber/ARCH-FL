@@ -5,6 +5,7 @@ This module provides functionality to load and preprocess the CheXpert dataset
 for federated learning experiments with multi-label chest X-ray classification.
 """
 
+import io
 import sys
 import os
 import pandas as pd
@@ -18,10 +19,7 @@ from typing import Optional, Tuple, List, Dict, Any, Union
 from collections import Counter
 import random
 
-# Add project root to path
-sys.path.insert(0, Path(__file__).resolve().parent.parent.parent.as_posix())
-
-dataset_dir = Path(__file__).resolve().parent.parent / "datasets"
+dataset_dir = Path(__file__).resolve().parent.parent / "datasets/chexpert/data"
 
 # CheXpert competition classes (14 observations + support devices)
 CHEXPERT_CLASSES = [
@@ -70,7 +68,7 @@ class CheXpertDataset(Dataset):
     PyTorch Dataset for CheXpert chest X-ray images with multi-label annotations.
 
     Args:
-        csv_file: Path to CheXpert CSV file or pandas DataFrame
+        data_frame: Pandas DataFrame containing dataset metadata
         root_dir: Root directory containing the image files
         transform: Optional transform to be applied to images
         max_samples: Maximum number of samples to load (for memory management)
@@ -85,13 +83,13 @@ class CheXpertDataset(Dataset):
 
     def __init__(
         self,
-        csv_file: Union[str, pd.DataFrame],
-        root_dir: str = "src/datasets/chexpert",
+        data_frame: pd.DataFrame,
+        root_dir: str = Path(__file__).parent.parent / "datasets/chexpert",
         transform: Optional[transforms.Compose] = None,
         max_samples: Optional[int] = None,
         binary_classification: bool = False,
         target_pathology: str = "Pneumonia",
-        multi_label: bool = True,
+        multi_label: bool = False,
         uncertainty_handling: str = "zeros",
         image_size: Tuple[int, int] = (224, 224),
         use_frontal_only: bool = True,
@@ -107,46 +105,30 @@ class CheXpertDataset(Dataset):
         self.image_size = image_size
         self.use_frontal_only = use_frontal_only
         self.use_lateral = use_lateral
+        self.data_frame = data_frame
 
-        # Load CSV
-        if isinstance(csv_file, str):
-            self.data_frame = pd.read_csv(csv_file)
-        else:
-            self.data_frame = csv_file.copy()
+        # Limit samples if specified (for memory management)
+        if max_samples is not None and max_samples < len(data_frame):
+            self.data_frame = data_frame.sample(n=max_samples, random_state=42)
 
-        print(f"📊 Initial CheXpert CSV loaded: {len(self.data_frame)} samples")
+        # Preprocess findings for binary classification
+        if binary_classification:
+            pass  # self._preprocess_binary_labels()
 
-        # Filter by view if specified
-        self._filter_by_view()
-
-        # Handle uncertain labels
-        self._handle_uncertain_labels()
-
-        # Limit samples if specified
-        if max_samples is not None and max_samples < len(self.data_frame):
-            self.data_frame = self.data_frame.sample(n=max_samples, random_state=42)
+        print(f"📊 CheXpert Dataset loaded: {len(self.data_frame)} samples")
+        if max_samples:
             print(f"🔍 Using subset: {max_samples} samples")
 
-        # Validate image paths
-        self._validate_paths()
-
-        # Prepare labels
-        if binary_classification:
-            self._prepare_binary_labels()
-        elif multi_label:
-            self._prepare_multilabel_labels()
-
-        print(f"✅ CheXpert Dataset loaded: {len(self.data_frame)} samples")
-        if binary_classification:
-            pos_count = (
-                self.data_frame["binary_label"].sum()
-                if "binary_label" in self.data_frame.columns
-                else 0
-            )
-            print(
-                f"🏥 Binary classification for '{target_pathology}': {pos_count} positive, "
-                f"{len(self.data_frame) - pos_count} negative"
-            )
+    def _preprocess_binary_labels(self):
+        """Convert findings text to binary labels for target pathology."""
+        # Simple text-based classification (can be enhanced with NLP later)
+        self.data_frame["binary_label"] = self.data_frame["findings"].apply(
+            lambda x: 1 if self.target_pathology.lower() in str(x).lower() else 0
+        )
+        print(
+            f"🏥 Binary labels created for {self.target_pathology}: "
+            f"{self.data_frame['binary_label'].sum()} positive cases"
+        )
 
     def _filter_by_view(self):
         """Filter samples based on view selection."""
@@ -261,18 +243,23 @@ class CheXpertDataset(Dataset):
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, Union[int, torch.Tensor]]:
         """Get a sample from the dataset."""
         try:
-            # Get image path
+            # Get image data (assuming it's stored as bytes in the parquet)
             row = self.data_frame.iloc[idx]
-            img_path = row.get("Path", row.get("path", ""))
+            img_data = row["image"]
 
-            # Try different path formats
-            full_path = os.path.join(self.root_dir, img_path)
-            if not os.path.exists(full_path):
-                alt_path = img_path.replace("CheXpert-v1.0/", "")
-                full_path = os.path.join(self.root_dir, alt_path)
-
-            # Load image
-            image = Image.open(full_path).convert("L")  # Convert to grayscale
+            # Handle different image data formats
+            if isinstance(img_data, bytes):
+                # Image stored as bytes
+                image = Image.open(io.BytesIO(img_data)).convert(
+                    "L"
+                )  # Convert to grayscale
+            elif isinstance(img_data, str):
+                # Image path stored as string
+                img_path = os.path.join(self.root_dir, img_data)
+                image = Image.open(img_path).convert("L")
+            else:
+                # Try to convert other formats
+                image = Image.fromarray(img_data).convert("L")
 
             # Apply transformations
             if self.transform:
@@ -346,11 +333,10 @@ def get_chexpert_transforms(
 
 
 def load_chexpert_dataset(
-    csv_path: str = None,
-    max_samples: int = 10000,
+    max_samples: int = 2000,
     binary_classification: bool = False,
     target_pathology: str = "Pneumonia",
-    multi_label: bool = True,
+    multi_label: bool = False,
     uncertainty_handling: str = "zeros",
     test_split: float = 0.2,
     val_split: float = 0.1,
@@ -361,7 +347,6 @@ def load_chexpert_dataset(
     Load CheXpert dataset and split into train/val/test.
 
     Args:
-        csv_path: Path to CheXpert CSV file
         max_samples: Maximum number of samples to load (for memory management)
         binary_classification: Whether to convert to binary classification
         target_pathology: Target pathology for binary classification
@@ -373,38 +358,70 @@ def load_chexpert_dataset(
         use_frontal_only: Whether to use only frontal views
 
     Returns:
-        Tuple of (train_dataset, val_dataset, test_dataset)
+        Tuple of (train_dataset, test_dataset)
     """
-    print(f"🔄 Loading CheXpert dataset...")
+    import pyarrow.parquet as pq
 
-    # Default CSV path
-    if csv_path is None:
-        csv_path = dataset_dir / "chexpert" / "CheXpert-v1.0" / "train.csv"
-        csv_path = csv_path.as_posix()
+    print(f"🔄 Loading CheXpert dataset (max {max_samples} samples)...")
 
     try:
-        # Check if CSV exists
-        if not os.path.exists(csv_path):
-            print(f"✗ CSV file not found: {csv_path}")
-            print("🔄 Trying alternative path...")
-            alt_path = dataset_dir / "chexpert" / "train.csv"
-            alt_path = alt_path.as_posix()
-            if os.path.exists(alt_path):
-                csv_path = alt_path
-                print(f"✓ Found CSV at: {csv_path}")
+        # Load parquet files
+        parquet_files = [
+            dataset_dir / file for file in os.listdir(dataset_dir.as_posix())
+        ]
+        # print("Dataset file:", parquet_files)
+
+        # Read parquet files in chunks to manage memory
+        dfs = []
+        for file in parquet_files:
+            file = file.as_posix()
+            if os.path.exists(file):
+                # Read in chunks
+                table = pq.read_table(file)
+                df = table.to_pandas()
+                dfs.append(df)
+                print(f"✓ Loaded {file}: {len(df)} samples")
             else:
-                raise FileNotFoundError(
-                    f"CheXpert CSV not found at {csv_path} or {alt_path}"
-                )
+                print(f"✗ File not found: {file}")
+
+        if not dfs:
+            raise FileNotFoundError("No MIMIC-CXR parquet files found")
+
+        # Combine dataframes
+        full_df = pd.concat(dfs, ignore_index=True)
+
+        # Limit samples for memory management
+        if max_samples and max_samples < len(full_df):
+            full_df = full_df.sample(n=max_samples, random_state=random_state)
+            print(f"🔍 Using {max_samples} samples (limited for memory)")
+
+        # Split into train and test
+        from sklearn.model_selection import train_test_split
+
+        train_df, test_df = train_test_split(
+            full_df, test_size=test_split, random_state=random_state
+        )
+
+        print(f"📊 Dataset split: {len(train_df)} train, {len(test_df)} test")
 
         # Create transforms
         train_transform = get_chexpert_transforms(train=True)
-        val_transform = get_chexpert_transforms(train=False)
+        # val_transform = get_chexpert_transforms(train=False)
         test_transform = get_chexpert_transforms(train=False)
 
         # Load full dataset
-        full_dataset = CheXpertDataset(
-            csv_file=csv_path,
+        # full_dataset = CheXpertDataset(
+        #     data_frame=train_df,
+        #     transform=train_transform,  # Will be overridden for val/test
+        #     max_samples=max_samples,
+        #     binary_classification=binary_classification,
+        #     target_pathology=target_pathology,
+        #     multi_label=multi_label,
+        #     uncertainty_handling=uncertainty_handling,
+        #     use_frontal_only=use_frontal_only,
+        # )
+        train_dataset = CheXpertDataset(
+            data_frame=train_df,
             transform=train_transform,  # Will be overridden for val/test
             max_samples=max_samples,
             binary_classification=binary_classification,
@@ -413,49 +430,58 @@ def load_chexpert_dataset(
             uncertainty_handling=uncertainty_handling,
             use_frontal_only=use_frontal_only,
         )
-
+        test_dataset = CheXpertDataset(
+            data_frame=test_df,
+            transform=test_transform,  # Will be overridden for val/test
+            max_samples=max_samples,
+            binary_classification=binary_classification,
+            target_pathology=target_pathology,
+            multi_label=multi_label,
+            uncertainty_handling=uncertainty_handling,
+            use_frontal_only=use_frontal_only,
+        )
         # Split into train, val, test
-        indices = list(range(len(full_dataset)))
-        random.Random(random_state).shuffle(indices)
+        # indices = list(range(len(full_dataset)))
+        # random.Random(random_state).shuffle(indices)
+        # del full_dataset
 
-        test_size = int(len(indices) * test_split)
-        val_size = int(len(indices) * val_split)
-        train_size = len(indices) - test_size - val_size
+        # test_size = int(len(indices) * test_split)
+        # val_size = int(len(indices) * val_split)
+        # train_size = len(indices) - test_size - val_size
 
-        train_indices = indices[:train_size]
-        val_indices = indices[train_size : train_size + val_size]
-        test_indices = indices[train_size + val_size :]
+        # train_indices = indices[:train_size]
+        # val_indices = indices[train_size : train_size + val_size]
+        # test_indices = indices[train_size + val_size :]
 
         # Create subset datasets
-        train_dataset = Subset(full_dataset, train_indices)
-        val_dataset = Subset(full_dataset, val_indices)
-        test_dataset = Subset(full_dataset, test_indices)
+        # train_dataset = Subset(full_dataset, train_indices)
+        # val_dataset = Subset(full_dataset, val_indices)
+        # test_dataset = Subset(full_dataset, test_indices)
 
         # Override transforms
-        train_dataset.dataset.transform = train_transform
-        val_dataset.dataset.transform = val_transform
-        test_dataset.dataset.transform = test_transform
+        # train_dataset.dataset.transform = train_transform
+        # val_dataset.dataset.transform = val_transform
+        # test_dataset.dataset.transform = test_transform
 
-        print(
-            f"📊 Dataset split: {len(train_dataset)} train, {len(val_dataset)} val, {len(test_dataset)} test"
-        )
+        print(f"📊 Dataset split: {len(train_dataset)} train, {len(test_dataset)} test")
         print("🎉 CheXpert dataset loaded successfully!")
 
-        return train_dataset, val_dataset, test_dataset
+        return train_dataset, test_dataset
 
     except Exception as e:
         print(f"❌ Error loading CheXpert dataset: {e}")
-        print("🔄 Falling back to synthetic data...")
-        return _create_synthetic_chexpert(
-            max_samples=max_samples,
-            multi_label=multi_label,
-            test_split=test_split,
-            val_split=val_split,
-        )
+        raise
+        # print("🔄 Falling back to synthetic data...")
+        # return _create_synthetic_chexpert(
+        #     max_samples=max_samples,
+        #     multi_label=multi_label,
+        #     test_split=test_split,
+        #     val_split=val_split,
+        # )
 
 
 def _create_synthetic_chexpert(
-    max_samples: int = 1000,
+    max_samples: int = 300,
     multi_label: bool = True,
     test_split: float = 0.2,
     val_split: float = 0.1,
@@ -500,13 +526,13 @@ def _create_synthetic_chexpert(
 
 def create_chexpert_data_loaders(
     num_clients: int = 5,
-    max_samples: int = 10000,
+    max_samples: int = 300,
     batch_size: int = 32,
     iid: bool = False,
     alpha: float = 0.5,
     binary_classification: bool = False,
     target_pathology: str = "Pneumonia",
-    multi_label: bool = True,
+    multi_label: bool = False,
     uncertainty_handling: str = "zeros",
     use_frontal_only: bool = True,
 ) -> Tuple[List[DataLoader], DataLoader]:
@@ -530,7 +556,7 @@ def create_chexpert_data_loaders(
     """
     try:
         # Load dataset
-        train_dataset, val_dataset, test_dataset = load_chexpert_dataset(
+        train_dataset, test_dataset = load_chexpert_dataset(
             max_samples=max_samples,
             binary_classification=binary_classification,
             target_pathology=target_pathology,
@@ -556,14 +582,10 @@ def create_chexpert_data_loaders(
                 if isinstance(labels[0], torch.Tensor):
                     # Convert multi-label to single label for partitioning (use most frequent)
                     labels = [torch.argmax(l).item() for l in labels]
-                client_datasets = partition_non_iid(
-                    train_dataset, num_clients, alpha, labels=labels
-                )
+                client_datasets = partition_non_iid(train_dataset, num_clients, alpha)
             else:
                 labels = [train_dataset[i][1] for i in range(len(train_dataset))]
-                client_datasets = partition_non_iid(
-                    train_dataset, num_clients, alpha, labels=labels
-                )
+                client_datasets = partition_non_iid(train_dataset, num_clients, alpha)
 
         # Create data loaders
         client_loaders = [
@@ -594,16 +616,17 @@ def create_chexpert_data_loaders(
 
     except Exception as e:
         print(f"❌ Error creating CheXpert data loaders: {e}")
-        print("🔄 Falling back to synthetic data loaders...")
-        from .loaders import get_data_loaders
-
-        return get_data_loaders(
-            dataset_name="chexpert",
-            num_clients=num_clients,
-            iid=iid,
-            batch_size=batch_size,
-            alpha=alpha,
-        )
+        raise
+        # print("🔄 Falling back to synthetic data loaders...")
+        # from .loaders import get_data_loaders
+        #
+        # return get_data_loaders(
+        #     dataset_name="chexpert",
+        #     num_clients=num_clients,
+        #     iid=iid,
+        #     batch_size=batch_size,
+        #     alpha=alpha,
+        # )
 
 
 def get_chexpert_statistics(csv_path: str = None) -> Dict[str, Any]:
@@ -616,12 +639,34 @@ def get_chexpert_statistics(csv_path: str = None) -> Dict[str, Any]:
     Returns:
         Dictionary with dataset statistics
     """
-    if csv_path is None:
-        csv_path = dataset_dir / "chexpert" / "CheXpert-v1.0" / "train.csv"
-        csv_path = csv_path.as_posix()
+    import pyarrow.parquet as pq
 
     try:
-        df = pd.read_csv(csv_path)
+        # Load parquet files
+        parquet_files = [
+            dataset_dir / file for file in os.listdir(dataset_dir.as_posix())
+        ]
+        # print("Dataset file:", parquet_files)
+
+        # Read parquet files in chunks to manage memory
+        dfs = []
+        for file in parquet_files:
+            file = file.as_posix()
+            if os.path.exists(file):
+                # Read in chunks
+                table = pq.read_table(file)
+                df = table.to_pandas()
+                dfs.append(df)
+                print(f"✓ Loaded {file}: {len(df)} samples")
+            else:
+                print(f"✗ File not found: {file}")
+
+        if not dfs:
+            raise FileNotFoundError("No MIMIC-CXR parquet files found")
+
+        # Combine dataframes
+        df = pd.concat(dfs, ignore_index=True)
+
         stats = {
             "total_samples": len(df),
             "frontal_lateral_distribution": df["Frontal/Lateral"]
@@ -655,8 +700,8 @@ def get_chexpert_statistics(csv_path: str = None) -> Dict[str, Any]:
         return {}
 
 
-# Simple test function
 if __name__ == "__main__":
+    sys.path.insert(0, Path(__file__).resolve().parent.parent.parent.as_posix())
     print("🧪 Testing CheXpert dataset loader...")
     print("=" * 60)
 
@@ -730,14 +775,18 @@ if __name__ == "__main__":
         for i, loader in enumerate(client_loaders):
             labels = []
             for _, batch_labels in loader:
-                labels.extend(batch_labels.numpy())
+                try:
+                    labels.extend(batch_labels.numpy())
+                except Exception:
+                    pass
             if labels:
                 pos_pct = sum(labels) / len(labels) * 100
                 print(
-                    f"     Client {i + 1}: {pos_pct:.1f}% positive ({sum(labels)}/{len(labels)})"
+                    f"     Client {i + 1}: {len(labels)} positive ({sum(labels)}/{len(labels)})"
                 )
 
     except Exception as e:
+        raise
         print(f"❌ Test 3 failed: {e}")
 
     # Test 4: Get statistics

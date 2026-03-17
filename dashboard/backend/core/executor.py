@@ -83,12 +83,17 @@ class Executor:
             def wrapped_progress(
                 progress: int, message: str, metadata: Optional[Dict] = None
             ):
+                print(type(progress), type(message), type(metadata))
                 """Wrapper to handle progress updates"""
                 # Update in database
                 with self.db_manager.transaction() as cursor:
                     cursor.execute(
                         "UPDATE experiments SET status = ?, message = ? WHERE id = ?",
-                        ("running", message, experiment_id),
+                        (
+                            "running",
+                            message,
+                            experiment_id,
+                        ),
                     )
 
                 # Call external callback if provided
@@ -97,7 +102,8 @@ class Executor:
 
             # Execute the experiment
             result = self._execute_experiment(
-                experiment_id, experiment_data, wrapped_progress
+                experiment_id,
+                experiment_data,  # wrapped_progress
             )
 
             # Update final status
@@ -146,7 +152,7 @@ class Executor:
         self,
         experiment_id: int,
         experiment_data: Dict[str, Any],
-        progress_callback: Callable,
+        progress_callback: Callable = None,
     ) -> Dict[str, Any]:
         """
         Internal method to execute experiment using ARCH-FL core
@@ -283,7 +289,8 @@ class Executor:
             delta = params.get("delta", 1e-5)
 
             # Report initial progress
-            progress_callback(0, "Initializing experiment")
+            if progress_callback:
+                progress_callback(0, "Initializing experiment")
 
             # Create model
             model = arch_registry.create_model_from_architecture(

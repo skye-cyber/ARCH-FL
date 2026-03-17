@@ -13,19 +13,23 @@ async def get_experiment_by_id(experiment_id: int) -> Optional[Dict[str, Any]]:
         conn = dbmanager.connection()
         cursor = conn.cursor()
 
+        # cursor.execute(
+        #     """
+        #     SELECT
+        #         e.*,
+        #         a.name as architecture_name,
+        #         a.config as architecture_config,
+        #         d.name as dataset_name,
+        #         d.metadata as dataset_metadata
+        #     FROM experiments e
+        #     LEFT JOIN architectures a ON e.architecture_id = a.id
+        #     LEFT JOIN datasets d ON e.dataset_id = d.id
+        #     WHERE e.id = ?
+        # """,
+        #     (experiment_id,),
+        # )
         cursor.execute(
-            """
-            SELECT
-                e.*,
-                a.name as architecture_name,
-                a.config as architecture_config,
-                d.name as dataset_name,
-                d.metadata as dataset_metadata
-            FROM experiments e
-            LEFT JOIN architectures a ON e.architecture_id = a.id
-            LEFT JOIN datasets d ON e.dataset_id = d.id
-            WHERE e.id = ?
-        """,
+            "SELECT * FROM experiments WHERE experiment_id = ?",
             (experiment_id,),
         )
 
@@ -37,6 +41,7 @@ async def get_experiment_by_id(experiment_id: int) -> Optional[Dict[str, Any]]:
 
         # Convert row to dict
         experiment = dict(row)
+        print("EXP:", experiment)
 
         # Parse JSON fields
         if experiment.get("parameters") and isinstance(experiment["parameters"], str):
