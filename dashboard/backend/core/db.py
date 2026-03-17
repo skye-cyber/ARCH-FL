@@ -280,8 +280,9 @@ class DatabaseManager:
             CREATE TABLE IF NOT EXISTS experiment_results (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 experiment_id INTEGER NOT NULL,
-                client_id INTEGER,
-                round INTEGER NOT NULL,
+                total_rounds INTEGER NOT NULL,
+                client_count INTEGER,
+                rounds_completed INTEGER NOT NULL,
                 accuracy REAL,
                 loss REAL,
                 metrics JSON,
@@ -313,6 +314,20 @@ class DatabaseManager:
             )
         """)
 
+        # Table to stores results for every client
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS client_results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                experiment_id INTEGER NOT NULL,
+                client_id INTEGER NOT NULL,
+                round INTEGER NOT NULL,
+                accuracy REAL,
+                loss REAL,
+                metrics JSON,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (experiment_id) REFERENCES experiments(id)
+            )
+        """)
         conn.commit()
         conn.close()
 
