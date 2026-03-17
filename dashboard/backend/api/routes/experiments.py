@@ -169,6 +169,26 @@ def get_experiment_results(experiment_id: int):
         """
         SELECT * FROM experiment_results
         WHERE experiment_id = ?
+        ORDER BY total_rounds, timestamp
+    """,
+        (experiment_id,),
+    )
+
+    results = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return results
+
+
+@router.get("/{experiment_id}/client/results", response_model=List[Dict])
+def get_client_experiment_results(experiment_id: int):
+    """Get results for a specific experiment."""
+    conn = dbmanager.connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM client_results
+        WHERE experiment_id = ?
         ORDER BY round, timestamp
     """,
         (experiment_id,),
@@ -196,13 +216,13 @@ def add_experiment_result(experiment_id: int, result: Dict):
         cursor.execute(
             """
             INSERT INTO experiment_results
-            (experiment_id, client_id, round, accuracy, loss, metrics)
+            (experiment_id, client_count, total_rounds, accuracy, loss, metrics)
             VALUES (?, ?, ?, ?, ?, ?)
         """,
             (
                 experiment_id,
-                result.get("client_id"),
-                result.get("round"),
+                result.get("client_count"),
+                result.get("total_rounds"),
                 result.get("accuracy"),
                 result.get("loss"),
                 json.dumps(result.get("metrics", {})),
