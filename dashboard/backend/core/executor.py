@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from ..models.experiment import ExperimentModel, ExperimentStatus
 from ..utils.logger import logger
 from ..core.db import dbmanager
+from tqdm.auto import tqdm
 
 
 class Executor:
@@ -331,7 +332,9 @@ class Executor:
                 "privacy_spent": None,
             }
 
-            for round_num in range(1, num_rounds + 1):
+            # Update dashboard with round results
+            dashboard_connector.update_experiment_status(experiment_id, "running")
+            for round_num in tqdm(range(1, num_rounds + 1)):
                 # Train clients
                 client_indices = list(range(num_clients))
 
@@ -373,10 +376,8 @@ class Executor:
 
                 results["rounds"].append(round_result)
 
-                # Update dashboard with round results
-                dashboard_connector.update_experiment_status(
-                    experiment_id, "running", round_result
-                )
+                # Update clients table with round results
+                dashboard_connector.add_client_result(experiment_id, round_result)
 
                 # Calculate progress
                 progress = int((round_num / num_rounds) * 95) + 5  # 5-99%
