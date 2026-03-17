@@ -82,8 +82,13 @@ class DashboardConnector:
         try:
             # Update experiment status
             cursor.execute(
-                "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
-                (status, datetime.now().isoformat(), experiment_id),
+                "UPDATE experiments SET status = ?, message = ?, updated_at = ? WHERE id = ?",
+                (
+                    status,
+                    metrics.get("message", "success"),
+                    datetime.now().isoformat(),
+                    experiment_id,
+                ),
             )
 
             # Add metrics if provided
@@ -92,20 +97,28 @@ class DashboardConnector:
                 cursor.execute(
                     """
                     INSERT INTO experiment_results
-                    (experiment_id, client_id, round, accuracy, loss, metrics)
+                    (experiment_id, client_count, total_rounds, rounds_completed, accuracy, loss, metrics)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """,
                     (
                         experiment_id,
-                        metrics.get("client_id", None),
-                        metrics.get("round", 0),
-                        metrics.get("accuracy", None),
+                        metrics.get("num_clients", None),
+                        metrics.get("rounds", 0),
+                        metrics.get("rounds_completed", 0),
+                        metrics.get("final_accuracy", None),
                         metrics.get("loss", None),
                         json.dumps(
                             {
                                 k: v
                                 for k, v in metrics.items()
-                                if k not in ["client_id", "round", "accuracy", "loss"]
+                                if k
+                                not in [
+                                    "client_id",
+                                    "round",
+                                    "rounds_completed",
+                                    "final_accuracy",
+                                    "loss",
+                                ]
                             }
                         ),
                     ),
@@ -145,6 +158,52 @@ class DashboardConnector:
         try:
             cursor.execute(
                 """
+                    INSERT INTO experiment_results
+                    (experiment_id, client_count, total_rounds, rounds_completed, accuracy, loss, metrics)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    experiment_id,
+                    result_data.get("num_clients", None),
+                    result_data.get("rounds", 0),
+                    result_data.get("rounds_completed", 0),
+                    result_data.get("final_accuracy", None),
+                    result_data.get("loss", None),
+                    json.dumps(
+                        {
+                            k: v
+                            for k, v in result_data.items()
+                            if k
+                            not in [
+                                "client_id",
+                                "round",
+                                "rounds_completed",
+                                "accuracy",
+                                "loss",
+                            ]
+                        }
+                    ),
+                ),
+            )
+
+            result_id = cursor.lastrowid
+            conn.commit()
+            return result_id
+
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    def add_client_result(self, experiment_id: int, result_data: Dict[str, Any]) -> int:
+        """Add a result record for an experiment."""
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                """
                 INSERT INTO experiment_results
                 (experiment_id, client_id, round, accuracy, loss, metrics)
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -155,7 +214,19 @@ class DashboardConnector:
                     result_data.get("round", 0),
                     result_data.get("accuracy", None),
                     result_data.get("loss", None),
-                    json.dumps(result_data.get("metrics", {})),
+                    json.dumps(
+                        {
+                            k: v
+                            for k, v in result_data.items()
+                            if k
+                            not in [
+                                "client_id",
+                                "round",
+                                "accuracy",
+                                "loss",
+                            ]
+                        }
+                    ),
                 ),
             )
 
