@@ -420,19 +420,19 @@ export default function Home() {
                                 {[
                                     {
                                         label: "CPU",
-                                        value: systemInfo.system_info.cpu.percent,
+                                        value: systemInfo.system_info.cpu.percent || "-",
                                         color: "bg-emerald-400",
                                     },
                                     {
                                         label: "Memory",
-                                        value: systemInfo.system_info.memory.used_human,
-                                        total: systemInfo.system_info.memory.total_human,
+                                        value: systemInfo.system_info.memory.used_human || "-GB",
+                                        total: systemInfo.system_info.memory.total_human || "-",
                                         color: "bg-blue-400",
                                     },
                                     {
                                         label: "Storage",
-                                        value: systemInfo.system_info.disk.used_human,
-                                        total: systemInfo.system_info.disk.total_human,
+                                        value: systemInfo.system_info.disk.used_human || "-GB",
+                                        total: systemInfo.system_info.disk.total_human || "-",
                                         color: "bg-violet-400",
                                     },
                                 ].map((metric) => (
