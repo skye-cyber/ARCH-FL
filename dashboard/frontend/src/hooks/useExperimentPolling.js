@@ -3,7 +3,7 @@ import { experimentService } from "../services/api";
 
 export const useExperimentPolling = (experimentId, options = {}) => {
   const {
-    interval = 2000, // Poll every 2 seconds
+    interval = 5000, // Poll every 2 seconds
     enabled = true,
     onProgressUpdate,
     onComplete,

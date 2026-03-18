@@ -59,7 +59,6 @@ export default function Experiments() {
         // Fetch experiments
         const experimentsResponse = await experimentService.getAll();
         setExperiments(experimentsResponse.data);
-        console.log(experimentsResponse.data);
 
         // Fetch datasets
         const datasetsResponse = await datasetService.getAll();
