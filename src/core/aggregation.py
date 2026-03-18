@@ -24,6 +24,8 @@ def fed_avg(
         weighted_sum = torch.zeros_like(client_updates[0][key])
         for i, update in enumerate(client_updates):
             weight = client_sizes[i] / total_size
+            if isinstance(weight, float):
+                weight = int(weight)
             weighted_sum += update[key] * weight
         averaged_params[key] = weighted_sum
 

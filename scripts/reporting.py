@@ -30,7 +30,7 @@ COLORS = {
     "non_iid": "#A23B72",
     "dp_low": "#F18F01",
     "dp_high": "#C73E1D",
-    "baseline": "#566573",
+    "baseline": "#aaaaff",
     "chexpert": "#2874A6",
     "mimic": "#B03A2E",
     "delta_1e-5": "#1B98A0",
@@ -123,8 +123,8 @@ class AccuracyVisualizer:
             df[col] = param_df[col]
 
         # Add derived columns
-        df["accuracy_percent"] = df["final_accuracy"] * 100
-        df["client_accuracy_percent"] = df["client_accuracy"] * 100
+        df["accuracy_percent"] = df["final_accuracy"]
+        df["client_accuracy_percent"] = df["client_accuracy"]
         df["privacy_budget"] = df.apply(
             lambda row: (
                 f"ε={row['epsilon']}, δ={row['delta']:.0e}"
@@ -664,33 +664,38 @@ class AccuracyVisualizer:
     def _plot_epsilon_alpha_heatmap(self, df: pd.DataFrame, ax):
         """Heatmap: Epsilon vs Alpha"""
         non_iid_df = df[df["iid"] == 0].copy()
+        # print(non_iid_df)
         if non_iid_df.empty or "alpha" not in non_iid_df.columns:
             ax.text(0.5, 0.5, "No non-IID data with alpha", ha="center", va="center")
             return
 
         # Bin alpha values for better visualization
         non_iid_df["alpha_bin"] = pd.cut(non_iid_df["alpha"], bins=5)
-
+        print(non_iid_df["dp_enabled"])  # All shouldn't be same value eg True
         pivot = non_iid_df.pivot_table(
             values="accuracy_percent",
             index="alpha_bin",
             columns="epsilon" if "epsilon" in non_iid_df.columns else "dp_enabled",
             aggfunc="mean",
         )
-
-        sns.heatmap(
-            pivot,
-            annot=True,
-            fmt=".1f",
-            cmap="YlGnBu",
-            ax=ax,
-            cbar_kws={"label": "Accuracy (%)"},
-        )
-        ax.set_title(
-            "Epsilon vs Alpha (Non-IID Concentration)", fontweight="bold", fontsize=12
-        )
-        ax.set_xlabel("Privacy Configuration")
-        ax.set_ylabel("Alpha (lower = more non-IID)")
+        if not pivot.empty:
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="YlGnBu",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)"},
+            )
+            ax.set_title(
+                "Epsilon vs Alpha (Non-IID Concentration)",
+                fontweight="bold",
+                fontsize=12,
+            )
+            ax.set_xlabel("Privacy Configuration")
+            ax.set_ylabel("Alpha (lower = more non-IID)")
+        else:
+            print("Pivot empty - no valid combinations")
 
     def _plot_delta_alpha_heatmap(self, df: pd.DataFrame, ax):
         """Heatmap: Delta vs Alpha"""
@@ -707,20 +712,22 @@ class AccuracyVisualizer:
             columns="delta",
             aggfunc="mean",
         )
+        if not pivot.empty:
+            pivot.columns = [f"{c:.0e}" for c in pivot.columns]
 
-        pivot.columns = [f"{c:.0e}" for c in pivot.columns]
-
-        sns.heatmap(
-            pivot,
-            annot=True,
-            fmt=".1f",
-            cmap="RdYlBu_r",
-            ax=ax,
-            cbar_kws={"label": "Accuracy (%)"},
-        )
-        ax.set_title("Delta vs Alpha Interaction", fontweight="bold", fontsize=12)
-        ax.set_xlabel("Delta (δ)")
-        ax.set_ylabel("Alpha")
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="RdYlBu_r",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)"},
+            )
+            ax.set_title("Delta vs Alpha Interaction", fontweight="bold", fontsize=12)
+            ax.set_xlabel("Delta (δ)")
+            ax.set_ylabel("Alpha")
+        else:
+            print("Pivot empty - no valid combinations")
 
     def _plot_privacy_distribution_heatmap(self, df: pd.DataFrame, ax):
         """Heatmap: Privacy Level vs Distribution"""
@@ -742,19 +749,23 @@ class AccuracyVisualizer:
             columns="privacy_level",
             aggfunc="mean",
         )
-
-        sns.heatmap(
-            pivot,
-            annot=True,
-            fmt=".1f",
-            cmap="coolwarm",
-            ax=ax,
-            cbar_kws={"label": "Accuracy (%)"},
-            center=75,
-        )
-        ax.set_title("Privacy Level vs Distribution", fontweight="bold", fontsize=12)
-        ax.set_xlabel("Privacy Configuration")
-        ax.set_ylabel("Data Distribution")
+        if not pivot.empty:
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="coolwarm",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)"},
+                center=75,
+            )
+            ax.set_title(
+                "Privacy Level vs Distribution", fontweight="bold", fontsize=12
+            )
+            ax.set_xlabel("Privacy Configuration")
+            ax.set_ylabel("Data Distribution")
+        else:
+            print("Pivot empty - no valid combinations")
 
     def _plot_epsilon_rounds_heatmap(self, df: pd.DataFrame, ax):
         """Heatmap: Epsilon vs Training Rounds"""
@@ -766,18 +777,20 @@ class AccuracyVisualizer:
             columns="epsilon" if "epsilon" in df.columns else "dp_enabled",
             aggfunc="mean",
         )
-
-        sns.heatmap(
-            pivot,
-            annot=True,
-            fmt=".1f",
-            cmap="magma",
-            ax=ax,
-            cbar_kws={"label": "Accuracy (%)"},
-        )
-        ax.set_title("Epsilon vs Training Rounds", fontweight="bold", fontsize=12)
-        ax.set_xlabel("Privacy Budget (ε)")
-        ax.set_ylabel("Rounds Completed")
+        if not pivot.empty:
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="magma",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)"},
+            )
+            ax.set_title("Epsilon vs Training Rounds", fontweight="bold", fontsize=12)
+            ax.set_xlabel("Privacy Budget (ε)")
+            ax.set_ylabel("Rounds Completed")
+        else:
+            print("Pivot empty - no valid combinations")
 
     def _plot_summary_table(self, df: pd.DataFrame, ax):
         """Create summary statistics table"""
@@ -984,23 +997,27 @@ class AccuracyVisualizer:
             pivot = speed_df.pivot_table(
                 values="Rounds", index="Distribution", columns="Privacy", aggfunc="mean"
             )
+            if not pivot.empty:
+                pivot.plot(
+                    kind="bar",
+                    ax=ax,
+                    color=["#95A5A6", "#F39C12", "#E67E22", "#D35400"],
+                )
+                ax.set_title(
+                    f"Rounds to Reach {target_acc}% Accuracy",
+                    fontweight="bold",
+                    fontsize=12,
+                )
+                ax.set_ylabel("Number of Rounds")
+                ax.set_xlabel("Data Distribution")
+                ax.grid(True, alpha=0.3, axis="y")
+                ax.legend(title="Privacy", bbox_to_anchor=(1.05, 1))
 
-            pivot.plot(
-                kind="bar", ax=ax, color=["#95A5A6", "#F39C12", "#E67E22", "#D35400"]
-            )
-            ax.set_title(
-                f"Rounds to Reach {target_acc}% Accuracy",
-                fontweight="bold",
-                fontsize=12,
-            )
-            ax.set_ylabel("Number of Rounds")
-            ax.set_xlabel("Data Distribution")
-            ax.grid(True, alpha=0.3, axis="y")
-            ax.legend(title="Privacy", bbox_to_anchor=(1.05, 1))
-
-            # Add value labels
-            for container in ax.containers:
-                ax.bar_label(container, fmt="%.0f", fontsize=9)
+                # Add value labels
+                for container in ax.containers:
+                    ax.bar_label(container, fmt="%.0f", fontsize=9)
+            else:
+                print("Pivot empty - no valid combinations")
 
     def _plot_accuracy_vs_time(self, df: pd.DataFrame, ax):
         """Scatter plot: Final accuracy vs training time"""

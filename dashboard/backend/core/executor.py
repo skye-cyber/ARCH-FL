@@ -179,7 +179,6 @@ class Executor:
             from src.data.registry import get_dataset_registry
             from src.core.coordinator import Coordinator
             from src.training.fedavg import FederatedTrainer
-            # from src.training.local_trainer import LocalTrainer
 
             from src.core.client import Client
 
@@ -646,7 +645,6 @@ class Executor:
             from src.training.local_trainer import LocalTrainer
 
             from src.core.client import Client
-            import torch
 
             # Initialize dashboard connector
             dashboard_connector = DashboardConnector()
