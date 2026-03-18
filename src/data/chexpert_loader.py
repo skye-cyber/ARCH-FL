@@ -526,7 +526,7 @@ def _create_synthetic_chexpert(
 
 def create_chexpert_data_loaders(
     num_clients: int = 5,
-    max_samples: int = 300,
+    max_samples: int = 5000,
     batch_size: int = 32,
     iid: bool = False,
     alpha: float = 0.5,
