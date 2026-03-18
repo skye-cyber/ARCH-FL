@@ -4,6 +4,7 @@ from typing import List, Dict
 from datetime import datetime
 from backend.models.requests import ExperimentCreate, ExperimentUpdate
 from backend.core.db import dbmanager
+from backend.utils.logger import logger
 
 # from backend.core.experiment_manager import experimentmanager
 from backend.utils.experiment_utils import (
@@ -414,6 +415,16 @@ def restart_experiment(experiment_id: int):
         "UPDATE experiments SET status = ?, updated_at = ? WHERE id = ?",
         ("pending", datetime.now().isoformat(), experiment_id),
     )
+    # Clear previous results
+    cursor.execute(
+        "DELETE FROM experiment_results WHERE experiment_id = ?",
+        (experiment_id,),
+    )
+    # Clear client results
+    cursor.execute(
+        "DELETE FROM client_results WHERE experiment_id = ?",
+        (experiment_id,),
+    )
     conn.commit()
     conn.close()
 
@@ -501,7 +512,7 @@ async def get_experiment_progress(experiment_id: int):
             raise HTTPException(status_code=404, detail="Experiment not found")
 
         # Fetch latest results
-        experiment_results = await get_experiment_results(experiment_id)
+        experiment_results = get_experiment_results(experiment_id)
         client_results = await get_client_results(experiment_id, limit=100)
 
         # Get summaries
@@ -518,6 +529,7 @@ async def get_experiment_progress(experiment_id: int):
             completed_rounds + 1 if completed_rounds < total_rounds else total_rounds
         )
 
+        # logger.debug(f"/033[1;34mEX_RESULT/033[0m:{experiment_results},/033[1;34mClientResult/033[0m:{client_results}")
         # Get latest metrics
         latest_accuracy = None
         latest_loss = None
@@ -563,14 +575,14 @@ async def get_experiment_progress(experiment_id: int):
                 "current_round": current_round,
             },
             "metrics": {
-                "latest_accuracy": latest_accuracy * 100
+                "latest_accuracy": latest_accuracy
                 if latest_accuracy
                 else None,  # Convert to percentage
                 "latest_loss": latest_loss,
-                "best_accuracy": best_accuracy * 100 if best_accuracy else None,
+                "best_accuracy": best_accuracy if best_accuracy else None,
                 "best_loss": best_loss,
                 "accuracy_trend": [
-                    {"round": r["round"], "value": r["avg_accuracy"] * 100}
+                    {"round": r["round"], "value": r["avg_accuracy"]}
                     for r in round_summary
                 ]
                 if round_summary
@@ -594,7 +606,7 @@ async def get_experiment_progress(experiment_id: int):
     except HTTPException:
         raise
     except Exception as e:
-        # logger.error(f"Error fetching experiment progress: {e}")
+        logger.error(f"Error fetching experiment progress: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
