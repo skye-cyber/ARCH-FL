@@ -40,7 +40,7 @@ import {
 // import { WebSocketMessageType } from "../types/websocket";
 import { useExperimentPolling } from "../hooks/useExperimentPolling";
 
-export default function ExperimentVisualization() {
+export default function ExperimentLiveMonitor() {
   const { experimentId } = useParams();
   const [experiment, setExperiment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,96 +58,6 @@ export default function ExperimentVisualization() {
     roundMetrics: {},
   });
 
-  /*
-  // WebSocket integration
-  //   const {
-  //     isConnected,
-  //     lastMessage,
-  //     error: wsError,
-  //     sendMessage,
-  //     connectionStats,
-  //   } = useWebSocket(experimentId, {
-  //     onConnect: () => {
-  //       console.log("Connected to real-time updates");
-  //     },
-  //     onDisconnect: () => {
-  //       console.log("Disconnected from real-time updates");
-  //     },
-  //     onMessage: (message) => {
-  //       handleWebSocketMessage(message);
-  //     },
-  //   });
-
-  // Handle incoming WebSocket messages
-    const handleWebSocketMessage = (message) => {
-    switch (message.type) {
-      case WebSocketMessageType.ROUND_COMPLETED:
-        setLiveMetrics((prev) => ({
-          ...prev,
-          currentRound: message.round,
-          roundMetrics: {
-            ...prev.roundMetrics,
-            [message.round]: {
-              accuracy: message.accuracy,
-              loss: message.loss,
-              timestamp: message.timestamp,
-            },
-          },
-        }));
-        setSelectedRound(message.round);
-        break;
-
-      case WebSocketMessageType.METRICS_UPDATE:
-        setLiveMetrics((prev) => ({
-          ...prev,
-          accuracy: message.accuracy,
-          loss: message.loss,
-        }));
-        break;
-
-      case WebSocketMessageType.CLIENT_UPDATE:
-        setLiveMetrics((prev) => ({
-          ...prev,
-          clientUpdates: [
-            ...prev.clientUpdates.slice(-9), // Keep last 10 updates
-            {
-              clientId: message.client_id,
-              round: message.round,
-              accuracy: message.accuracy,
-              loss: message.loss,
-              timestamp: message.timestamp,
-            },
-          ],
-        }));
-
-        // Animate active client
-        setActiveClient(message.client_id);
-        setTimeout(() => setActiveClient(null), 2000);
-        break;
-
-      case WebSocketMessageType.EXPERIMENT_COMPLETED:
-        setExperiment((prev) => ({
-          ...prev,
-          status: "completed",
-        }));
-        break;
-
-      case WebSocketMessageType.EXPERIMENT_FAILED:
-        setExperiment((prev) => ({
-          ...prev,
-          status: "failed",
-        }));
-        break;
-
-      case WebSocketMessageType.PROGRESS_UPDATE:
-        // Update progress if needed
-        break;
-
-      default:
-        console.log("Unhandled message type:", message.type);
-    }
-  };
-*/
   // Use polling for real-time updates
   const {
     data: progressData,
@@ -155,7 +65,7 @@ export default function ExperimentVisualization() {
     error: pollingError,
     isPolling,
   } = useExperimentPolling(experimentId, {
-    interval: 2000, // Poll every 2 seconds
+    interval: 4000, // Poll every 2 seconds
     enabled: experiment?.status === "running",
     onProgressUpdate: (data) => {
       // Update live metrics
@@ -164,9 +74,9 @@ export default function ExperimentVisualization() {
           accuracy: data.metrics.latest_accuracy,
           loss: data.metrics.latest_loss,
           currentRound: data.progress.current_round,
+          //clientUpdates: data.clients,
         });
       }
-      console.log("Polling", data);
 
       // Update client activity
       if (data.clients?.details) {
@@ -390,18 +300,18 @@ export default function ExperimentVisualization() {
   return (
     <div className="space-y-6">
       {/* Connection Status Bar (new) */}
-      {/*experiment.status === "running" && (
+      {experiment.status === "running" && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`flex items-center justify-between px-4 py-2 rounded-lg ${
-            isConnected
+          className={`hidden flex items-center justify-between px-4 py-2 rounded-lg ${
+            experiment?.status === "running"
               ? "bg-green-50 border border-green-200"
               : "bg-yellow-50 border border-yellow-200"
           }`}
         >
           <div className="flex items-center">
-            {isConnected ? (
+            {experiment?.status === "running" && !isPolling ? (
               <>
                 <Wifi className="w-4 h-4 text-green-600 mr-2" />
                 <span className="text-sm text-green-700">
@@ -417,14 +327,11 @@ export default function ExperimentVisualization() {
               </>
             )}
           </div>
-          {5 > connectionStats.reconnectAttempts > 0 && (
-            <span className="text-xs text-gray-500">
-              Reconnect attempt {connectionStats.reconnectAttempts}/5
-            </span>
-          )}
+          <span className="hidden text-xs text-gray-500">
+            Reconnect attempt {/*connectionStats.reconnectAttempts}/5*/}
+          </span>
         </motion.div>
-      )*/}
-
+      )}
       {/* Header with status */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -438,7 +345,7 @@ export default function ExperimentVisualization() {
               </h2>
               <p className="text-sm text-gray-500 mt-1">
                 {experiment?.status === "running"
-                  ? `Round ${progressData?.progress?.current_round || 1} of ${progressData?.progress?.total_rounds || 10}`
+                  ? `Round ${progressData?.progress?.current_round || 1} of ${progressData?.progress?.total_rounds}`
                   : "Federated learning process"}
               </p>
             </div>
@@ -450,7 +357,6 @@ export default function ExperimentVisualization() {
           </div>
         </div>
       </div>
-
       {/* Main Visualization */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -519,7 +425,7 @@ export default function ExperimentVisualization() {
                     const clientNum = index + 1;
                     const isActive =
                       (activeClient === clientNum ||
-                        liveMetrics.clientUpdates.some(
+                        liveMetrics.clientUpdates?.some(
                           (update) =>
                             update.clientId === clientNum &&
                             Date.now() - new Date(update.timestamp).getTime() <
@@ -630,7 +536,6 @@ export default function ExperimentVisualization() {
           </div>
         </div>
       </motion.div>
-
       {/* Info Grid - Keep existing but enhance with live metrics */}
       <div className="grid grid-cols-4 gap-6">
         {/* Dataset Card */}
@@ -718,7 +623,7 @@ export default function ExperimentVisualization() {
                   transition={{ duration: 2, repeat: Infinity }}
                   className="text-green-600"
                 >
-                  {liveMetrics.clientUpdates.length} active
+                  {liveMetrics.clientUpdates?.length} active
                 </motion.span>
               )}
             </div>
@@ -757,7 +662,6 @@ export default function ExperimentVisualization() {
           </div>
         </motion.div>
       </div>
-
       {/* Training Parameters and Progress with Live Metrics */}
       <div className="grid grid-cols-2 gap-6">
         {/* Parameters */}
@@ -842,12 +746,11 @@ export default function ExperimentVisualization() {
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">
-                  Round {currentRound} of {experiment.parameters?.epochs || 10}
+                  Round {currentRound} of {experiment.parameters?.epochs || "-"}
                 </span>
                 <span className="font-medium text-gray-900">
                   {Math.round(
-                    (currentRound / (experiment.parameters?.epochs || 10)) *
-                      100,
+                    (currentRound / experiment.parameters?.epochs || 0) * 100,
                   )}
                   %
                 </span>
@@ -876,17 +779,14 @@ export default function ExperimentVisualization() {
                 <p className="text-xs text-gray-500 mb-1">Accuracy</p>
                 <div className="flex items-end justify-between">
                   <p className="text-lg font-bold text-gray-900">
-                    {currentAccuracy
-                      ? (currentAccuracy * 100).toFixed(2)
-                      : "0.00"}
-                    %
+                    {currentAccuracy ? currentAccuracy.toFixed(2) : "0.00"}%
                   </p>
                   {liveMetrics.accuracy && (
                     <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
                       +
                       {(
-                        liveMetrics.accuracy * 100 -
-                        (experiment.metrics?.final_accuracy || 0) * 100
+                        liveMetrics.accuracy -
+                        (experiment.metrics?.final_accuracy || 0)
                       ).toFixed(2)}
                       %
                     </span>
@@ -918,7 +818,7 @@ export default function ExperimentVisualization() {
             </div>
 
             {/* Recent Client Updates */}
-            {liveMetrics.clientUpdates.length > 0 && (
+            {liveMetrics.clientUpdates?.length > 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -928,7 +828,7 @@ export default function ExperimentVisualization() {
                   Recent Client Updates
                 </p>
                 <div className="space-y-2">
-                  {liveMetrics.clientUpdates.slice(-3).map((update, idx) => (
+                  {liveMetrics.clientUpdates?.slice(-3).map((update, idx) => (
                     <motion.div
                       key={idx}
                       initial={{ x: -20, opacity: 0 }}
@@ -940,7 +840,7 @@ export default function ExperimentVisualization() {
                       </span>
                       <div className="flex items-center space-x-2">
                         <span className="text-green-600">
-                          {(update.accuracy * 100).toFixed(2)}%
+                          {update.accuracy.toFixed(2)}%
                         </span>
                         <span className="text-red-600">
                           {update.loss.toFixed(4)}
@@ -963,10 +863,7 @@ export default function ExperimentVisualization() {
               <div className="flex items-center space-x-2">
                 {[...Array(5)].map((_, i) => {
                   const round = currentRound - 2 + i;
-                  if (
-                    round > 0 &&
-                    round <= (experiment.parameters?.epochs || 10)
-                  ) {
+                  if (round > 0 && round <= experiment.parameters?.epochs) {
                     return (
                       <button
                         key={round}
@@ -1003,10 +900,9 @@ export default function ExperimentVisualization() {
           </div>
         </motion.div>
       </div>
-
       {/* Live Client Activity Feed */}
       {experiment.status === "running" &&
-        liveMetrics.clientUpdates.length > 0 && (
+        liveMetrics.clientUpdates?.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1017,7 +913,7 @@ export default function ExperimentVisualization() {
               Live Client Activity
             </h3>
             <div className="grid grid-cols-4 gap-4">
-              {liveMetrics.clientUpdates.slice(-4).map((update, idx) => (
+              {liveMetrics.clientUpdates?.slice(-4).map((update, idx) => (
                 <motion.div
                   key={idx}
                   initial={{ scale: 0.9, opacity: 0 }}
@@ -1037,7 +933,7 @@ export default function ExperimentVisualization() {
                     <div className="flex justify-between text-xs">
                       <span className="text-gray-500">Accuracy:</span>
                       <span className="font-medium text-green-600">
-                        {(update.accuracy * 100).toFixed(2)}%
+                        {update.accuracy.toFixed(2)}%
                       </span>
                     </div>
                     <div className="flex justify-between text-xs">
