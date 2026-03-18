@@ -273,7 +273,7 @@ class Executor:
 
             # Get training parameters
             params = json.loads(experiment_data["parameters"])
-            num_rounds = params.get("num_rounds", 5)
+            num_rounds = params.get("epochs", 10)
             num_clients = experiment_data["num_clients"]
             iid = experiment_data["iid"]
             local_epochs = params.get("local_epochs", 1)
@@ -342,7 +342,8 @@ class Executor:
             )
 
             # Report progress
-            progress_callback(5, "Clients initialized, starting training")
+            if progress_callback:
+                progress_callback(5, "Clients initialized, starting training")
 
             # Run federated training with proper metrics
             results = {
@@ -362,15 +363,16 @@ class Executor:
             # Update dashboard with round results
             dashboard_connector.update_experiment_status(experiment_id, "running")
             # After starting the experiment
-            progress_callback(
-                0,
-                "Experiment started",
-                {
-                    "type": "experiment_started",
-                    "experiment_id": experiment_id,
-                    "timestamp": datetime.now().isoformat(),
-                },
-            )
+            if progress_callback:
+                progress_callback(
+                    0,
+                    "Experiment started",
+                    {
+                        "type": "experiment_started",
+                        "experiment_id": experiment_id,
+                        "timestamp": datetime.now().isoformat(),
+                    },
+                )
             for round_num in tqdm(range(1, num_rounds + 1)):
                 # Train clients
                 client_indices = list(range(num_clients))
@@ -400,7 +402,7 @@ class Executor:
 
                         client_accuracy = client_metrics.get("accuracy", 0)
                         client_loss = client_metrics.get("loss", 0)
-
+                        print("Client Accuracy:", client_accuracy)
                         # Store in history
                         client_metrics_history[client_idx].append(
                             {
@@ -410,18 +412,19 @@ class Executor:
                             }
                         )
                         # Send client update
-                        progress_callback(
-                            f"{(round_num / num_rounds) * 100:.2f}",
-                            f"Client {client_idx}: Rounds: {round_num} of {num_rounds}",
-                            {
-                                "type": "client_update",
-                                "client_id": client_idx,
-                                "round": round_num,
-                                "accuracy": client_accuracy,
-                                "loss": client_loss,
-                                "timestamp": datetime.now().isoformat(),
-                            },
-                        )
+                        if progress_callback:
+                            progress_callback(
+                                f"{(round_num / num_rounds) * 100:.2f}",
+                                f"Client {client_idx}: Rounds: {round_num} of {num_rounds}",
+                                {
+                                    "type": "client_update",
+                                    "client_id": client_idx,
+                                    "round": round_num,
+                                    "accuracy": client_accuracy,
+                                    "loss": client_loss,
+                                    "timestamp": datetime.now().isoformat(),
+                                },
+                            )
 
                 # Federated aggregation phase
                 client_updates = []
@@ -445,23 +448,24 @@ class Executor:
                 best_loss = min(best_loss, global_loss)
 
                 # After aggregation, send round completed with metrics
-                progress_callback(
-                    f"{(round_num / num_rounds) * 100:.2f}",
-                    {
-                        "type": "round_completed",
-                        "round": round_num,
-                        "accuracy": global_accuracy,
-                        "loss": global_loss,
-                        "timestamp": datetime.now().isoformat(),
-                    },
-                )
-                progress = f"{(round_num / num_rounds) * 100:.2f}"
-                # Send progress update
-                progress_callback(
-                    progress,
-                    f"Round {round_num}/{num_rounds} completed",
-                    {"round": round_num, "accuracy": global_accuracy},
-                )
+                if progress_callback:
+                    progress_callback(
+                        f"{(round_num / num_rounds) * 100:.2f}",
+                        {
+                            "type": "round_completed",
+                            "round": round_num,
+                            "accuracy": global_accuracy,
+                            "loss": global_loss,
+                            "timestamp": datetime.now().isoformat(),
+                        },
+                    )
+                    progress = f"{(round_num / num_rounds) * 100:.2f}"
+                    # Send progress update
+                    progress_callback(
+                        progress,
+                        f"Round {round_num}/{num_rounds} completed",
+                        {"round": round_num, "accuracy": global_accuracy},
+                    )
                 # Record global round results
                 round_result = {
                     "round": round_num,
@@ -511,16 +515,17 @@ class Executor:
                     )
 
                 # Calculate progress
-                progress = int((round_num / num_rounds) * 95) + 5  # 5-99%
-                progress_callback(
-                    progress,
-                    f"Round {round_num}/{num_rounds} completed - Accuracy: {global_accuracy:.2f}%, Loss: {global_loss:.4f}",
-                    {
-                        "round": round_num,
-                        "accuracy": global_accuracy,
-                        "loss": global_loss,
-                    },
-                )
+                if progress_callback:
+                    progress = int((round_num / num_rounds) * 95) + 5  # 5-99%
+                    progress_callback(
+                        progress,
+                        f"Round {round_num}/{num_rounds} completed - Accuracy: {global_accuracy:.2f}%, Loss: {global_loss:.4f}",
+                        {
+                            "round": round_num,
+                            "accuracy": global_accuracy,
+                            "loss": global_loss,
+                        },
+                    )
 
             # Final evaluation
             final_metrics = federated_trainer.evaluate_with_metrics()
@@ -531,9 +536,10 @@ class Executor:
             results["final_loss"] = final_loss
             results["best_accuracy"] = best_accuracy
             results["best_loss"] = best_loss
-
+            print("Best acc:", best_accuracy, "Final acc:", final_accuracy)
             # Report completion
-            progress_callback(100, "Training completed successfully")
+            if progress_callback:
+                progress_callback(100, "Training completed successfully")
 
             # Store final results
             final_result = {
