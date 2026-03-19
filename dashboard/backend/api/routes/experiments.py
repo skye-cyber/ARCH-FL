@@ -65,8 +65,8 @@ def create_experiment(experiment: ExperimentCreate):
         cursor.execute(
             """
             INSERT INTO experiments
-            (name, description, dataset_name, architecture_name, num_clients, iid, status, parameters)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (name, description, dataset_name, architecture_name, num_clients, iid, dp_enabled, epsilon, delta, noise_scale, sensitivity, max_grad_norm, status, parameters)
+            VALUES (?, ?, ?, ?, ?, ?, ? ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 experiment.name,
@@ -75,6 +75,12 @@ def create_experiment(experiment: ExperimentCreate):
                 experiment.architecture_name,
                 experiment.num_clients,
                 experiment.iid,
+                experiment.dp_enabled,
+                experiment.epsilon,
+                experiment.delta,
+                experiment.noise_scale,
+                experiment.sensitivity,
+                experiment.max_grad_norm,
                 "pending",
                 json.dumps(experiment.parameters),
             ),
@@ -138,6 +144,30 @@ def update_experiment(experiment_id: int, update_data: ExperimentUpdate):
         if update_data.description is not None:
             updates.append("description = ?")
             params.append(update_data.description)
+
+        if update_data.dp_enabled is not None:
+            updates.append("dp_enabled = ?")
+            params.append(update_data.dp_enabled)
+
+        if update_data.epsilon is not None:
+            updates.append("epsilon = ?")
+            params.append(update_data.epsilon)
+
+        if update_data.delta is not None:
+            updates.append("delta = ?")
+            params.append(update_data.delta)
+
+        if update_data.sensitivity is not None:
+            updates.append("sensitivity = ?")
+            params.append(update_data.sensitivity)
+
+        if update_data.noise_scale is not None:
+            updates.append("noise_scale = ?")
+            params.append(update_data.noise_scale)
+
+        if update_data.max_grad_norm is not None:
+            updates.append("max_grad_norm = ?")
+            params.append(update_data.max_grad_norm)
 
         if update_data.status is not None:
             updates.append("status = ?")

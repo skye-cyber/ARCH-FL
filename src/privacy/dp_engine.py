@@ -7,6 +7,27 @@ logger = get_logger(__name__)
 
 
 class DPEngine:
+    """
+    1. Privacy Budget (ε)
+    Total allowable privacy loss over training; smaller ε means stronger privacy \
+        but less model utility, as it accumulates across rounds.
+
+    2. Noise Mechanism
+    Method to add calibrated randomness (e.g., Gaussian or Laplace) to model
+    updates, obscuring individual contributions while preserving aggregate utility.
+
+    3. Noise Scale (σ)
+    Standard deviation of added Gaussian noise; higher σ enhances privacy by\
+        increasing randomness but reduces accuracy.
+
+    4. Max-Grad-Norm (C)
+    Clipper threshold for gradient norms; bounds update size to limit sensitivity\
+        before noise addition, preventing outliers from dominating.
+
+    5. Sensitivity (Δ)
+    Maximum influence one data record can have on an output (e.g., L2 norm of\
+        clipped gradients); determines required noise level for DP guarantees.
+    """
     def __init__(self, epsilon: float, delta: float, max_grad_norm: float):
         self.epsilon = epsilon
         self.delta = delta
