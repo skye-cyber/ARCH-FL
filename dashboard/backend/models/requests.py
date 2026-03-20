@@ -22,11 +22,11 @@ class ExperimentCreate(BaseModel):
     epsilon: float = None
     # Privacy Failure Probability
     delta: float = None
-    noise_scale: float = None
-    sensitivity: float = None
+    # noise_scale: float = None
+    # sensitivity: float = None
     max_grad_norm: float = None
     # gaussian or laplace
-    noise_mechanism: str = None
+    noise_mechanism: str = "gaussian"
 
 
 class ExperimentUpdate(BaseModel):

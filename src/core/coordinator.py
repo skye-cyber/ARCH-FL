@@ -1,9 +1,9 @@
 import torch
 from typing import List, Dict, Optional, Callable
 from .aggregation import fed_avg, weighted_aggregation, secure_aggregation
-from ..utils.logger import get_logger
 
-logger = get_logger(__name__)
+# from ..utils.logger import logger
+from ..utils.model_utils import unwrap_dp_state_dict
 
 # Type definition for progress callback
 ProgressCallback = Callable[[int, Dict[str, float], str], None]
@@ -42,6 +42,8 @@ class Coordinator:
             averaged_params = agg_fn(client_updates, weights)
         else:
             averaged_params = agg_fn(client_updates, client_sizes)
+
+        averaged_params = unwrap_dp_state_dict(averaged_params)
 
         self.global_model.load_state_dict(averaged_params)
         # logger.info(f"Aggregated {len(client_updates)} clients using {self.aggregation_method}")

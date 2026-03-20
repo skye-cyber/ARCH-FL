@@ -43,7 +43,7 @@ class ArchitectureRegistry:
             "simple_cnn",
             self._get_simple_cnn_config(),
             description="Simple CNN for basic medical imaging tasks",
-            compatible_datasets=["pneumoniamnist", "mimic_cxr"],
+            compatible_datasets=["pneumoniamnist"],
         )
 
         # Register MediumCNN

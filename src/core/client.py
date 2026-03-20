@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from ..privacy.dp_engine import DPEngine
 from ..privacy.noise_mechanisms import clip_gradients
+from ..utils.model_utils import wrap_dp_state_dict
 
 
 class Client:
@@ -70,8 +71,15 @@ class Client:
         """
         Perform local training and return both model update and metrics
         """
+        # print(f"\033[1;33m{'_module' in global_params}\033[0m")
+
+        # self.model.register_load_state_dict_pre_hook(unwrap_dp_state_dict)
         self.model.train()
-        self.model.load_state_dict(global_params)
+        try:
+            self.model.load_state_dict(global_params)
+        except RuntimeError:
+            global_params_unwrapped = wrap_dp_state_dict(global_params)
+            self.model.load_state_dict(global_params_unwrapped)
 
         optimizer = torch.optim.SGD(self.model.parameters(), lr=learning_rate)
         criterion = self._get_loss_function()
@@ -79,12 +87,13 @@ class Client:
         total_loss = 0
         correct = 0
         total = 0
-
+        dp_wrapped = False
         # Apply centralized DP if enabled
         if self.dp_engine and self.dp_engine.use_opacus:
             self.model, optimizer, self.train_loader = self.dp_engine.make_private(
                 self.model, optimizer, self.train_loader
             )
+            dp_wrapped = True
 
         for epoch in range(local_epochs):
             for batch_idx, (data, target) in enumerate(self.train_loader):
@@ -111,6 +120,16 @@ class Client:
         avg_loss = total_loss / (local_epochs * len(self.train_loader))
         accuracy = 100.0 * correct / total
 
+        # Get model state dict and unwrap if needed
+        if dp_wrapped:
+            # Extract the actual model from the DP wrapper
+            actual_model = (
+                self.model._module if hasattr(self.model, "_module") else self.model
+            )
+            updates = actual_model.state_dict()
+        else:
+            updates = self.model.state_dict()
+
         # Get updates
         updates = self.model.state_dict()
 
@@ -131,6 +150,9 @@ class Client:
         }
 
         return updates, metrics
+
+    def get_dataset_size(self) -> int:
+        return self.dataset_size or len(self.train_loader.dataset)
 
     def _get_loss_function(self):
         """Get loss function based on configuration"""

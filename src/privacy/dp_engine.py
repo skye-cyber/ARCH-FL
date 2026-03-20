@@ -25,10 +25,8 @@ import math
 from typing import Dict, Optional, Tuple, Any
 from opacus import PrivacyEngine
 from opacus.validators import ModuleValidator
-from ..utils.logger import get_logger
+from ..utils.logger import logger
 from .noise_mechanisms import NoiseMechanism, GaussianNoise, LaplaceNoise
-
-logger = get_logger(__name__)
 
 
 class DPEngine:

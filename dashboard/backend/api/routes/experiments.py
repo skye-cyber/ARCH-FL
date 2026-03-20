@@ -66,8 +66,8 @@ def create_experiment(experiment: ExperimentCreate):
         cursor.execute(
             """
             INSERT INTO experiments
-            (name, description, dataset_name, architecture_name, num_clients, iid, dp_enabled, epsilon, delta, noise_scale, sensitivity, max_grad_norm, status, parameters)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (name, description, dataset_name, architecture_name, num_clients, iid, dp_enabled, epsilon, delta,  max_grad_norm, status, parameters)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 experiment.name,
@@ -79,8 +79,6 @@ def create_experiment(experiment: ExperimentCreate):
                 experiment.dp_enabled,
                 experiment.epsilon,
                 experiment.delta,
-                experiment.noise_scale,
-                experiment.sensitivity,
                 experiment.max_grad_norm,
                 "pending",
                 json.dumps(experiment.parameters),

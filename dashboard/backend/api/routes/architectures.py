@@ -16,6 +16,7 @@ def get_architectures():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM architectures ORDER BY name")
     architectures = [dict(row) for row in cursor.fetchall()]
+
     conn.close()
     return architectures
 
@@ -293,7 +294,8 @@ def get_architecture_registry():
                             "compatible_datasets": info.get("compatible_datasets", []),
                         }
                     )
-            except:
+            except Exception as e:
+                print(e)
                 pass
 
         return architecture_list

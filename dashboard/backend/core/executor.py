@@ -283,8 +283,11 @@ class Executor:
 
             # Privacy parameters
             dp_enabled = experiment_data.get("dp_enabled", False)
-            epsilon, delta, max_grad_norm, noise_scale, noise_mechanism, sensitivity = (
-                None
+            epsilon, delta, max_grad_norm, noise_mechanism = (
+                None,
+                None,
+                None,
+                None,
             )
 
             # Report initial progress
@@ -309,6 +312,13 @@ class Executor:
 
             dp_engine = None
             if dp_enabled:
+                epsilon = experiment_data.get("epsilon", 1.0)
+                delta = experiment_data.get("delta", 1e-5)
+                max_grad_norm = experiment_data.get("max_grad_norm", 1e-5)
+                # noise_scale = experiment_data.get("noise_scale", 1e-5)
+                noise_mechanism = experiment_data.get("noise_mechanism", "gaussian")
+                # sensitivity = experiment_data.get("sensitivity", 1e-5)
+
                 # Configure DP engine for clients
                 dp_engine = DPEngine(
                     epsilon=epsilon,
@@ -477,7 +487,7 @@ class Executor:
                 for client_idx in client_indices:
                     client = clients[client_idx]
                     client_updates.append(client.model.state_dict())
-                    client_sizes.append(client.get_dataset_size())
+                    client_sizes.append(client.dataset_size)
 
                 # Aggregate updates
                 coordinator.aggregate(client_updates, client_sizes, round_num)

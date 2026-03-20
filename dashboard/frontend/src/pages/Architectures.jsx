@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { architectureService } from "../services/api";
+import { architectureService, experimentService } from "../services/api";
+
 import {
   Network,
   Loader2,
@@ -56,9 +57,8 @@ export default function Architectures() {
 
       // Get architectures in use by experiments
       try {
-        const experimentsResponse = await fetch(
-          "http://localhost:8008/api/experiments",
-        );
+        const experimentsResponse = await experimentService.getAll()
+
         const experiments = await experimentsResponse.json();
         const usedArchitectures = new Set(
           experiments.map((exp) => exp.architecture_name),
