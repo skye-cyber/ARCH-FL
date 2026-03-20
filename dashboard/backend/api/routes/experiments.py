@@ -32,6 +32,7 @@ def get_experiments():
 @router.post("/", response_model=Dict)
 def create_experiment(experiment: ExperimentCreate):
     """Create a new experiment."""
+
     # Validate inputs
     if not dbmanager.validate_architecture_exists(experiment.architecture_name):
         print(f"Architecture '{experiment.architecture_name}' not found")
@@ -66,7 +67,7 @@ def create_experiment(experiment: ExperimentCreate):
             """
             INSERT INTO experiments
             (name, description, dataset_name, architecture_name, num_clients, iid, dp_enabled, epsilon, delta, noise_scale, sensitivity, max_grad_norm, status, parameters)
-            VALUES (?, ?, ?, ?, ?, ?, ? ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 experiment.name,
@@ -96,7 +97,6 @@ def create_experiment(experiment: ExperimentCreate):
         return created_experiment
 
     except Exception as e:
-        print(e)
         conn.rollback()
         raise HTTPException(status_code=400, detail=str(e))
     finally:
@@ -197,6 +197,24 @@ def update_experiment(experiment_id: int, update_data: ExperimentUpdate):
         raise HTTPException(status_code=400, detail=str(e))
     finally:
         conn.close()
+
+
+@router.get("/results/all", response_model=List[Dict])
+def get_all_experiment_results():
+    """Get results for a specific experiment."""
+    conn = dbmanager.connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM experiment_results
+        ORDER BY total_rounds, timestamp
+    """
+    )
+
+    results = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return results
 
 
 @router.get("/{experiment_id}/results", response_model=List[Dict])

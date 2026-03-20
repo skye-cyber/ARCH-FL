@@ -83,7 +83,6 @@ class Executor:
             def wrapped_progress(
                 progress: int, message: str, metadata: Optional[Dict] = None
             ):
-                print(type(progress), type(message), type(metadata))
                 """Wrapper to handle progress updates"""
                 # Update in database
                 with self.db_manager.transaction() as cursor:
@@ -179,7 +178,7 @@ class Executor:
             from src.data.registry import get_dataset_registry
             from src.core.coordinator import Coordinator
             from src.training.fedavg import FederatedTrainer
-
+            from src.privacy.dp_engine import DPEngine
             from src.core.client import Client
 
             # Initialize dashboard connector
@@ -283,9 +282,26 @@ class Executor:
             loss_function = params.get("loss_function", "cross_entropy")
 
             # Privacy parameters
-            dp_enabled = params.get("dp_enabled", False)
-            epsilon = params.get("epsilon", 1.0)
-            delta = params.get("delta", 1e-5)
+            dp_enabled = experiment_data.get("dp_enabled", False)
+            epsilon, delta, max_grad_norm, noise_scale, noise_mechanism, sensitivity = (
+                None
+            )
+            dp_engine = None
+            if dp_enabled:
+                epsilon = experiment_data.get("epsilon", 1.0)
+                delta = experiment_data.get("delta", 1e-5)
+                max_grad_norm = experiment_data.get("max_grad_norm", 1e-5)
+                noise_scale = experiment_data.get("noise_scale", 1e-5)
+                noise_mechanism = experiment_data.get("noise_mechanism", "gaussian")
+                sensitivity = experiment_data.get("sensitivity", 1e-5)
+                dp_engine = DPEngine(
+                    epsilon=epsilon,
+                    delta=delta,
+                    max_grad_norm=max_grad_norm,
+                    sensitivity=sensitivity,
+                    noise_scale=noise_scale,
+                    noise_mechanisms=noise_mechanism,
+                )
 
             # Report initial progress
             if progress_callback:

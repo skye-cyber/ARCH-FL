@@ -41,6 +41,7 @@ export const experimentService = {
   create: (experimentData) => api.post("/experiments", experimentData),
   update: (id, updateData) => api.put(`/experiments/${id}`, updateData),
   getResults: (id) => api.get(`/experiments/${id}/results`),
+  getAllResults: () => api.get(`/experiments/results/all`),
   getClientsResults: (id) => api.get(`/experiments/${id}/client/results`),
   addResult: (id, resultData) =>
     api.post(`/experiments/${id}/results`, resultData),

@@ -43,7 +43,7 @@ export default function ExperimentCreate() {
         },
     });
 
-    const noise_mechanism = [
+    const noise_mechanisms = [
         { name: "gaussian", description: "Gaussian Noise Mechanism" },
         { name: "laplace", description: "Laplace Noise Mechanism" }
     ]
@@ -71,8 +71,17 @@ export default function ExperimentCreate() {
         fetchData();
     }, []);
 
+    const validateDataType = (name, value)=>{
+        const float_fields = ['delta', 'epsilon', 'sensitivity', 'noise_scale', 'max_grad_norm', "epoch", "batch_size", "learning_rate", "num_clients"]
+        if (float_fields.includes(name)){
+            return Number(value)
+        }
+        return value
+    }
+
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        let { name, value, type, checked } = e.target;
+        value = validateDataType(name, value)
         if (name.startsWith("parameters.")) {
             const paramName = name.split(".")[1];
             setExperiment((prev) => ({
@@ -97,7 +106,6 @@ export default function ExperimentCreate() {
                             ? value === "on"
                             : value,
             }));
-            console.log(experiment.iid);
         }
     };
 
@@ -115,6 +123,9 @@ export default function ExperimentCreate() {
             setError(
                 "Failed to create experiment. Please check your inputs and try again.",
             );
+            setTimeout(()=>{
+                setError()
+            }, 4000)
         }
     };
 
@@ -427,9 +438,9 @@ export default function ExperimentCreate() {
                                     <button
                                         onClick={() => setStep(2)}
                                         disabled={
-                                            experiment.name ||
-                                            experiment.dataset_name ||
-                                            experiment.architecture_name
+                                            !experiment.name ||
+                                            !experiment.dataset_name ||
+                                            !experiment.architecture_name
                                         }
                                         className={`inline-flex items-center px-4 py-2 rounded-lg transition-colors ${experiment.name &&
                                             experiment.dataset_name &&
@@ -459,14 +470,14 @@ export default function ExperimentCreate() {
                                                     Noise Scale <span className="text-[11.5px] text-gray-600 font-medium">(Privacy Failure Probability)</span>
                                                 </label>
                                                 <select
-                                                    name="dataset_name"
+                                                    name="noise_mechanism"
                                                     value={experiment.noise_mechanism}
                                                     onChange={handleChange}
                                                     required
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 >
                                                     <option value="">Select a Noise Mechanism</option>
-                                                    {noise_mechanism.map((mechanism) => (
+                                                    {noise_mechanisms.map((mechanism) => (
                                                         <option key={mechanism.name} value={mechanism.name}>
                                                             {mechanism.description} ({mechanism.name})
                                                         </option>
@@ -605,7 +616,7 @@ export default function ExperimentCreate() {
                                                     value={experiment.epsilon}
                                                     onChange={(e) => {
                                                         if (e.target.value > 1) e.target.value = 0.9
-                                                        handleChange()
+                                                        handleChange(e)
                                                     }}
                                                     min="0"
                                                     step="0.1"
@@ -626,7 +637,7 @@ export default function ExperimentCreate() {
                                                     value={experiment.delta}
                                                     onChange={(e) => {
                                                         if (e.target.value > 1) e.target.value = 0.9
-                                                        handleChange()
+                                                        handleChange(e)
                                                     }}
                                                     min="0"
                                                     step="0.1"
@@ -647,7 +658,7 @@ export default function ExperimentCreate() {
                                                     value={experiment.sensitivity}
                                                     onChange={(e) => {
                                                         if (e.target.value > 1) e.target.value = 0.9
-                                                        handleChange()
+                                                        handleChange(e)
                                                     }}
                                                     min="0"
                                                     step="0.1"
@@ -668,7 +679,7 @@ export default function ExperimentCreate() {
                                                     value={experiment.noise_scale}
                                                     onChange={(e) => {
                                                         if (e.target.value > 1) e.target.value = 0.9
-                                                        handleChange()
+                                                        handleChange(e)
                                                     }}
                                                     min="0"
                                                     step="0.1"
@@ -689,7 +700,7 @@ export default function ExperimentCreate() {
                                                     value={experiment.max_grad_norm}
                                                     onChange={(e) => {
                                                         if (e.target.value > 1) e.target.value = 0.9
-                                                        handleChange()
+                                                        handleChange(e)
                                                     }}
                                                     min="0"
                                                     step="0.1"
@@ -791,6 +802,42 @@ export default function ExperimentCreate() {
                                                 <p className="text-gray-500">Learning Rate</p>
                                                 <p className="font-medium">
                                                     {experiment.parameters.learning_rate}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-500">DP Enabled</p>
+                                                <p className="font-medium">
+                                                    {experiment.dp_enabled? "True" : "False"}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-500">Delta</p>
+                                                <p className="font-medium">
+                                                    {experiment.delta}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-500">Epsilon</p>
+                                                <p className="font-medium">
+                                                    {experiment.epsilon}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-500">Noise Scale</p>
+                                                <p className="font-medium">
+                                                    {experiment.noise_scale}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-500">Noise Mechanism</p>
+                                                <p className="font-medium">
+                                                    {experiment.noise_mechanism}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-500">Max Grad Norm</p>
+                                                <p className="font-medium">
+                                                    {experiment.max_grad_norm}
                                                 </p>
                                             </div>
                                         </div>
