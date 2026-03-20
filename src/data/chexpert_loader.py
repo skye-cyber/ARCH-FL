@@ -612,7 +612,11 @@ def create_chexpert_data_loaders(
                                 label_counts[CHEXPERT_COMPETITION_CLASSES[j]] += 1
                 print(f"  Client {i + 1}: {dict(label_counts.most_common(3))}")
 
-        return client_loaders, test_loader
+        return (
+            client_loaders,
+            test_loader,
+            {"train_len": len(train_dataset), "test_len": len(test_dataset)},
+        )
 
     except Exception as e:
         print(f"❌ Error creating CheXpert data loaders: {e}")

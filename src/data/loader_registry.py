@@ -180,11 +180,11 @@ class DataLoaderRegistry:
             raise ValueError(f"Data loader '{loader_type}' not found")
 
         # Create data loaders using the factory
-        client_loaders, test_loader = loader_info["factory"](
+        client_loaders, test_loader, length_metric = loader_info["factory"](
             dataset_name, num_clients, iid, batch_size, alpha
         )
 
-        return client_loaders, test_loader
+        return client_loaders, test_loader, length_metric
 
     def _auto_select_loader(self, dataset_name: str) -> str:
         """
@@ -265,7 +265,11 @@ class DataLoaderRegistry:
         train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
         test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
-        return client_loaders, test_loader
+        return (
+            client_loaders,
+            test_loader,
+            {"train_len": train_size, "test_len": len(test_size)},
+        )
 
     def _create_medmnist_loader(
         self,
@@ -322,7 +326,7 @@ class DataLoaderRegistry:
             from src.data.mimi import create_chexpert_loaders
 
             # Create loaders
-            client_loaders, test_loader = create_chexpert_loaders(
+            client_loaders, test_loader, length_metric = create_chexpert_loaders(
                 data_dir=data_dir,
                 num_clients=num_clients,
                 iid=iid,
@@ -330,7 +334,7 @@ class DataLoaderRegistry:
                 alpha=alpha,
             )
 
-            return client_loaders, test_loader
+            return client_loaders, test_loader, length_metric
 
         except ImportError as e:
             print(f"Custom CheXpert loader not available: {e}")
@@ -371,7 +375,7 @@ class DataLoaderRegistry:
             from src.data.mimic_cxr_loader import create_mimic_cxr_data_loaders
 
             # Create loaders
-            client_loaders, test_loader = create_mimic_cxr_data_loaders(
+            client_loaders, test_loader, length_metric = create_mimic_cxr_data_loaders(
                 # data_dir=data_dir,
                 num_clients=num_clients,
                 iid=iid,
@@ -379,7 +383,7 @@ class DataLoaderRegistry:
                 alpha=alpha,
             )
 
-            return client_loaders, test_loader
+            return client_loaders, test_loader, length_metric
 
         except ImportError as e:
             print(f"Custom MIMIC-CXR loader not available: {e}")
@@ -420,14 +424,14 @@ class DataLoaderRegistry:
             from src.data.chexpert_loader import create_chexpert_data_loaders
 
             # Create loaders
-            client_loaders, test_loader = create_chexpert_data_loaders(
+            client_loaders, test_loader, length_metric = create_chexpert_data_loaders(
                 num_clients=num_clients,
                 iid=iid,
                 batch_size=batch_size,
                 alpha=alpha,
             )
 
-            return client_loaders, test_loader
+            return client_loaders, test_loader, length_metric
 
         except ImportError as e:
             print(f"Custom CheXpert loader not available: {e}")

@@ -331,7 +331,11 @@ def create_mimic_cxr_data_loaders(
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
         print(f"🎉 Created {num_clients} client loaders and 1 test loader")
-        return client_loaders, test_loader
+        return (
+            client_loaders,
+            test_loader,
+            {"train_len": len(train_dataset), "test_len": len(test_dataset)},
+        )
 
     except Exception as e:
         print(f"❌ Error creating MIMIC-CXR data loaders: {e}")
