@@ -69,6 +69,11 @@ class AccuracyVisualizer:
             e.status,
             e.created_at,
             e.parameters,
+            e.delta,
+            e.dp_enabled,
+            e.noise_mechanism,
+            e.max_grad_norm,
+            e.epsilon,
             er.rounds_completed,
             er.accuracy as final_accuracy,
             er.loss as final_loss,
@@ -93,27 +98,31 @@ class AccuracyVisualizer:
         df = df.copy()
 
         def extract_params(row):
+            # print(row.keys())
+            data = {
+                "dp_enabled": row.get("dp_enabled", False),
+                "epsilon": row.get("epsilon", None),
+                "delta": row.get("delta", 1e-5),
+                "alpha": row.get("alpha", 0.5),  # Non-IID concentration
+                "noise_multiplier": row.get("noise_mechanism", None),
+                "max_grad_norm": row.get("max_grad_norm", 1.0),
+                "total_rounds": row.get("total_rounds", 10),
+            }
             if pd.isna(row["parameters"]):
-                return {}
+                return data
             try:
                 params = (
                     json.loads(row["parameters"])
                     if isinstance(row["parameters"], str)
                     else row["parameters"]
                 )
-                return {
-                    "dp_enabled": params.get("dp_enabled", False),
-                    "epsilon": params.get("epsilon", None),
-                    "delta": params.get("delta", 1e-5),
-                    "num_rounds": params.get("num_rounds", 0),
-                    "local_epochs": params.get("local_epochs", 1),
-                    "learning_rate": params.get("learning_rate", 0.01),
-                    "batch_size": params.get("batch_size", 32),
-                    "alpha": params.get("alpha", 0.5),  # Non-IID concentration
-                    "aggregation_method": params.get("aggregation_method", "fed_avg"),
-                    "noise_multiplier": params.get("noise_multiplier", None),
-                    "max_grad_norm": params.get("max_grad_norm", 1.0),
-                }
+                data["local_epochs"] = (params.get("epochs", 1),)
+                data["learning_rate"] = (params.get("learning_rate", 0.01),)
+                data["batch_size"] = (params.get("batch_size", 32),)
+                data["aggregation_method"] = (
+                    params.get("aggregation_method", "fed_avg"),
+                )
+                return data
             except:
                 return {}
 
@@ -461,7 +470,7 @@ class AccuracyVisualizer:
         iid_acc = df[df["iid"] == 1].groupby("dp_enabled")["accuracy_percent"].mean()
 
         drop_data = []
-        for dp_status in [True, False]:
+        for dp_status in [0, 1]:
             non_iid_subset = non_iid_df[non_iid_df["dp_enabled"] == dp_status]
             if not non_iid_subset.empty:
                 for eps in (
@@ -479,7 +488,9 @@ class AccuracyVisualizer:
                         iid_mean = (
                             iid_acc[dp_status]
                             if dp_status in iid_acc.index
-                            else iid_acc[False]
+                            else iid_acc[
+                                0
+                            ]  # 0 = False 1=True ie. { 0: 90.068966 1: 90.333333}
                         )
 
                         drop_data.append(
@@ -671,7 +682,7 @@ class AccuracyVisualizer:
 
         # Bin alpha values for better visualization
         non_iid_df["alpha_bin"] = pd.cut(non_iid_df["alpha"], bins=5)
-        print(non_iid_df["dp_enabled"])  # All shouldn't be same value eg True
+        # print(non_iid_df["dp_enabled"])  # All shouldn't be same value eg True
         pivot = non_iid_df.pivot_table(
             values="accuracy_percent",
             index="alpha_bin",
@@ -920,7 +931,6 @@ class AccuracyVisualizer:
         # Plot curves for each privacy level
         for privacy in sorted(round_df["Privacy"].unique()):
             subset = round_df[round_df["Privacy"] == privacy]
-
             # Calculate mean and std per round
             grouped = (
                 subset.groupby("Round")["Accuracy"]
@@ -934,7 +944,7 @@ class AccuracyVisualizer:
                     COLORS["baseline"]
                     if privacy == "No DP"
                     else plt.cm.RdYlBu_r(
-                        privacy.split("=")[-1] if "=" in privacy else 0.5
+                        float(privacy.split("=")[-1]) if "=" in privacy else 0.5
                     )
                 )
                 ax.plot(

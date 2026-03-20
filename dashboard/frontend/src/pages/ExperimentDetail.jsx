@@ -347,7 +347,6 @@ export default function ExperimentDetail() {
     setActionLoading(true);
     try {
       let response;
-      console.log(actionType);
       switch (actionType) {
         case "run":
           response = await experimentService.run(id);
@@ -366,10 +365,9 @@ export default function ExperimentDetail() {
         default:
           return;
       }
-      console.log(response);
       setActionResult({
         type: "success",
-        message: `Experiment ${actionType} completed successfully`,
+        message: `Experiment '${actionType}' successful`,
       });
     } catch (error) {
       console.error(`Error performing ${actionType} action:`, error);

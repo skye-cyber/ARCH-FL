@@ -290,7 +290,7 @@ def load_mimic_cxr_dataset(
 
 def create_mimic_cxr_data_loaders(
     num_clients: int = 5,
-    max_samples: int = 1000,
+    max_samples: int = 500,
     batch_size: int = 32,
     iid: bool = False,
     alpha: float = 0.5,
