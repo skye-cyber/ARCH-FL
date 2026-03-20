@@ -1,7 +1,8 @@
-from typing import Dict
+from typing import Dict, Optional
 import torch
 import torch.nn as nn
-# from tqdm.auto import tqdm
+from ..privacy.dp_engine import DPEngine
+from ..privacy.noise_mechanisms import clip_gradients
 
 
 class Client:
@@ -12,12 +13,17 @@ class Client:
         train_loader: torch.utils.data.DataLoader,
         device: str = "cpu",
         loss_function: str = "cross_entropy",
+        dp_engine: Optional[DPEngine] = None,  # Add DP engine parameter
     ):
         self.client_id = client_id
         self.model = model
         self.train_loader = train_loader
         self.device = device
         self.loss_function = loss_function
+        self.dp_engine = dp_engine  # Store DP engine
+
+        # Store dataset size for sensitivity calculation
+        self.dataset_size = len(train_loader.dataset)
 
     def local_train(
         self, global_params: Dict[str, torch.Tensor], local_epochs: int, lr: float
@@ -26,22 +32,37 @@ class Client:
         self.model.train()
 
         optimizer = torch.optim.SGD(self.model.parameters(), lr=lr)
-        criterion = nn.CrossEntropyLoss()
+        criterion = self._get_loss_function()
+
+        # Apply centralized DP (Opacus) if enabled
+        if self.dp_engine and self.dp_engine.use_opacus:
+            self.model, optimizer, self.train_loader = self.dp_engine.make_private(
+                self.model, optimizer, self.train_loader
+            )
 
         for epoch in range(local_epochs):
             for data, target in self.train_loader:
                 data = data.to(self.device)
-                target = torch.tensor(target).to(self.device)
+                target = target.to(self.device)
                 optimizer.zero_grad()
                 output = self.model(data)
                 loss = criterion(output, target)
                 loss.backward()
+
+                # Apply gradient clipping for local DP (non-Opacus)
+                if self.dp_engine and not self.dp_engine.use_opacus:
+                    clip_gradients(self.model, self.dp_engine.max_grad_norm)
+
                 optimizer.step()
 
-        return self.model.state_dict()
+        # Get model updates
+        updates = self.model.state_dict()
 
-    def get_dataset_size(self) -> int:
-        return len(self.train_loader.dataset)
+        # Add noise for local DP (non-Opacus)
+        if self.dp_engine and not self.dp_engine.use_opacus:
+            updates = self.dp_engine.add_noise_to_updates(updates)
+
+        return updates
 
     def local_train_with_metrics(
         self, global_params: Dict[str, torch.Tensor], local_epochs, learning_rate
@@ -49,7 +70,6 @@ class Client:
         """
         Perform local training and return both model update and metrics
         """
-        # Set model to training mode
         self.model.train()
         self.model.load_state_dict(global_params)
 
@@ -60,6 +80,12 @@ class Client:
         correct = 0
         total = 0
 
+        # Apply centralized DP if enabled
+        if self.dp_engine and self.dp_engine.use_opacus:
+            self.model, optimizer, self.train_loader = self.dp_engine.make_private(
+                self.model, optimizer, self.train_loader
+            )
+
         for epoch in range(local_epochs):
             for batch_idx, (data, target) in enumerate(self.train_loader):
                 data, target = data.to(self.device), target.to(self.device)
@@ -68,6 +94,11 @@ class Client:
                 output = self.model(data)
                 loss = criterion(output, target)
                 loss.backward()
+
+                # Apply gradient clipping for local DP
+                if self.dp_engine and not self.dp_engine.use_opacus:
+                    clip_gradients(self.model, self.dp_engine.max_grad_norm)
+
                 optimizer.step()
 
                 total_loss += loss.item()
@@ -80,9 +111,26 @@ class Client:
         avg_loss = total_loss / (local_epochs * len(self.train_loader))
         accuracy = 100.0 * correct / total
 
-        metrics = {"accuracy": accuracy, "loss": avg_loss, "samples": total}
+        # Get updates
+        updates = self.model.state_dict()
 
-        return self.model.state_dict(), metrics
+        # Add noise for local DP
+        if self.dp_engine and not self.dp_engine.use_opacus:
+            updates = self.dp_engine.add_noise_to_updates(updates)
+
+        # Track privacy spending
+        privacy_spent = None
+        if self.dp_engine:
+            privacy_spent = self.dp_engine.get_privacy_spent()
+
+        metrics = {
+            "accuracy": accuracy,
+            "loss": avg_loss,
+            "samples": total,
+            "privacy_spent": privacy_spent,
+        }
+
+        return updates, metrics
 
     def _get_loss_function(self):
         """Get loss function based on configuration"""
@@ -91,4 +139,4 @@ class Client:
         elif self.loss_function == "mse":
             return torch.nn.MSELoss()
         else:
-            return torch.nn.CrossEntropyLoss()  # Default
+            return torch.nn.CrossEntropyLoss()

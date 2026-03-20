@@ -286,22 +286,6 @@ class Executor:
             epsilon, delta, max_grad_norm, noise_scale, noise_mechanism, sensitivity = (
                 None
             )
-            dp_engine = None
-            if dp_enabled:
-                epsilon = experiment_data.get("epsilon", 1.0)
-                delta = experiment_data.get("delta", 1e-5)
-                max_grad_norm = experiment_data.get("max_grad_norm", 1e-5)
-                noise_scale = experiment_data.get("noise_scale", 1e-5)
-                noise_mechanism = experiment_data.get("noise_mechanism", "gaussian")
-                sensitivity = experiment_data.get("sensitivity", 1e-5)
-                dp_engine = DPEngine(
-                    epsilon=epsilon,
-                    delta=delta,
-                    max_grad_norm=max_grad_norm,
-                    sensitivity=sensitivity,
-                    noise_scale=noise_scale,
-                    noise_mechanisms=noise_mechanism,
-                )
 
             # Report initial progress
             if progress_callback:
@@ -313,13 +297,30 @@ class Executor:
             )
 
             # Create data loaders
-            client_loaders, test_loader = data_loader_registry.create_data_loaders(
-                experiment_data["dataset_name"],
-                num_clients,
-                iid=iid,
-                batch_size=batch_size,
-                alpha=params.get("alpha", 0.5),
+            client_loaders, test_loader, length_metric = (
+                data_loader_registry.create_data_loaders(
+                    experiment_data["dataset_name"],
+                    num_clients,
+                    iid=iid,
+                    batch_size=batch_size,
+                    alpha=params.get("alpha", 0.5),
+                )
             )
+
+            dp_engine = None
+            if dp_enabled:
+                # Configure DP engine for clients
+                dp_engine = DPEngine(
+                    epsilon=epsilon,
+                    delta=delta,
+                    max_grad_norm=max_grad_norm,
+                    noise_mechanism=noise_mechanism,
+                    batch_size=batch_size,
+                    dataset_size=length_metric["train_len"],
+                    use_opacus=True,  # Set to True for centralized DP
+                    target_epsilon=epsilon,
+                    target_delta=delta,
+                )
 
             # Create clients with proper loss tracking
             clients = []
@@ -329,14 +330,26 @@ class Executor:
                 )
 
                 # Initialize client with loss function
-                client = Client(
-                    client_id,
-                    client_model,
-                    client_loaders[client_id],
-                    "cpu",
-                    loss_function=loss_function,  # Pass loss function to client
-                )
-                clients.append(client)
+                if dp_enabled:
+                    # DP ON
+                    client = Client(
+                        client_id,
+                        client_model,
+                        client_loaders[client_id],
+                        "cpu",
+                        loss_function=loss_function,  # Pass loss function to client
+                        dp_engine=dp_engine,  # Pass DP engine to each client
+                    )
+                    clients.append(client)
+                else:
+                    client = Client(
+                        client_id,
+                        client_model,
+                        client_loaders[client_id],
+                        "cpu",
+                        loss_function=loss_function,  # Pass loss function to client
+                    )
+                    clients.append(client)
 
             # Create coordinator with callback for better metrics
             coordinator = Coordinator(
@@ -352,9 +365,24 @@ class Executor:
             )
 
             # Create federated trainer with loss tracking
-            federated_trainer = FederatedTrainer(
-                coordinator, clients, test_loader, "cpu", loss_function=loss_function
-            )
+            if dp_enabled:
+                # use DPEngine if enabled
+                federated_trainer = FederatedTrainer(
+                    coordinator,
+                    clients,
+                    test_loader,
+                    "cpu",
+                    loss_function=loss_function,
+                    dp_engine=dp_engine,  # For global DP
+                )
+            else:
+                federated_trainer = FederatedTrainer(
+                    coordinator,
+                    clients,
+                    test_loader,
+                    "cpu",
+                    loss_function=loss_function,
+                )
 
             # Report progress
             if progress_callback:
@@ -371,6 +399,7 @@ class Executor:
             # Track best metrics
             best_accuracy = 0.0
             best_loss = float("inf")
+            best_privacy_spent = 0.0
 
             # Store per-client metrics history
             client_metrics_history = {i: [] for i in range(num_clients)}
@@ -457,29 +486,33 @@ class Executor:
                 eval_metrics = federated_trainer.evaluate_with_metrics()
                 global_accuracy = eval_metrics.get("accuracy", 0)
                 global_loss = eval_metrics.get("loss", 0)
+                global_privacy_spent = eval_metrics.get("loss", 0)
 
                 # Update best metrics
                 best_accuracy = max(best_accuracy, global_accuracy)
                 best_loss = min(best_loss, global_loss)
+                best_privacy_spent = max(best_privacy_spent, global_privacy_spent)
 
                 # After aggregation, send round completed with metrics
                 if progress_callback:
-                    progress_callback(
-                        f"{(round_num / num_rounds) * 100:.2f}",
-                        {
-                            "type": "round_completed",
-                            "round": round_num,
-                            "accuracy": global_accuracy,
-                            "loss": global_loss,
-                            "timestamp": datetime.now().isoformat(),
-                        },
-                    )
+                    progress_metrics = {
+                        "type": "round_completed",
+                        "round": round_num,
+                        "accuracy": global_accuracy,
+                        "loss": global_loss,
+                        "privacy_spent": best_privacy_spent,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                    if dp_enabled:
+                        results["privacy_spent"] = best_privacy_spent
+
                     progress = f"{(round_num / num_rounds) * 100:.2f}"
+
                     # Send progress update
                     progress_callback(
                         progress,
                         f"Round {round_num}/{num_rounds} completed",
-                        {"round": round_num, "accuracy": global_accuracy},
+                        progress_metrics,
                     )
                 # Record global round results
                 round_result = {
@@ -489,13 +522,16 @@ class Executor:
                     "num_clients": num_clients,
                     "iid": iid,
                     "aggregation_method": params.get("aggregation_method", "fed_avg"),
-                    "epsilon": epsilon if dp_enabled else None,
-                    "delta": delta if dp_enabled else None,
+                    # "epsilon": epsilon if dp_enabled else None,
+                    # "delta": delta if dp_enabled else None,
                     "best_accuracy_so_far": best_accuracy,
                     "best_loss_so_far": best_loss,
                 }
 
                 results["rounds"].append(round_result)
+
+                if dp_enabled:
+                    results["privacy_spent"] = best_privacy_spent
 
                 # Record per-client results
                 for client_idx in client_indices:
@@ -520,9 +556,11 @@ class Executor:
                         "aggregation_method": params.get(
                             "aggregation_method", "fed_avg"
                         ),
-                        "epsilon": epsilon if dp_enabled else None,
-                        "delta": delta if dp_enabled else None,
+                        # "epsilon": epsilon if dp_enabled else None,
+                        # "delta": delta if dp_enabled else None,
                     }
+                    if dp_enabled:
+                        results["privacy_spent"] = best_privacy_spent
 
                     # Update clients table with round results
                     dashboard_connector.add_client_result(
@@ -551,6 +589,9 @@ class Executor:
             results["final_loss"] = final_loss
             results["best_accuracy"] = best_accuracy
             results["best_loss"] = best_loss
+            if dp_enabled:
+                results["privacy_spent"] = best_privacy_spent
+
             print("Best acc:", best_accuracy, "Final acc:", final_accuracy)
             # Report completion
             if progress_callback:
@@ -569,9 +610,9 @@ class Executor:
                 "num_clients": num_clients,
                 "iid": iid,
                 "aggregation_method": params.get("aggregation_method", "fed_avg"),
-                "dp_enabled": dp_enabled,
-                "epsilon": epsilon if dp_enabled else None,
-                "delta": delta if dp_enabled else None,
+                # "dp_enabled": dp_enabled,
+                # "epsilon": epsilon if dp_enabled else None,
+                # "delta": delta if dp_enabled else None,
                 "total_rounds": len(results["rounds"]),
                 "client_metrics_summary": {
                     "total_clients": num_clients,
@@ -580,6 +621,8 @@ class Executor:
                     else 0,
                 },
             }
+            if dp_enabled:
+                results["privacy_spent"] = best_privacy_spent
 
             # Update dashboard with final results
             dashboard_connector.update_experiment_status(
