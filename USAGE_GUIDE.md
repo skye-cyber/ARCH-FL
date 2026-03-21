@@ -245,17 +245,15 @@ Experiments can be configured with various parameters:
   "dataset_name": "pneumoniamnist",  # or "mimic_cxr", "chexpert"
   "architecture_name": "simple_cnn",  # or "medium_cnn", "resnet18"
   "num_clients": 5,
-  "iid": true,  # Independent and identically distributed data
+  "iid": True,  # Independent and identically distributed data
+  "enabled": True,
+  "epsilon": 1.0,
+  "delta": 1e-5
   "parameters": {
     "num_rounds": 10,
     "learning_rate": 0.01,
     "batch_size": 32,
     "aggregation_method": "fed_avg",  # or "weighted", "secure"
-    "privacy": {
-      "enabled": true,
-      "epsilon": 1.0,
-      "delta": 1e-5
-    }
   }
 }
 ```

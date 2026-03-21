@@ -79,23 +79,23 @@ Multiple experiments can be selected and controlled simultaneously:
 
 ```bash
 # Run experiment
-POST /api/experiments/{id}/run
+POST /api/v1/experiments/{id}/run
 
 # Cancel experiment
-POST /api/experiments/{id}/cancel
+POST /api/v1/experiments/{id}/cancel
 
 # Restart experiment
-POST /api/experiments/{id}/restart
+POST /api/v1/experiments/{id}/restart
 
 # Delete experiment
-POST /api/experiments/{id}/delete
+POST /api/v1/experiments/{id}/delete
 ```
 
 ### Batch Actions
 
 ```bash
 # Batch actions
-POST /api/experiments/actions
+POST /api/v1/experiments/actions
 Content-Type: application/json
 
 {
