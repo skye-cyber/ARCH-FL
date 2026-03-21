@@ -46,6 +46,11 @@ class AccuracyVisualizer:
         self.db_path = db_path
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create subdirectory for standalone charts
+        self.standalone_dir = self.output_dir / "standalone"
+        self.standalone_dir.mkdir(parents=True, exist_ok=True)
+
         self.conn = None
         self._connect_db()
 
@@ -98,7 +103,6 @@ class AccuracyVisualizer:
         df = df.copy()
 
         def extract_params(row):
-            # print(row.keys())
             data = {
                 "dp_enabled": row.get("dp_enabled", False),
                 "epsilon": row.get("epsilon", None),
@@ -149,6 +153,508 @@ class AccuracyVisualizer:
 
         return df
 
+    def save_figure(self, fig, filename, standalone=False):
+        """Helper function to save figures to appropriate directory"""
+        if standalone:
+            save_path = self.standalone_dir / filename
+        else:
+            save_path = self.output_dir / filename
+
+        fig.savefig(save_path, dpi=DPI, bbox_inches="tight")
+        plt.close(fig)
+        return save_path
+
+    # ==================== STANDALONE VISUALIZATIONS ====================
+
+    def standalone_accuracy_vs_epsilon_all_deltas(self, df: pd.DataFrame):
+        """Standalone: Accuracy vs Epsilon for different delta values"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        dp_df = df[df["dp_enabled"] == True].copy()
+
+        if dp_df.empty:
+            print("No DP experiments found")
+            return None
+
+        for delta in sorted(dp_df["delta"].unique()):
+            delta_df = dp_df[dp_df["delta"] == delta]
+            if not delta_df.empty:
+                eps_data = (
+                    delta_df.groupby("epsilon")["accuracy_percent"]
+                    .agg(["mean", "std"])
+                    .reset_index()
+                )
+
+                ax.errorbar(
+                    eps_data["epsilon"],
+                    eps_data["mean"],
+                    yerr=eps_data["std"],
+                    marker="o",
+                    capsize=5,
+                    label=f"δ = {delta:.0e}",
+                    linewidth=2,
+                    markersize=8,
+                )
+
+        # Add baseline (no DP)
+        baseline_df = df[df["dp_enabled"] == False]
+        if not baseline_df.empty:
+            baseline_acc = baseline_df["accuracy_percent"].mean()
+            ax.axhline(
+                y=baseline_acc,
+                color="gray",
+                linestyle="--",
+                alpha=0.7,
+                label="No DP (Baseline)",
+            )
+            baseline_std = baseline_df["accuracy_percent"].std()
+            ax.axhspan(
+                baseline_acc - baseline_std,
+                baseline_acc + baseline_std,
+                alpha=0.1,
+                color="gray",
+            )
+
+        ax.set_xlabel("Privacy Budget (ε)", fontsize=14, fontweight="bold")
+        ax.set_ylabel("Accuracy (%)", fontsize=14, fontweight="bold")
+        ax.set_title(
+            "Model Accuracy vs Privacy Budget (ε) for Different δ Values",
+            fontsize=16,
+            fontweight="bold",
+            pad=20,
+        )
+        ax.set_xscale("log")
+        ax.grid(True, alpha=0.3, which="both")
+        ax.legend(loc="best", fontsize=11)
+
+        self.save_figure(
+            fig, "standalone_accuracy_vs_epsilon_all_deltas.png", standalone=True
+        )
+        print("✓ Generated standalone: Accuracy vs Epsilon (All Deltas)")
+        return fig
+
+    def standalone_iid_vs_non_iid_comparison(self, df: pd.DataFrame):
+        """Standalone: IID vs Non-IID accuracy comparison with box plot"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        plot_data = []
+        for _, row in df.iterrows():
+            if not pd.isna(row["final_accuracy"]):
+                plot_data.append(
+                    {
+                        "Distribution": "IID" if row["iid"] else "Non-IID",
+                        "Privacy": "With DP" if row["dp_enabled"] else "No DP",
+                        "Accuracy": row["accuracy_percent"],
+                    }
+                )
+
+        plot_df = pd.DataFrame(plot_data)
+
+        if not plot_df.empty:
+            sns.boxplot(
+                data=plot_df,
+                x="Distribution",
+                y="Accuracy",
+                hue="Privacy",
+                ax=ax,
+                palette=["#95A5A6", "#E67E22"],
+            )
+            ax.set_title(
+                "Accuracy Distribution: IID vs Non-IID with Privacy Impact",
+                fontweight="bold",
+                fontsize=16,
+                pad=20,
+            )
+            ax.set_ylabel("Accuracy (%)", fontsize=14)
+            ax.set_xlabel("Data Distribution", fontsize=14)
+            ax.grid(True, alpha=0.3, axis="y")
+            ax.legend(title="Privacy Setting", fontsize=11)
+
+            # Add statistical annotations
+            for i, dist in enumerate(["IID", "Non-IID"]):
+                for j, priv in enumerate(["No DP", "With DP"]):
+                    subset = plot_df[
+                        (plot_df["Distribution"] == dist) & (plot_df["Privacy"] == priv)
+                    ]
+                    if not subset.empty:
+                        mean_val = subset["Accuracy"].mean()
+                        ax.text(
+                            i + j * 0.3 - 0.15,
+                            mean_val + 1,
+                            f"{mean_val:.1f}%",
+                            ha="center",
+                            fontsize=10,
+                            fontweight="bold",
+                        )
+
+        self.save_figure(
+            fig, "standalone_iid_vs_non_iid_comparison.png", standalone=True
+        )
+        print("✓ Generated standalone: IID vs Non-IID Comparison")
+        return fig
+
+    def standalone_accuracy_heatmap_epsilon_delta(self, df: pd.DataFrame):
+        """Standalone: Epsilon vs Delta accuracy heatmap"""
+        fig, ax = plt.subplots(figsize=(12, 10))
+
+        dp_df = df[df["dp_enabled"] == True].copy()
+
+        if dp_df.empty:
+            print("No DP experiments found")
+            return None
+
+        pivot = dp_df.pivot_table(
+            values="accuracy_percent", index="delta", columns="epsilon", aggfunc="mean"
+        )
+
+        # Format labels
+        pivot.index = [f"{d:.0e}" for d in pivot.index]
+        pivot.columns = [f"ε={c}" for c in pivot.columns]
+
+        sns.heatmap(
+            pivot,
+            annot=True,
+            fmt=".1f",
+            cmap="viridis",
+            ax=ax,
+            cbar_kws={"label": "Accuracy (%)", "shrink": 0.8},
+            linewidths=2,
+            linecolor="white",
+        )
+        ax.set_title(
+            "Accuracy Heatmap: Privacy Budget (ε) vs Delta (δ)",
+            fontweight="bold",
+            fontsize=16,
+            pad=20,
+        )
+        ax.set_xlabel("Privacy Budget (ε)", fontsize=14, fontweight="bold")
+        ax.set_ylabel("Delta (δ)", fontsize=14, fontweight="bold")
+
+        self.save_figure(fig, "standalone_heatmap_epsilon_delta.png", standalone=True)
+        print("✓ Generated standalone: Epsilon-Delta Heatmap")
+        return fig
+
+    def standalone_accuracy_heatmap_epsilon_alpha(self, df: pd.DataFrame):
+        """Standalone: Epsilon vs Alpha accuracy heatmap"""
+        fig, ax = plt.subplots(figsize=(12, 10))
+
+        non_iid_df = df[df["iid"] == 0].copy()
+
+        if non_iid_df.empty or "alpha" not in non_iid_df.columns:
+            print("No non-IID data with alpha")
+            return None
+
+        # Bin alpha values for better visualization
+        non_iid_df["alpha_bin"] = pd.cut(non_iid_df["alpha"], bins=5)
+
+        pivot = non_iid_df.pivot_table(
+            values="accuracy_percent",
+            index="alpha_bin",
+            columns="epsilon" if "epsilon" in non_iid_df.columns else "dp_enabled",
+            aggfunc="mean",
+        )
+
+        if not pivot.empty:
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="YlGnBu",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)", "shrink": 0.8},
+                linewidths=2,
+            )
+            ax.set_title(
+                "Accuracy Heatmap: Privacy Budget (ε) vs Non-IID Concentration (α)",
+                fontweight="bold",
+                fontsize=16,
+                pad=20,
+            )
+            ax.set_xlabel("Privacy Configuration", fontsize=14, fontweight="bold")
+            ax.set_ylabel(
+                "Alpha (α) - Lower = More Non-IID", fontsize=14, fontweight="bold"
+            )
+
+        self.save_figure(fig, "standalone_heatmap_epsilon_alpha.png", standalone=True)
+        print("✓ Generated standalone: Epsilon-Alpha Heatmap")
+        return fig
+
+    def standalone_convergence_iid(self, df: pd.DataFrame):
+        """Standalone: IID convergence curves"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+        self._plot_convergence_curves(df[df["iid"] == 1], ax, "IID Distribution")
+        ax.set_title(
+            "Convergence Behavior with Differential Privacy (IID Distribution)",
+            fontweight="bold",
+            fontsize=16,
+            pad=20,
+        )
+        self.save_figure(fig, "standalone_convergence_iid.png", standalone=True)
+        print("✓ Generated standalone: IID Convergence Curves")
+        return fig
+
+    def standalone_convergence_non_iid(self, df: pd.DataFrame):
+        """Standalone: Non-IID convergence curves"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+        self._plot_convergence_curves(df[df["iid"] == 0], ax, "Non-IID Distribution")
+        ax.set_title(
+            "Convergence Behavior with Differential Privacy (Non-IID Distribution)",
+            fontweight="bold",
+            fontsize=16,
+            pad=20,
+        )
+        self.save_figure(fig, "standalone_convergence_non_iid.png", standalone=True)
+        print("✓ Generated standalone: Non-IID Convergence Curves")
+        return fig
+
+    def standalone_accuracy_drop_analysis(self, df: pd.DataFrame):
+        """Standalone: Privacy-induced accuracy degradation analysis"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        baseline_df = df[df["dp_enabled"] == False]
+        baseline_acc = (
+            baseline_df["accuracy_percent"].mean() if not baseline_df.empty else 100
+        )
+
+        dp_df = df[df["dp_enabled"] == True].copy()
+
+        for dist_type in ["IID", "Non-IID"]:
+            dist_df = dp_df[dp_df["distribution"] == dist_type]
+            if not dist_df.empty:
+                # Calculate accuracy drop from baseline
+                acc_drop = []
+                for eps in sorted(dist_df["epsilon"].unique()):
+                    eps_acc = dist_df[dist_df["epsilon"] == eps][
+                        "accuracy_percent"
+                    ].mean()
+                    acc_drop.append(
+                        {
+                            "epsilon": eps,
+                            "drop": baseline_acc - eps_acc,
+                            "distribution": dist_type,
+                        }
+                    )
+
+                drop_df = pd.DataFrame(acc_drop)
+                if not drop_df.empty:
+                    color = COLORS["iid"] if dist_type == "IID" else COLORS["non_iid"]
+                    ax.plot(
+                        drop_df["epsilon"],
+                        drop_df["drop"],
+                        marker="o",
+                        linewidth=2.5,
+                        markersize=10,
+                        color=color,
+                        label=dist_type,
+                    )
+
+        ax.set_xlabel("Privacy Budget (ε)", fontsize=14, fontweight="bold")
+        ax.set_ylabel(
+            "Accuracy Drop (percentage points)", fontsize=14, fontweight="bold"
+        )
+        ax.set_title(
+            "Privacy-Induced Accuracy Degradation Across Distributions",
+            fontsize=16,
+            fontweight="bold",
+            pad=20,
+        )
+        ax.set_xscale("log")
+        ax.grid(True, alpha=0.3, which="both")
+        ax.legend(loc="best", fontsize=12)
+        ax.invert_xaxis()
+
+        self.save_figure(fig, "standalone_accuracy_drop_analysis.png", standalone=True)
+        print("✓ Generated standalone: Accuracy Drop Analysis")
+        return fig
+
+    def standalone_client_variance_analysis(self, df: pd.DataFrame):
+        """Standalone: Client accuracy variance (fairness metric)"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        variance_data = []
+        for exp_id in df["experiment_id"].unique():
+            exp_df = df[df["experiment_id"] == exp_id]
+            client_accs = exp_df["client_accuracy_percent"].dropna()
+
+            if len(client_accs) > 1:
+                variance_data.append(
+                    {
+                        "Experiment": exp_id,
+                        "Distribution": "IID" if exp_df["iid"].iloc[0] else "Non-IID",
+                        "Privacy": "With DP"
+                        if exp_df["dp_enabled"].iloc[0]
+                        else "No DP",
+                        "Variance": client_accs.var(),
+                        "Std": client_accs.std(),
+                    }
+                )
+
+        var_df = pd.DataFrame(variance_data)
+        if not var_df.empty:
+            var_pivot = var_df.pivot_table(
+                values="Std", index="Distribution", columns="Privacy", aggfunc="mean"
+            )
+
+            var_pivot.plot(kind="bar", ax=ax, color=["#95A5A6", "#E67E22"], width=0.7)
+            ax.set_title(
+                "Client Accuracy Variance: Fairness Across Distributions",
+                fontweight="bold",
+                fontsize=16,
+                pad=20,
+            )
+            ax.set_ylabel("Standard Deviation of Client Accuracies", fontsize=14)
+            ax.set_xlabel("Data Distribution", fontsize=14)
+            ax.grid(True, alpha=0.3, axis="y")
+            ax.legend(title="Privacy Setting", fontsize=11)
+            ax.set_ylim(bottom=0)
+
+            # Add value labels
+            for container in ax.containers:
+                ax.bar_label(container, fmt="%.2f", fontsize=10)
+
+        self.save_figure(
+            fig, "standalone_client_variance_analysis.png", standalone=True
+        )
+        print("✓ Generated standalone: Client Variance Analysis")
+        return fig
+
+    def standalone_convergence_speed_comparison(self, df: pd.DataFrame):
+        """Standalone: Rounds to reach target accuracy"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        target_acc = 75  # Target accuracy percentage
+
+        speed_data = []
+        for exp_id in df["experiment_id"].unique():
+            exp_df = df[df["experiment_id"] == exp_id]
+
+            # Get per-round accuracy
+            round_accs = exp_df.groupby("round")["client_accuracy_percent"].mean()
+
+            # Find first round reaching target
+            rounds_to_target = None
+            for round_num, acc in round_accs.items():
+                if acc >= target_acc:
+                    rounds_to_target = round_num
+                    break
+
+            if rounds_to_target:
+                speed_data.append(
+                    {
+                        "Experiment": exp_id,
+                        "Distribution": "IID" if exp_df["iid"].iloc[0] else "Non-IID",
+                        "Privacy": "No DP"
+                        if not exp_df["dp_enabled"].iloc[0]
+                        else f"ε={exp_df['epsilon'].iloc[0]}",
+                        "Rounds": rounds_to_target,
+                    }
+                )
+
+        speed_df = pd.DataFrame(speed_data)
+
+        if not speed_df.empty:
+            # Create grouped bar plot
+            pivot = speed_df.pivot_table(
+                values="Rounds", index="Distribution", columns="Privacy", aggfunc="mean"
+            )
+            if not pivot.empty:
+                colors = ["#95A5A6", "#F39C12", "#E67E22", "#D35400"]
+                pivot.plot(
+                    kind="bar", ax=ax, color=colors[: len(pivot.columns)], width=0.7
+                )
+                ax.set_title(
+                    f"Rounds to Reach {target_acc}% Accuracy",
+                    fontweight="bold",
+                    fontsize=16,
+                    pad=20,
+                )
+                ax.set_ylabel("Number of Communication Rounds", fontsize=14)
+                ax.set_xlabel("Data Distribution", fontsize=14)
+                ax.grid(True, alpha=0.3, axis="y")
+                ax.legend(
+                    title="Privacy Setting", fontsize=11, bbox_to_anchor=(1.05, 1)
+                )
+
+                # Add value labels
+                for container in ax.containers:
+                    ax.bar_label(container, fmt="%.0f", fontsize=10)
+
+        self.save_figure(
+            fig, "standalone_convergence_speed_comparison.png", standalone=True
+        )
+        print("✓ Generated standalone: Convergence Speed Comparison")
+        return fig
+
+    def standalone_accuracy_vs_training_time(self, df: pd.DataFrame):
+        """Standalone: Final accuracy vs training time scatter plot"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        time_data = []
+        for exp_id in df["experiment_id"].unique():
+            exp_df = df[df["experiment_id"] == exp_id]
+
+            rounds_completed = (
+                exp_df["rounds_completed"].iloc[0]
+                if "rounds_completed" in exp_df.columns
+                else 0
+            )
+
+            time_data.append(
+                {
+                    "Experiment": exp_id,
+                    "Distribution": "IID" if exp_df["iid"].iloc[0] else "Non-IID",
+                    "Privacy": "No DP"
+                    if not exp_df["dp_enabled"].iloc[0]
+                    else f"ε={exp_df['epsilon'].iloc[0]}",
+                    "Accuracy": exp_df["accuracy_percent"].iloc[0],
+                    "Rounds": rounds_completed,
+                }
+            )
+
+        time_df = pd.DataFrame(time_data)
+
+        if not time_df.empty:
+            # Create scatter plot with different markers for distributions
+            markers = {"IID": "o", "Non-IID": "s"}
+            colors = {"No DP": "#95A5A6", "With DP": "#E67E22"}
+
+            for dist in ["IID", "Non-IID"]:
+                for priv_label in time_df["Privacy"].unique():
+                    subset = time_df[
+                        (time_df["Distribution"] == dist)
+                        & (time_df["Privacy"] == priv_label)
+                    ]
+                    if not subset.empty:
+                        ax.scatter(
+                            subset["Rounds"],
+                            subset["Accuracy"],
+                            label=f"{dist}, {priv_label}",
+                            marker=markers[dist],
+                            s=120,
+                            alpha=0.7,
+                            edgecolors="black",
+                            linewidth=1,
+                        )
+
+            ax.set_xlabel("Training Rounds Completed", fontsize=14, fontweight="bold")
+            ax.set_ylabel("Final Accuracy (%)", fontsize=14, fontweight="bold")
+            ax.set_title(
+                "Accuracy vs Training Duration: Privacy Impact",
+                fontweight="bold",
+                fontsize=16,
+                pad=20,
+            )
+            ax.grid(True, alpha=0.3)
+            ax.legend(bbox_to_anchor=(1.05, 1), fontsize=10)
+
+        self.save_figure(
+            fig, "standalone_accuracy_vs_training_time.png", standalone=True
+        )
+        print("✓ Generated standalone: Accuracy vs Training Time")
+        return fig
+
+    # ==================== GROUPED VISUALIZATIONS (Original) ====================
+
     def figure_1_accuracy_vs_epsilon(self, df: pd.DataFrame):
         """
         Figure 1: Accuracy vs Epsilon for different delta values
@@ -168,7 +674,6 @@ class AccuracyVisualizer:
         for delta in sorted(dp_df["delta"].unique()):
             delta_df = dp_df[dp_df["delta"] == delta]
             if not delta_df.empty:
-                # Group by epsilon for this delta
                 eps_data = (
                     delta_df.groupby("epsilon")["accuracy_percent"]
                     .agg(["mean", "std"])
@@ -197,8 +702,6 @@ class AccuracyVisualizer:
                 alpha=0.7,
                 label="No DP (Baseline)",
             )
-
-            # Add shaded region for baseline std
             baseline_std = baseline_df["accuracy_percent"].std()
             ax1.axhspan(
                 baseline_acc - baseline_std,
@@ -224,7 +727,6 @@ class AccuracyVisualizer:
         for dist_type in ["IID", "Non-IID"]:
             dist_df = dp_df[dp_df["distribution"] == dist_type]
             if not dist_df.empty:
-                # Take median delta for clarity
                 median_delta = dist_df["delta"].median()
                 dist_df = dist_df[dist_df["delta"] == median_delta]
 
@@ -261,16 +763,12 @@ class AccuracyVisualizer:
 
         # 1.3 Accuracy heatmap: Epsilon vs Delta
         ax3 = axes[1, 0]
-
-        # Create pivot table for heatmap
         pivot_data = (
             dp_df.groupby(["epsilon", "delta"])["accuracy_percent"].mean().reset_index()
         )
         heatmap_data = pivot_data.pivot(
             index="delta", columns="epsilon", values="accuracy_percent"
         )
-
-        # Format delta for display
         heatmap_data.index = [f"{d:.0e}" for d in heatmap_data.index]
         heatmap_data.columns = [f"ε={c}" for c in heatmap_data.columns]
 
@@ -292,7 +790,6 @@ class AccuracyVisualizer:
 
         # 1.4 Accuracy drop vs epsilon
         ax4 = axes[1, 1]
-
         baseline_acc = (
             baseline_df["accuracy_percent"].mean() if not baseline_df.empty else 100
         )
@@ -300,7 +797,6 @@ class AccuracyVisualizer:
         for dist_type in ["IID", "Non-IID"]:
             dist_df = dp_df[dp_df["distribution"] == dist_type]
             if not dist_df.empty:
-                # Calculate accuracy drop from baseline
                 acc_drop = []
                 for eps in sorted(dist_df["epsilon"].unique()):
                     eps_acc = dist_df[dist_df["epsilon"] == eps][
@@ -338,7 +834,7 @@ class AccuracyVisualizer:
         ax4.set_xscale("log")
         ax4.grid(True, alpha=0.3, which="both")
         ax4.legend(loc="best", fontsize=10)
-        ax4.invert_xaxis()  # Higher epsilon = less privacy = smaller drop
+        ax4.invert_xaxis()
 
         plt.suptitle(
             "Impact of Differential Privacy Parameters on Model Accuracy",
@@ -347,13 +843,8 @@ class AccuracyVisualizer:
             y=1.02,
         )
         plt.tight_layout()
-        plt.savefig(
-            self.output_dir / "figure_1_accuracy_vs_epsilon.png",
-            dpi=DPI,
-            bbox_inches="tight",
-        )
-        plt.close()
-        print("✓ Generated Figure 1: Accuracy vs Epsilon")
+        self.save_figure(fig, "figure_1_accuracy_vs_epsilon.png", standalone=False)
+        print("✓ Generated Figure 1: Accuracy vs Epsilon (Grouped)")
 
     def figure_2_iid_vs_non_iid_accuracy(self, df: pd.DataFrame):
         """
@@ -363,8 +854,6 @@ class AccuracyVisualizer:
 
         # 2.1 Box plot: IID vs Non-IID accuracy
         ax1 = axes[0, 0]
-
-        # Prepare data
         plot_data = []
         for _, row in df.iterrows():
             if not pd.isna(row["final_accuracy"]):
@@ -393,7 +882,6 @@ class AccuracyVisualizer:
             ax1.set_ylabel("Accuracy (%)")
             ax1.grid(True, alpha=0.3, axis="y")
 
-            # Add statistical annotation
             for i, dist in enumerate(["IID", "Non-IID"]):
                 for j, priv in enumerate(["No DP", "With DP"]):
                     subset = plot_df[
@@ -412,13 +900,11 @@ class AccuracyVisualizer:
 
         # 2.2 Accuracy vs Alpha (Non-IID concentration)
         ax2 = axes[0, 1]
-
         non_iid_df = df[df["iid"] == 0].copy()
         if not non_iid_df.empty and "alpha" in non_iid_df.columns:
             for dp_status in [True, False]:
                 subset = non_iid_df[non_iid_df["dp_enabled"] == dp_status]
                 if not subset.empty:
-                    # Group by alpha
                     alpha_data = (
                         subset.groupby("alpha")["accuracy_percent"]
                         .agg(["mean", "std"])
@@ -451,9 +937,8 @@ class AccuracyVisualizer:
             )
             ax2.grid(True, alpha=0.3)
             ax2.legend()
-            ax2.invert_xaxis()  # Lower alpha = more non-IID
+            ax2.invert_xaxis()
 
-            # Add trend line
             z = np.polyfit(
                 non_iid_df["alpha"].dropna(), non_iid_df["accuracy_percent"].dropna(), 1
             )
@@ -465,8 +950,6 @@ class AccuracyVisualizer:
 
         # 2.3 Accuracy drop due to non-IID at different privacy levels
         ax3 = axes[1, 0]
-
-        # Calculate accuracy drop
         iid_acc = df[df["iid"] == 1].groupby("dp_enabled")["accuracy_percent"].mean()
 
         drop_data = []
@@ -488,9 +971,7 @@ class AccuracyVisualizer:
                         iid_mean = (
                             iid_acc[dp_status]
                             if dp_status in iid_acc.index
-                            else iid_acc[
-                                0
-                            ]  # 0 = False 1=True ie. { 0: 90.068966 1: 90.333333}
+                            else iid_acc[0]
                         )
 
                         drop_data.append(
@@ -521,7 +1002,6 @@ class AccuracyVisualizer:
             )
             ax3.grid(True, alpha=0.3, axis="y")
 
-            # Add value labels
             for bar, val in zip(bars, drop_df["Drop"]):
                 height = bar.get_height()
                 ax3.text(
@@ -535,7 +1015,6 @@ class AccuracyVisualizer:
 
         # 2.4 Client accuracy variance (IID vs Non-IID)
         ax4 = axes[1, 1]
-
         variance_data = []
         for exp_id in df["experiment_id"].unique():
             exp_df = df[df["experiment_id"] == exp_id]
@@ -556,7 +1035,6 @@ class AccuracyVisualizer:
 
         var_df = pd.DataFrame(variance_data)
         if not var_df.empty:
-            # Grouped bar plot
             var_pivot = var_df.pivot_table(
                 values="Std", index="Distribution", columns="Privacy", aggfunc="mean"
             )
@@ -572,7 +1050,6 @@ class AccuracyVisualizer:
             ax4.grid(True, alpha=0.3, axis="y")
             ax4.legend(title="Privacy")
 
-            # Add value labels
             for container in ax4.containers:
                 ax4.bar_label(container, fmt="%.2f", fontsize=9)
 
@@ -583,21 +1060,14 @@ class AccuracyVisualizer:
             y=1.02,
         )
         plt.tight_layout()
-        plt.savefig(
-            self.output_dir / "figure_2_iid_vs_non_iid_accuracy.png",
-            dpi=DPI,
-            bbox_inches="tight",
-        )
-        plt.close()
-        print("✓ Generated Figure 2: IID vs Non-IID Accuracy")
+        self.save_figure(fig, "figure_2_iid_vs_non_iid_accuracy.png", standalone=False)
+        print("✓ Generated Figure 2: IID vs Non-IID Accuracy (Grouped)")
 
     def figure_3_accuracy_heatmap_matrix(self, df: pd.DataFrame):
         """
         Figure 3: Comprehensive heatmap matrix showing accuracy relationships
         """
         fig = plt.figure(figsize=(18, 12))
-
-        # Create grid for subplots
         gs = fig.add_gridspec(3, 3, hspace=0.3, wspace=0.3)
 
         # 3.1 Epsilon vs Delta heatmap (IID)
@@ -636,236 +1106,8 @@ class AccuracyVisualizer:
             fontweight="bold",
             y=0.98,
         )
-        plt.savefig(
-            self.output_dir / "figure_3_accuracy_heatmap_matrix.png",
-            dpi=DPI,
-            bbox_inches="tight",
-        )
-        plt.close()
-        print("✓ Generated Figure 3: Accuracy Heatmap Matrix")
-
-    def _plot_epsilon_delta_heatmap(self, df: pd.DataFrame, ax, title: str):
-        """Helper for epsilon-delta heatmap"""
-        dp_df = df[df["dp_enabled"] == True]
-        if dp_df.empty:
-            ax.text(0.5, 0.5, "No data", ha="center", va="center")
-            return
-
-        pivot = dp_df.pivot_table(
-            values="accuracy_percent", index="delta", columns="epsilon", aggfunc="mean"
-        )
-
-        # Format labels
-        pivot.index = [f"{d:.0e}" for d in pivot.index]
-        pivot.columns = [f"ε={c}" for c in pivot.columns]
-
-        sns.heatmap(
-            pivot,
-            annot=True,
-            fmt=".1f",
-            cmap="viridis",
-            ax=ax,
-            cbar_kws={"label": "Accuracy (%)"},
-            linewidths=1,
-        )
-        ax.set_title(title, fontweight="bold", fontsize=12)
-        ax.set_xlabel("Privacy Budget (ε)")
-        ax.set_ylabel("Delta (δ)")
-
-    def _plot_epsilon_alpha_heatmap(self, df: pd.DataFrame, ax):
-        """Heatmap: Epsilon vs Alpha"""
-        non_iid_df = df[df["iid"] == 0].copy()
-        # print(non_iid_df)
-        if non_iid_df.empty or "alpha" not in non_iid_df.columns:
-            ax.text(0.5, 0.5, "No non-IID data with alpha", ha="center", va="center")
-            return
-
-        # Bin alpha values for better visualization
-        non_iid_df["alpha_bin"] = pd.cut(non_iid_df["alpha"], bins=5)
-        # print(non_iid_df["dp_enabled"])  # All shouldn't be same value eg True
-        pivot = non_iid_df.pivot_table(
-            values="accuracy_percent",
-            index="alpha_bin",
-            columns="epsilon" if "epsilon" in non_iid_df.columns else "dp_enabled",
-            aggfunc="mean",
-        )
-        if not pivot.empty:
-            sns.heatmap(
-                pivot,
-                annot=True,
-                fmt=".1f",
-                cmap="YlGnBu",
-                ax=ax,
-                cbar_kws={"label": "Accuracy (%)"},
-            )
-            ax.set_title(
-                "Epsilon vs Alpha (Non-IID Concentration)",
-                fontweight="bold",
-                fontsize=12,
-            )
-            ax.set_xlabel("Privacy Configuration")
-            ax.set_ylabel("Alpha (lower = more non-IID)")
-        else:
-            print("Pivot empty - no valid combinations")
-
-    def _plot_delta_alpha_heatmap(self, df: pd.DataFrame, ax):
-        """Heatmap: Delta vs Alpha"""
-        non_iid_df = df[(df["iid"] == 0) & (df["dp_enabled"] == True)].copy()
-        if non_iid_df.empty or "alpha" not in non_iid_df.columns:
-            ax.text(0.5, 0.5, "No DP non-IID data", ha="center", va="center")
-            return
-
-        non_iid_df["alpha_bin"] = pd.cut(non_iid_df["alpha"], bins=4)
-
-        pivot = non_iid_df.pivot_table(
-            values="accuracy_percent",
-            index="alpha_bin",
-            columns="delta",
-            aggfunc="mean",
-        )
-        if not pivot.empty:
-            pivot.columns = [f"{c:.0e}" for c in pivot.columns]
-
-            sns.heatmap(
-                pivot,
-                annot=True,
-                fmt=".1f",
-                cmap="RdYlBu_r",
-                ax=ax,
-                cbar_kws={"label": "Accuracy (%)"},
-            )
-            ax.set_title("Delta vs Alpha Interaction", fontweight="bold", fontsize=12)
-            ax.set_xlabel("Delta (δ)")
-            ax.set_ylabel("Alpha")
-        else:
-            print("Pivot empty - no valid combinations")
-
-    def _plot_privacy_distribution_heatmap(self, df: pd.DataFrame, ax):
-        """Heatmap: Privacy Level vs Distribution"""
-        # Create privacy categories
-        df["privacy_level"] = df.apply(
-            lambda x: (
-                "No DP"
-                if not x["dp_enabled"]
-                else f"ε={x['epsilon']}"
-                if x["epsilon"] <= 1.0
-                else f"ε={x['epsilon']}"
-            ),
-            axis=1,
-        )
-
-        pivot = df.pivot_table(
-            values="accuracy_percent",
-            index="distribution",
-            columns="privacy_level",
-            aggfunc="mean",
-        )
-        if not pivot.empty:
-            sns.heatmap(
-                pivot,
-                annot=True,
-                fmt=".1f",
-                cmap="coolwarm",
-                ax=ax,
-                cbar_kws={"label": "Accuracy (%)"},
-                center=75,
-            )
-            ax.set_title(
-                "Privacy Level vs Distribution", fontweight="bold", fontsize=12
-            )
-            ax.set_xlabel("Privacy Configuration")
-            ax.set_ylabel("Data Distribution")
-        else:
-            print("Pivot empty - no valid combinations")
-
-    def _plot_epsilon_rounds_heatmap(self, df: pd.DataFrame, ax):
-        """Heatmap: Epsilon vs Training Rounds"""
-        df["rounds_bin"] = pd.cut(df["rounds_completed"], bins=5)
-
-        pivot = df.pivot_table(
-            values="accuracy_percent",
-            index="rounds_bin",
-            columns="epsilon" if "epsilon" in df.columns else "dp_enabled",
-            aggfunc="mean",
-        )
-        if not pivot.empty:
-            sns.heatmap(
-                pivot,
-                annot=True,
-                fmt=".1f",
-                cmap="magma",
-                ax=ax,
-                cbar_kws={"label": "Accuracy (%)"},
-            )
-            ax.set_title("Epsilon vs Training Rounds", fontweight="bold", fontsize=12)
-            ax.set_xlabel("Privacy Budget (ε)")
-            ax.set_ylabel("Rounds Completed")
-        else:
-            print("Pivot empty - no valid combinations")
-
-    def _plot_summary_table(self, df: pd.DataFrame, ax):
-        """Create summary statistics table"""
-        ax.axis("tight")
-        ax.axis("off")
-
-        # Calculate summary statistics
-        summary_data = []
-
-        for dist in ["IID", "Non-IID"]:
-            for dp in ["No DP", "With DP"]:
-                subset = df[
-                    (df["distribution"] == dist)
-                    & (df["dp_enabled"] == (dp == "With DP"))
-                ]
-
-                if not subset.empty:
-                    summary_data.append(
-                        [
-                            dist,
-                            dp,
-                            f"{subset['accuracy_percent'].mean():.2f}%",
-                            f"{subset['accuracy_percent'].std():.2f}",
-                            f"{subset['final_loss'].mean():.4f}",
-                            f"{len(subset)}",
-                        ]
-                    )
-
-        # Add epsilon-specific data
-        for eps in sorted(df[df["dp_enabled"] == True]["epsilon"].unique()):
-            subset = df[df["epsilon"] == eps]
-            if not subset.empty:
-                summary_data.append(
-                    [
-                        "All",
-                        f"ε={eps}",
-                        f"{subset['accuracy_percent'].mean():.2f}%",
-                        f"{subset['accuracy_percent'].std():.2f}",
-                        f"{subset['final_loss'].mean():.4f}",
-                        f"{len(subset)}",
-                    ]
-                )
-
-        # Create table
-        columns = ["Distribution", "Privacy", "Avg Acc", "Std", "Avg Loss", "Count"]
-        table = ax.table(
-            cellText=summary_data,
-            colLabels=columns,
-            cellLoc="center",
-            loc="center",
-            colWidths=[0.15, 0.2, 0.15, 0.15, 0.15, 0.1],
-        )
-
-        table.auto_set_font_size(False)
-        table.set_fontsize(10)
-        table.scale(1.2, 1.5)
-
-        # Style header
-        for (i, j), cell in table.get_cegivenlld().items():
-            if i == 0:
-                cell.set_facecolor("#40466e")
-                cell.set_text_props(weight="bold", color="white")
-
-        ax.set_title("Summary Statistics Table", fontweight="bold", fontsize=14, pad=20)
+        self.save_figure(fig, "figure_3_accuracy_heatmap_matrix.png", standalone=False)
+        print("✓ Generated Figure 3: Accuracy Heatmap Matrix (Grouped)")
 
     def figure_4_convergence_with_privacy(self, df: pd.DataFrame):
         """
@@ -896,17 +1138,13 @@ class AccuracyVisualizer:
             y=1.02,
         )
         plt.tight_layout()
-        plt.savefig(
-            self.output_dir / "figure_4_convergence_with_privacy.png",
-            dpi=DPI,
-            bbox_inches="tight",
-        )
-        plt.close()
-        print("✓ Generated Figure 4: Convergence with Privacy")
+        self.save_figure(fig, "figure_4_convergence_with_privacy.png", standalone=False)
+        print("✓ Generated Figure 4: Convergence with Privacy (Grouped)")
+
+    # ==================== HELPER METHODS ====================
 
     def _plot_convergence_curves(self, df: pd.DataFrame, ax, title: str):
         """Plot convergence curves for different privacy levels"""
-        # Get per-round data
         round_data = []
         for _, row in df.iterrows():
             if not pd.isna(row["round"]) and not pd.isna(row["client_accuracy"]):
@@ -928,17 +1166,14 @@ class AccuracyVisualizer:
             ax.text(0.5, 0.5, "No round data", ha="center", va="center")
             return
 
-        # Plot curves for each privacy level
         for privacy in sorted(round_df["Privacy"].unique()):
             subset = round_df[round_df["Privacy"] == privacy]
-            # Calculate mean and std per round
             grouped = (
                 subset.groupby("Round")["Accuracy"]
                 .agg(["mean", "std", "count"])
                 .reset_index()
             )
 
-            # Only plot if enough data
             if len(grouped) > 1:
                 color = (
                     COLORS["baseline"]
@@ -972,16 +1207,13 @@ class AccuracyVisualizer:
 
     def _plot_convergence_speed(self, df: pd.DataFrame, ax):
         """Plot rounds to reach target accuracy"""
-        target_acc = 75  # Target accuracy percentage
-
+        target_acc = 75
         speed_data = []
+
         for exp_id in df["experiment_id"].unique():
             exp_df = df[df["experiment_id"] == exp_id]
-
-            # Get per-round accuracy
             round_accs = exp_df.groupby("round")["client_accuracy_percent"].mean()
 
-            # Find first round reaching target
             rounds_to_target = None
             for round_num, acc in round_accs.items():
                 if acc >= target_acc:
@@ -1003,7 +1235,6 @@ class AccuracyVisualizer:
         speed_df = pd.DataFrame(speed_data)
 
         if not speed_df.empty:
-            # Create grouped bar plot
             pivot = speed_df.pivot_table(
                 values="Rounds", index="Distribution", columns="Privacy", aggfunc="mean"
             )
@@ -1023,24 +1254,14 @@ class AccuracyVisualizer:
                 ax.grid(True, alpha=0.3, axis="y")
                 ax.legend(title="Privacy", bbox_to_anchor=(1.05, 1))
 
-                # Add value labels
                 for container in ax.containers:
                     ax.bar_label(container, fmt="%.0f", fontsize=9)
-            else:
-                print("Pivot empty - no valid combinations")
 
     def _plot_accuracy_vs_time(self, df: pd.DataFrame, ax):
         """Scatter plot: Final accuracy vs training time"""
         time_data = []
         for exp_id in df["experiment_id"].unique():
             exp_df = df[df["experiment_id"] == exp_id]
-
-            # Estimate training time from rounds
-            total_rounds = (
-                exp_df["total_rounds"].iloc[0]
-                if "total_rounds" in exp_df.columns
-                else 0
-            )
             rounds_completed = (
                 exp_df["rounds_completed"].iloc[0]
                 if "rounds_completed" in exp_df.columns
@@ -1062,7 +1283,6 @@ class AccuracyVisualizer:
         time_df = pd.DataFrame(time_data)
 
         if not time_df.empty:
-            # Create scatter plot
             for dist in ["IID", "Non-IID"]:
                 for priv in time_df["Privacy"].unique():
                     subset = time_df[
@@ -1090,8 +1310,230 @@ class AccuracyVisualizer:
             ax.grid(True, alpha=0.3)
             ax.legend(bbox_to_anchor=(1.05, 1), fontsize=8)
 
+    def _plot_epsilon_delta_heatmap(self, df: pd.DataFrame, ax, title: str):
+        """Helper for epsilon-delta heatmap"""
+        dp_df = df[df["dp_enabled"] == True]
+        if dp_df.empty:
+            ax.text(0.5, 0.5, "No data", ha="center", va="center")
+            return
+
+        pivot = dp_df.pivot_table(
+            values="accuracy_percent", index="delta", columns="epsilon", aggfunc="mean"
+        )
+        pivot.index = [f"{d:.0e}" for d in pivot.index]
+        pivot.columns = [f"ε={c}" for c in pivot.columns]
+
+        sns.heatmap(
+            pivot,
+            annot=True,
+            fmt=".1f",
+            cmap="viridis",
+            ax=ax,
+            cbar_kws={"label": "Accuracy (%)"},
+            linewidths=1,
+        )
+        ax.set_title(title, fontweight="bold", fontsize=12)
+        ax.set_xlabel("Privacy Budget (ε)")
+        ax.set_ylabel("Delta (δ)")
+
+    def _plot_epsilon_alpha_heatmap(self, df: pd.DataFrame, ax):
+        """Heatmap: Epsilon vs Alpha"""
+        non_iid_df = df[df["iid"] == 0].copy()
+        if non_iid_df.empty or "alpha" not in non_iid_df.columns:
+            ax.text(0.5, 0.5, "No non-IID data with alpha", ha="center", va="center")
+            return
+
+        non_iid_df["alpha_bin"] = pd.cut(non_iid_df["alpha"], bins=5)
+        pivot = non_iid_df.pivot_table(
+            values="accuracy_percent",
+            index="alpha_bin",
+            columns="epsilon" if "epsilon" in non_iid_df.columns else "dp_enabled",
+            aggfunc="mean",
+        )
+        if not pivot.empty:
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="YlGnBu",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)"},
+            )
+            ax.set_title(
+                "Epsilon vs Alpha (Non-IID Concentration)",
+                fontweight="bold",
+                fontsize=12,
+            )
+            ax.set_xlabel("Privacy Configuration")
+            ax.set_ylabel("Alpha (lower = more non-IID)")
+
+    def _plot_delta_alpha_heatmap(self, df: pd.DataFrame, ax):
+        """Heatmap: Delta vs Alpha"""
+        non_iid_df = df[(df["iid"] == 0) & (df["dp_enabled"] == True)].copy()
+        if non_iid_df.empty or "alpha" not in non_iid_df.columns:
+            ax.text(0.5, 0.5, "No DP non-IID data", ha="center", va="center")
+            return
+
+        non_iid_df["alpha_bin"] = pd.cut(non_iid_df["alpha"], bins=4)
+        pivot = non_iid_df.pivot_table(
+            values="accuracy_percent",
+            index="alpha_bin",
+            columns="delta",
+            aggfunc="mean",
+        )
+        if not pivot.empty:
+            pivot.columns = [f"{c:.0e}" for c in pivot.columns]
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="RdYlBu_r",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)"},
+            )
+            ax.set_title("Delta vs Alpha Interaction", fontweight="bold", fontsize=12)
+            ax.set_xlabel("Delta (δ)")
+            ax.set_ylabel("Alpha")
+
+    def _plot_privacy_distribution_heatmap(self, df: pd.DataFrame, ax):
+        """Heatmap: Privacy Level vs Distribution"""
+        df["privacy_level"] = df.apply(
+            lambda x: (
+                "No DP"
+                if not x["dp_enabled"]
+                else f"ε={x['epsilon']}"
+                if x["epsilon"] <= 1.0
+                else f"ε={x['epsilon']}"
+            ),
+            axis=1,
+        )
+
+        pivot = df.pivot_table(
+            values="accuracy_percent",
+            index="distribution",
+            columns="privacy_level",
+            aggfunc="mean",
+        )
+        if not pivot.empty:
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="coolwarm",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)"},
+                center=75,
+            )
+            ax.set_title(
+                "Privacy Level vs Distribution", fontweight="bold", fontsize=12
+            )
+            ax.set_xlabel("Privacy Configuration")
+            ax.set_ylabel("Data Distribution")
+
+    def _plot_epsilon_rounds_heatmap(self, df: pd.DataFrame, ax):
+        """Heatmap: Epsilon vs Training Rounds"""
+        df["rounds_bin"] = pd.cut(df["rounds_completed"], bins=5)
+        pivot = df.pivot_table(
+            values="accuracy_percent",
+            index="rounds_bin",
+            columns="epsilon" if "epsilon" in df.columns else "dp_enabled",
+            aggfunc="mean",
+        )
+        if not pivot.empty:
+            sns.heatmap(
+                pivot,
+                annot=True,
+                fmt=".1f",
+                cmap="magma",
+                ax=ax,
+                cbar_kws={"label": "Accuracy (%)"},
+            )
+            ax.set_title("Epsilon vs Training Rounds", fontweight="bold", fontsize=12)
+            ax.set_xlabel("Privacy Budget (ε)")
+            ax.set_ylabel("Rounds Completed")
+
+    def _plot_summary_table(self, df: pd.DataFrame, ax):
+        """Create summary statistics table"""
+        ax.axis("tight")
+        ax.axis("off")
+
+        summary_data = []
+
+        for dist in ["IID", "Non-IID"]:
+            for dp in ["No DP", "With DP"]:
+                subset = df[
+                    (df["distribution"] == dist)
+                    & (df["dp_enabled"] == (dp == "With DP"))
+                ]
+
+                if not subset.empty:
+                    summary_data.append(
+                        [
+                            dist,
+                            dp,
+                            f"{subset['accuracy_percent'].mean():.2f}%",
+                            f"{subset['accuracy_percent'].std():.2f}",
+                            f"{subset['final_loss'].mean():.4f}",
+                            f"{len(subset)}",
+                        ]
+                    )
+
+        for eps in sorted(df[df["dp_enabled"] == True]["epsilon"].unique()):
+            subset = df[df["epsilon"] == eps]
+            if not subset.empty:
+                summary_data.append(
+                    [
+                        "All",
+                        f"ε={eps}",
+                        f"{subset['accuracy_percent'].mean():.2f}%",
+                        f"{subset['accuracy_percent'].std():.2f}",
+                        f"{subset['final_loss'].mean():.4f}",
+                        f"{len(subset)}",
+                    ]
+                )
+
+        columns = ["Distribution", "Privacy", "Avg Acc", "Std", "Avg Loss", "Count"]
+        table = ax.table(
+            cellText=summary_data,
+            colLabels=columns,
+            cellLoc="center",
+            loc="center",
+            colWidths=[0.15, 0.2, 0.15, 0.15, 0.15, 0.1],
+        )
+
+        table.auto_set_font_size(False)
+        table.set_fontsize(10)
+        table.scale(1.2, 1.5)
+
+        for (i, j), cell in table.get_celld().items():
+            if i == 0:
+                cell.set_facecolor("#40466e")
+                cell.set_text_props(weight="bold", color="white")
+
+        ax.set_title("Summary Statistics Table", fontweight="bold", fontsize=14, pad=20)
+
+    def generate_all_standalone_charts(self, df: pd.DataFrame):
+        """Generate all standalone visualizations"""
+        print("\n" + "-" * 50)
+        print("Generating Standalone Visualizations...")
+        print("-" * 50)
+
+        self.standalone_accuracy_vs_epsilon_all_deltas(df)
+        self.standalone_iid_vs_non_iid_comparison(df)
+        self.standalone_accuracy_heatmap_epsilon_delta(df)
+        self.standalone_accuracy_heatmap_epsilon_alpha(df)
+        self.standalone_convergence_iid(df)
+        self.standalone_convergence_non_iid(df)
+        self.standalone_accuracy_drop_analysis(df)
+        self.standalone_client_variance_analysis(df)
+        self.standalone_convergence_speed_comparison(df)
+        self.standalone_accuracy_vs_training_time(df)
+
+        print("\n✓ All standalone charts generated successfully!")
+        print(f"  Location: {self.standalone_dir}")
+
     def generate_all_charts(self):
-        """Generate all visualization charts"""
+        """Generate all visualization charts (both grouped and standalone)"""
         print("\n" + "=" * 70)
         print("ARCH-FL Accuracy Analysis Visualization Generator")
         print("=" * 70 + "\n")
@@ -1113,16 +1555,25 @@ class AccuracyVisualizer:
         print(f"IID experiments: {df[df['iid'] == 1]['experiment_id'].nunique()}")
         print(f"Non-IID experiments: {df[df['iid'] == 0]['experiment_id'].nunique()}\n")
 
-        # Generate figures
+        # Generate grouped figures
+        print("\n" + "=" * 50)
+        print("Generating Grouped Visualizations...")
+        print("=" * 50)
+
         self.figure_1_accuracy_vs_epsilon(df)
         self.figure_2_iid_vs_non_iid_accuracy(df)
         self.figure_3_accuracy_heatmap_matrix(df)
         self.figure_4_convergence_with_privacy(df)
 
+        # Generate standalone charts
+        self.generate_all_standalone_charts(df)
+
         # Generate summary statistics CSV
         self.generate_summary_csv(df)
 
-        print(f"\n✓ All charts generated successfully in: {self.output_dir}")
+        print(f"\n✓ All charts generated successfully!")
+        print(f"  Grouped charts: {self.output_dir}")
+        print(f"  Standalone charts: {self.standalone_dir}")
         print("\n" + "=" * 70)
 
     def generate_summary_csv(self, df: pd.DataFrame):
@@ -1178,9 +1629,14 @@ def main():
     parser.add_argument(
         "--charts",
         nargs="+",
-        choices=["all", "epsilon", "iid", "heatmap", "convergence"],
+        choices=["all", "epsilon", "iid", "heatmap", "convergence", "standalone"],
         default=["all"],
         help="Charts to generate",
+    )
+    parser.add_argument(
+        "--standalone-only",
+        action="store_true",
+        help="Generate only standalone charts",
     )
 
     args = parser.parse_args()
@@ -1188,13 +1644,19 @@ def main():
     # Initialize visualizer
     visualizer = AccuracyVisualizer(args.db_path, args.output_dir)
 
-    # Generate selected charts
-    if "all" in args.charts:
+    # Load data
+    df = visualizer.load_experiment_data()
+    df = visualizer.parse_parameters(df)
+
+    if args.standalone_only:
+        # Generate only standalone charts
+        visualizer.generate_all_standalone_charts(df)
+        visualizer.generate_summary_csv(df)
+    elif "all" in args.charts:
+        # Generate both grouped and standalone
         visualizer.generate_all_charts()
     else:
-        df = visualizer.load_experiment_data()
-        df = visualizer.parse_parameters(df)
-
+        # Generate selected grouped charts
         chart_map = {
             "epsilon": visualizer.figure_1_accuracy_vs_epsilon,
             "iid": visualizer.figure_2_iid_vs_non_iid_accuracy,
@@ -1206,6 +1668,10 @@ def main():
             if chart in chart_map:
                 print(f"\nGenerating {chart} chart...")
                 chart_map[chart](df)
+
+        # Also generate standalone if specified
+        if "standalone" in args.charts:
+            visualizer.generate_all_standalone_charts(df)
 
         visualizer.generate_summary_csv(df)
 
