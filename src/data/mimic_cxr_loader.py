@@ -7,17 +7,19 @@ for federated learning experiments.
 
 import sys
 import os
-import numpy as np
+
+# import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
 import io
-import warnings
+
+# import warnings
 from pathlib import Path
 from typing import Optional, Tuple, List
-
+from ..utils.logger import logger
 
 dataset_dir = Path(__file__).resolve().parent.parent / "datasets/mimic_cxr/data"
 
@@ -64,9 +66,9 @@ class MIMICCXRDataset(Dataset):
         if binary_classification:
             self._preprocess_binary_labels()
 
-        print(f"📊 MIMIC-CXR Dataset loaded: {len(self.data_frame)} samples")
+        logger.info(f"📊 MIMIC-CXR Dataset loaded: {len(self.data_frame)} samples")
         if max_samples:
-            print(f"🔍 Using subset: {max_samples} samples")
+            logger.debug(f"🔍 Using subset: {max_samples} samples")
 
     def _preprocess_binary_labels(self):
         """Convert findings text to binary labels for target pathology."""
@@ -74,7 +76,7 @@ class MIMICCXRDataset(Dataset):
         self.data_frame["binary_label"] = self.data_frame["findings"].apply(
             lambda x: 1 if self.target_pathology.lower() in str(x).lower() else 0
         )
-        print(
+        logger.debug(
             f"🏥 Binary labels created for {self.target_pathology}: "
             f"{self.data_frame['binary_label'].sum()} positive cases"
         )
@@ -136,7 +138,7 @@ class MIMICCXRDataset(Dataset):
             return image, label
 
         except Exception as e:
-            warnings.warn(f"⚠️ Error loading sample {idx}: {e}")
+            logger.warn(f"⚠️ Error loading sample {idx}: {e}")
             # Return a blank image and dummy label if loading fails
             blank_image = torch.zeros((1, 224, 224))  # Standard chest X-ray size
             return blank_image, 0
@@ -200,7 +202,7 @@ def load_mimic_cxr_dataset(
     """
     import pyarrow.parquet as pq
 
-    print(f"🔄 Loading MIMIC-CXR dataset (max {max_samples} samples)...")
+    logger.info(f"🔄 Loading MIMIC-CXR dataset (max {max_samples} samples)...")
 
     try:
         # Load parquet files
@@ -217,9 +219,9 @@ def load_mimic_cxr_dataset(
                 table = pq.read_table(file)
                 df = table.to_pandas()
                 dfs.append(df)
-                print(f"✓ Loaded {file}: {len(df)} samples")
+                logger.info(f"✓ Loaded {file}: {len(df)} samples")
             else:
-                print(f"✗ File not found: {file}")
+                logger.info(f"✗ File not found: {file}")
 
         if not dfs:
             raise FileNotFoundError("No MIMIC-CXR parquet files found")
@@ -230,7 +232,7 @@ def load_mimic_cxr_dataset(
         # Limit samples for memory management
         if max_samples and max_samples < len(full_df):
             full_df = full_df.sample(n=max_samples, random_state=random_state)
-            print(f"🔍 Using {max_samples} samples (limited for memory)")
+            logger.debug(f"🔍 Using {max_samples} samples (limited for memory)")
 
         # Split into train and test
         from sklearn.model_selection import train_test_split
@@ -239,7 +241,7 @@ def load_mimic_cxr_dataset(
             full_df, test_size=test_split, random_state=random_state
         )
 
-        print(f"📊 Dataset split: {len(train_df)} train, {len(test_df)} test")
+        logger.info(f"📊 Dataset split: {len(train_df)} train, {len(test_df)} test")
 
         # Create transforms
         train_transform = get_mimic_cxr_transforms(train=True)
@@ -260,12 +262,11 @@ def load_mimic_cxr_dataset(
             target_pathology=target_pathology,
         )
 
-        print("🎉 MIMIC-CXR dataset loaded successfully!")
+        logger.info("🎉 MIMIC-CXR dataset loaded successfully!")
         return train_dataset, test_dataset
 
     except Exception as e:
-        print(f"❌ Error loading MIMIC-CXR dataset: {e}")
-        raise
+        logger.error(f"Loading MIMIC-CXR dataset: {e}")
         # Fallback to synthetic data
         # print("🔄 Falling back to synthetic data...")
         # from datasets import MedicalDataset
@@ -330,7 +331,7 @@ def create_mimic_cxr_data_loaders(
 
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-        print(f"🎉 Created {num_clients} client loaders and 1 test loader")
+        logger.info(f"🎉 Created {num_clients} client loaders and 1 test loader")
         return (
             client_loaders,
             test_loader,
@@ -338,9 +339,9 @@ def create_mimic_cxr_data_loaders(
         )
 
     except Exception as e:
-        print(f"❌ Error creating MIMIC-CXR data loaders: {e}")
+        logger.error(f"Error creating MIMIC-CXR data loaders: {e}")
         # Fallback to existing synthetic data loader
-        print("🔄 Falling back to synthetic data loaders...")
+        logger.info("🔄 Falling back to synthetic data loaders...")
         from .loaders import get_data_loaders
 
         return get_data_loaders("PneumoniaMNIST", num_clients, iid, batch_size, alpha)

@@ -6,13 +6,16 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": False,
     "formatters": {
         "default": {
-            "format": settings.LOG_FORMAT,
+            "format": settings.DEFAULT_LOG_FORMAT,
+        },
+        "minimal": {
+            "format": settings.MINIMAL_LOG_FORMAT,
         },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "default",
+            "formatter": "minimal",
             "level": settings.LOG_LEVEL,
         },
         "file": {
@@ -41,6 +44,11 @@ LOGGING_CONFIG = {
         },
         "archfl": {
             "handlers": ["console", "file"],
+            "level": settings.LOG_LEVEL,
+            "propagate": False,
+        },
+        "opacus.optimizers.optimizer": {
+            "handlers": ["console"],
             "level": settings.LOG_LEVEL,
             "propagate": False,
         },

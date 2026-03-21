@@ -434,6 +434,7 @@ export default function ExperimentDetail() {
       ...grouped,
     };
   })();
+  //   console.log(clientStats);
 
   // Helper function to calculate standard deviation
   const calculateStdDev = (values) => {

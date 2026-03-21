@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 from dashboard.backend.config.settings import settings
+from ..utils.logger import logger
 
 
 class DatasetRegistry:
@@ -45,31 +46,32 @@ class DatasetRegistry:
 
             dataset_name = dataset_dir.name
 
+            if dataset_name in self.datasets:
+                # Prevent re-registration
+                continue
+
             # Check if this is a valid dataset directory
             # Valid dataset structure: dataset_name/dataset_name/datasetinfo.yml and data folder
-            dataset_config_dir = dataset_dir / dataset_name
-
-            if not dataset_config_dir.exists():
+            if not dataset_dir.exists():
                 continue
 
             # Try both .yml and .md extensions
-            config_file_yml = dataset_config_dir / "datasetinfo.yml"
-            config_file_md = dataset_config_dir / "datasetinfo.md"
+            config_file_yml = dataset_dir / "datasetinfo.yml"
+            config_file_md = dataset_dir / "datasetinfo.md"
             config_file = (
                 config_file_yml if config_file_yml.exists() else config_file_md
             )
 
-            data_dir = dataset_config_dir / "data"
-
+            data_dir = dataset_dir / "data"
             # Validate dataset structure
             if not config_file.exists():
-                print(
+                logger.warn(
                     f"⚠️ Dataset {dataset_name}: missing datasetinfo.yml or datasetinfo.md"
                 )
                 continue
 
             if not data_dir.exists() or not any(data_dir.iterdir()):
-                print(f"⚠️ Dataset {dataset_name}: data folder is empty")
+                logger.warn(f"⚠️ Dataset {dataset_name}: data folder is empty")
                 continue
 
             # Load dataset configuration
@@ -95,15 +97,16 @@ class DatasetRegistry:
                     "metadata_file": str(config_file.absolute()),
                 }
 
-                print(f"✅ Registered dataset: {dataset_name}")
-
             except Exception as e:
-                print(f"⚠️ Failed to load dataset config for {dataset_name}: {e}")
+                logger.warn(f"⚠️ Failed to load dataset config for {dataset_name}: {e}")
                 continue
 
+        if self.datasets:
+            logger.info(f"Registered datasets: {len(self.datasets)}")
+
         # If no datasets found, add fallback datasets
-        if not self.datasets:
-            print(
+        else:
+            logger.warn(
                 f"⚠️ No datasets discovered in {self.datasets_dir}, using fallback datasets"
             )
             self.datasets = {
@@ -158,7 +161,7 @@ class DatasetRegistry:
         dataset_name = dataset_name.lower()
         self.datasets[dataset_name] = dataset_info
         self._save_registry()
-        print(f"Registered dataset: {dataset_name}")
+        # print(f"Registered dataset: {dataset_name}")
 
     def get_dataset_info(self, dataset_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -206,7 +209,7 @@ class DatasetRegistry:
                 elif metadata_file.endswith(".json"):
                     return self._load_json_metadata(metadata_file)
             except Exception as e:
-                print(f"⚠️ Could not load metadata from {metadata_file}: {e}")
+                logger.warn(f"⚠️ Could not load metadata from {metadata_file}: {e}")
 
         # Return basic info from registry
         return {
@@ -231,7 +234,7 @@ class DatasetRegistry:
             try:
                 return yaml.safe_load(match.group(1))
             except Exception as e:
-                print(f"⚠️ Error parsing YAML frontmatter: {e}")
+                logger.warn(f"⚠️ Error parsing YAML frontmatter: {e}")
 
         # If no frontmatter, try to parse as YAML directly
         try:
@@ -300,7 +303,7 @@ class DatasetRegistry:
                     ).strip()
 
         except Exception as e:
-            print(f"⚠️ Error parsing {metadata_file}: {e}")
+            logger.warn(f"⚠️ Error parsing {metadata_file}: {e}")
 
         return metadata
 

@@ -48,8 +48,11 @@ class Settings(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
-    LOG_FORMAT: str = Field(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s", env="LOG_FORMAT"
+    DEFAULT_LOG_FORMAT: str = Field(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s", env="DEFAULT_LOG_FORMAT"
+    )
+    MINIMAL_LOG_FORMAT: str = Field(
+        "%(name)s - %(levelname)s - %(message)s", env="MINIMAL_LOG_FORMAT"
     )
 
     # Paths

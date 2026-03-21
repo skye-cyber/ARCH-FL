@@ -456,7 +456,9 @@ class Executor:
 
                         client_accuracy = client_metrics.get("accuracy", 0)
                         client_loss = client_metrics.get("loss", 0)
-                        print("Client Accuracy:", client_accuracy)
+                        logger.info(
+                            f"Epoch: {round_num} Client{client_idx} Accuracy: {client_accuracy}"
+                        )
                         # Store in history
                         client_metrics_history[client_idx].append(
                             {
@@ -602,7 +604,7 @@ class Executor:
             if dp_enabled:
                 results["privacy_spent"] = best_privacy_spent
 
-            print("Best acc:", best_accuracy, "Final acc:", final_accuracy)
+            logger.info(f"Best acc: {best_accuracy} Final acc: {final_accuracy}")
             # Report completion
             if progress_callback:
                 progress_callback(100, "Training completed successfully")

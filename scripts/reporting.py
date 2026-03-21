@@ -860,7 +860,7 @@ class AccuracyVisualizer:
         table.scale(1.2, 1.5)
 
         # Style header
-        for (i, j), cell in table.get_celld().items():
+        for (i, j), cell in table.get_cegivenlld().items():
             if i == 0:
                 cell.set_facecolor("#40466e")
                 cell.set_text_props(weight="bold", color="white")

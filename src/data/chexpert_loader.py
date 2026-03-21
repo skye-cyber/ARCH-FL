@@ -13,11 +13,14 @@ import torch
 from torch.utils.data import Dataset, DataLoader, Subset
 from torchvision import transforms
 from PIL import Image
-import warnings
+
+# import warnings
 from pathlib import Path
 from typing import Optional, Tuple, List, Dict, Any, Union
 from collections import Counter
 import random
+from ..utils.logger import logger
+
 
 dataset_dir = Path(__file__).resolve().parent.parent / "datasets/chexpert/data"
 
@@ -115,9 +118,9 @@ class CheXpertDataset(Dataset):
         if binary_classification:
             pass  # self._preprocess_binary_labels()
 
-        print(f"📊 CheXpert Dataset loaded: {len(self.data_frame)} samples")
+        logger.info(f"📊 CheXpert Dataset loaded: {len(self.data_frame)} samples")
         if max_samples:
-            print(f"🔍 Using subset: {max_samples} samples")
+            logger.info(f"🔍 Using subset: {max_samples} samples")
 
     def _preprocess_binary_labels(self):
         """Convert findings text to binary labels for target pathology."""
@@ -125,7 +128,7 @@ class CheXpertDataset(Dataset):
         self.data_frame["binary_label"] = self.data_frame["findings"].apply(
             lambda x: 1 if self.target_pathology.lower() in str(x).lower() else 0
         )
-        print(
+        logger.info(
             f"🏥 Binary labels created for {self.target_pathology}: "
             f"{self.data_frame['binary_label'].sum()} positive cases"
         )
@@ -140,7 +143,9 @@ class CheXpertDataset(Dataset):
                         "frontal", case=False, na=False
                     )
                 ]
-                print(f"📐 Filtered to frontal views: {len(self.data_frame)} samples")
+                logger.info(
+                    f"📐 Filtered to frontal views: {len(self.data_frame)} samples"
+                )
             elif not self.use_frontal_only and self.use_lateral:
                 # Keep only lateral views
                 self.data_frame = self.data_frame[
@@ -148,7 +153,9 @@ class CheXpertDataset(Dataset):
                         "lateral", case=False, na=False
                     )
                 ]
-                print(f"📐 Filtered to lateral views: {len(self.data_frame)} samples")
+                logger.info(
+                    f"📐 Filtered to lateral views: {len(self.data_frame)} samples"
+                )
 
     def _handle_uncertain_labels(self):
         """Handle uncertain labels (-1 values) according to specified strategy."""
@@ -169,7 +176,7 @@ class CheXpertDataset(Dataset):
                     # Remove uncertain samples
                     self.data_frame = self.data_frame[self.data_frame[col] != -1]
 
-        print(f"🎯 Uncertainty handling: {self.uncertainty_handling}")
+        logger.debug(f"🎯 Uncertainty handling: {self.uncertainty_handling}")
 
     def _validate_paths(self):
         """Validate that image paths exist and remove missing files."""
@@ -191,7 +198,7 @@ class CheXpertDataset(Dataset):
                     valid_indices.append(idx)
 
         if len(valid_indices) < len(self.data_frame):
-            print(
+            logger.warn(
                 f"⚠️ Removed {len(self.data_frame) - len(valid_indices)} samples with missing images"
             )
             self.data_frame = self.data_frame.loc[valid_indices].reset_index(drop=True)
@@ -204,7 +211,9 @@ class CheXpertDataset(Dataset):
             ].apply(lambda x: 1 if x == 1 else 0)
         else:
             # Try to find pathology in text
-            print(f"⚠️ {self.target_pathology} not found in columns, using text search")
+            logger.warn(
+                f"⚠️ {self.target_pathology} not found in columns, using text search"
+            )
             self.data_frame["binary_label"] = 0  # Default
 
     def _prepare_multilabel_labels(self):
@@ -232,7 +241,7 @@ class CheXpertDataset(Dataset):
             label_matrix.append(labels)
 
         self.data_frame["multilabel"] = list(label_matrix)
-        print(
+        logger.info(
             f"🏷️ Created multi-label vectors with {len(CHEXPERT_COMPETITION_CLASSES)} classes"
         )
 
@@ -288,7 +297,7 @@ class CheXpertDataset(Dataset):
             return image, label
 
         except Exception as e:
-            warnings.warn(f"⚠️ Error loading sample {idx}: {e}")
+            logger.warn(f"⚠️ Error loading sample {idx}: {e}")
             # Return a blank image and dummy label if loading fails
             blank_image = torch.zeros((1, self.image_size[0], self.image_size[1]))
             if self.multi_label:
@@ -362,7 +371,7 @@ def load_chexpert_dataset(
     """
     import pyarrow.parquet as pq
 
-    print(f"🔄 Loading CheXpert dataset (max {max_samples} samples)...")
+    logger.debug(f"🔄 Loading CheXpert dataset (max {max_samples} samples)...")
 
     try:
         # Load parquet files
@@ -380,9 +389,9 @@ def load_chexpert_dataset(
                 table = pq.read_table(file)
                 df = table.to_pandas()
                 dfs.append(df)
-                print(f"✓ Loaded {file}: {len(df)} samples")
+                logger.info(f"✓ Loaded {file}: {len(df)} samples")
             else:
-                print(f"✗ File not found: {file}")
+                logger.info(f"✗ File not found: {file}")
 
         if not dfs:
             raise FileNotFoundError("No MIMIC-CXR parquet files found")
@@ -393,7 +402,7 @@ def load_chexpert_dataset(
         # Limit samples for memory management
         if max_samples and max_samples < len(full_df):
             full_df = full_df.sample(n=max_samples, random_state=random_state)
-            print(f"🔍 Using {max_samples} samples (limited for memory)")
+            logger.info(f"🔍 Using {max_samples} samples (limited for memory)")
 
         # Split into train and test
         from sklearn.model_selection import train_test_split
@@ -402,7 +411,7 @@ def load_chexpert_dataset(
             full_df, test_size=test_split, random_state=random_state
         )
 
-        print(f"📊 Dataset split: {len(train_df)} train, {len(test_df)} test")
+        logger.info(f"📊 Dataset split: {len(train_df)} train, {len(test_df)} test")
 
         # Create transforms
         train_transform = get_chexpert_transforms(train=True)
@@ -463,14 +472,15 @@ def load_chexpert_dataset(
         # val_dataset.dataset.transform = val_transform
         # test_dataset.dataset.transform = test_transform
 
-        print(f"📊 Dataset split: {len(train_dataset)} train, {len(test_dataset)} test")
-        print("🎉 CheXpert dataset loaded successfully!")
+        logger.debug(
+            f"📊 Dataset split: {len(train_dataset)} train, {len(test_dataset)} test"
+        )
+        logger.info("🎉 CheXpert dataset loaded successfully!")
 
         return train_dataset, test_dataset
 
     except Exception as e:
-        print(f"❌ Error loading CheXpert dataset: {e}")
-        raise
+        logger.error(f"❌ Error loading CheXpert dataset: {e}")
         # print("🔄 Falling back to synthetic data...")
         # return _create_synthetic_chexpert(
         #     max_samples=max_samples,
@@ -520,13 +530,13 @@ def _create_synthetic_chexpert(
         dataset, [train_size, val_size, test_size]
     )
 
-    print(f"✅ Created synthetic CheXpert dataset: {num_samples} samples")
+    logger.info(f"✅ Created synthetic CheXpert dataset: {num_samples} samples")
     return train_dataset, val_dataset, test_dataset
 
 
 def create_chexpert_data_loaders(
     num_clients: int = 5,
-    max_samples: int = 5000,
+    max_samples: int = 1000,
     batch_size: int = 32,
     iid: bool = False,
     alpha: float = 0.5,
@@ -598,7 +608,7 @@ def create_chexpert_data_loaders(
             test_dataset, batch_size=batch_size, shuffle=False, num_workers=0
         )
 
-        print(f"🎉 Created {num_clients} client loaders and 1 test loader")
+        logger.info(f"🎉 Created {num_clients} client loaders and 1 test loader")
 
         # Print class distribution if multi-label
         if multi_label:
@@ -610,7 +620,7 @@ def create_chexpert_data_loaders(
                         for j, val in enumerate(label_vec):
                             if val == 1:
                                 label_counts[CHEXPERT_COMPETITION_CLASSES[j]] += 1
-                print(f"  Client {i + 1}: {dict(label_counts.most_common(3))}")
+                logger.debug(f"  Client {i + 1}: {dict(label_counts.most_common(3))}")
 
         return (
             client_loaders,
@@ -619,8 +629,7 @@ def create_chexpert_data_loaders(
         )
 
     except Exception as e:
-        print(f"❌ Error creating CheXpert data loaders: {e}")
-        raise
+        logger.error(f"❌ Error creating CheXpert data loaders: {e}")
         # print("🔄 Falling back to synthetic data loaders...")
         # from .loaders import get_data_loaders
         #
@@ -661,9 +670,9 @@ def get_chexpert_statistics(csv_path: str = None) -> Dict[str, Any]:
                 table = pq.read_table(file)
                 df = table.to_pandas()
                 dfs.append(df)
-                print(f"✓ Loaded {file}: {len(df)} samples")
+                logger.info(f"✓ Loaded {file}: {len(df)} samples")
             else:
-                print(f"✗ File not found: {file}")
+                logger.info(f"✗ File not found: {file}")
 
         if not dfs:
             raise FileNotFoundError("No MIMIC-CXR parquet files found")
@@ -700,7 +709,7 @@ def get_chexpert_statistics(csv_path: str = None) -> Dict[str, Any]:
         return stats
 
     except Exception as e:
-        print(f"Error getting CheXpert statistics: {e}")
+        logger.error(f"Could not obtain CheXpert statistics: {e}")
         return {}
 
 

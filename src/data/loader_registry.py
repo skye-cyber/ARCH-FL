@@ -94,7 +94,7 @@ class DataLoaderRegistry:
             "description": description,
             "supported_datasets": supported_datasets or [],
         }
-        print(f"Registered data loader: {loader_name}")
+        # print(f"Registered data loader: {loader_name}")
 
     def get_loader_info(self, loader_name: str) -> Optional[Dict[str, Any]]:
         """
