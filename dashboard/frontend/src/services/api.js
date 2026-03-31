@@ -5,9 +5,10 @@ const api = axios.create({
   baseURL: "http://localhost:8008/api/v1",
 });
 
-// Add request interceptor for auth tokens if needed
+// Add request interceptor for auth tokens
 api.interceptors.request.use(
   (config) => {
+    config.headers["ngrok-skip-browser-warning"] = "true";
     // Add auth token if available
     const token = localStorage.getItem("authToken");
     if (token) {

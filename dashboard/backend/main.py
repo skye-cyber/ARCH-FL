@@ -67,6 +67,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
+    # allowed_hosts=["3a81-205-147-22-25.ngrok-free.app"],
     allow_credentials=settings.ALLOW_CREDENTIALS,
     allow_methods=settings.ALLOWED_METHODS,
     allow_headers=settings.ALLOWED_HEADERS,
