@@ -297,7 +297,7 @@ class CheXpertDataset(Dataset):
             return image, label
 
         except Exception as e:
-            logger.warn(f"⚠️ Error loading sample {idx}: {e}")
+            # logger.warn(f"⚠️ Error loading sample {idx}: {e}")
             # Return a blank image and dummy label if loading fails
             blank_image = torch.zeros((1, self.image_size[0], self.image_size[1]))
             if self.multi_label:

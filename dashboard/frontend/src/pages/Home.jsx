@@ -99,6 +99,7 @@ export default function Home() {
                 });
 
                 // Get recent experiments (last 3)
+                const experimentsData = experimentResultResponse.data
                 const sortedExperiments = [...experimentResultResponse.data].sort(
                     (a, b) => new Date(b.created_at) - new Date(a.created_at),
                 ).slice(0, 3);
@@ -112,7 +113,7 @@ export default function Home() {
                     }
                 } catch (err) { }
                 setRecentExperiments(sortedExperiments);
-                console.log(sortedExperiments)
+                console.log(experimentsData)
                 //Calculate overview stats
                 //                 const completedExperiments = experimentResultResponse.data.filter(
                 //                     (exp) => exp.status === "completed",
