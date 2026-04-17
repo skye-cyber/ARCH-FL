@@ -16,11 +16,11 @@ graph TD
         C -->|Refinement| D
     end
 
-    style A fill:#e1f5fe
-    style B fill:#fff3e0
-    style C fill:#e8f5e9
-    style D fill:#fce4ec
-    style E fill:#f3e5f5
+    style A fill:#aaffff
+    style B fill:#ffaa7f
+    style C fill:#ffaaff
+    style D fill:#7fbd5e
+    style E fill:#aaaaff
 ```
 
 ---
